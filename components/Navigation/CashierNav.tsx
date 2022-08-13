@@ -21,9 +21,15 @@ import {
     ChevronDownIcon,
     ChevronRightIcon,
   } from '@chakra-ui/icons';
+import { FC } from 'react';
   
   export default function WithSubnavigation() {
     const { isOpen, onToggle } = useDisclosure();
+    const handleclick = () => {
+      alert('Hey')
+    }
+
+    const date1 = new Date();
   
     return (
       <Box>
@@ -63,6 +69,7 @@ import {
             </Flex>
           </Flex>
           <Text px={4}>Airport Road</Text>  
+          <Text px={4}>{date1.toDateString()}</Text>
           <Stack
             flex={{ base: 1, md: 0 }}
             justify={'flex-end'}
@@ -70,24 +77,16 @@ import {
             spacing={6}>
             
             <Button
-              as={'a'}
-              fontSize={'sm'}
-              fontWeight={400}
-              variant={'link'}
-              href={'#'}>
-              Sign In
-            </Button>
-            <Button
+              onClick={handleclick}
               display={{ base: 'none', md: 'inline-flex' }}
               fontSize={'sm'}
               fontWeight={600}
               color={'white'}
               bg={'pink.400'}
-              href={'#'}
               _hover={{
                 bg: 'pink.300',
               }}>
-              Sign Up
+              Log Out
             </Button>
           </Stack>
         </Flex>
@@ -99,7 +98,7 @@ import {
     );
   }
   
-  const DesktopNav = () => {
+  const DesktopNav:FC = () => {
     const linkColor = useColorModeValue('gray.600', 'gray.200');
     const linkHoverColor = useColorModeValue('gray.800', 'white');
     const popoverContentBgColor = useColorModeValue('white', 'gray.800');
@@ -282,11 +281,11 @@ import {
       ],
     },
     {
-      label: 'Learn Design',
+      label: 'Register Customer',
       href: '#',
     },
     {
-      label: 'Hire Designers',
+      label: 'Report',
       href: '#',
     },
   ];

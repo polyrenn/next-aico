@@ -9,7 +9,7 @@ export default () => (
     <WithSubnavigation></WithSubnavigation>
     <Head title="Home" />
     <Nav />
-    <div className="hero">
+    <Box mx={8} className="hero">
       <h1 className="title">Welcome to Create Next App (Create Next.js App building tools)</h1>
       <p className="description">To get started, edit <code>pages/index.js</code> and save to reload.</p>
       <div className="row">
@@ -26,7 +26,7 @@ export default () => (
           </a>
         </Link>
       </div>
-    </div>
+    </Box>
 
     <style jsx>{`
       .hero {
