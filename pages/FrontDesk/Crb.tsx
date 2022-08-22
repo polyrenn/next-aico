@@ -30,13 +30,42 @@ import { useState } from 'react';
 
 //Utilities 
 import { useRadioGroup } from '@chakra-ui/react';
+import prisma from '../../lib/prisma';
+import { GetServerSideProps } from 'next';
 
 
-export default () => {
+export default (props:any) => {
   const options:string[] = ['Domestic', 'Dealer', 'Eatery', 'Other']
-  const [category, setCategory] = useState('react')
+  const [category, setCategory] = useState<string>();
 
-  const categoryPrices = {
+  const priceList: { category: string, price: number }[] = [
+    {
+      category: 'Domestic',
+      price: 720
+    },
+
+    {
+      category: 'Dealer',
+      price: 680
+    },
+
+    {
+      category: 'Eatery',
+      price: 700
+    }
+  ]
+
+  priceList.map(({category, price}) => (
+   console.log(category, price)
+ ))
+
+ interface PriceType {
+  domestic: number;
+  dealer: number;
+  eatery: number
+}
+  
+  const categoryPrices:PriceType = {
     domestic: 720,
     dealer: 680,
     eatery: 700
@@ -56,7 +85,7 @@ export default () => {
 
 console.log(prices[0][1])
 
-  const [pricePerKg, setPricePerKg] = useState<number | null>()
+  const [pricePerKg, setPricePerKg] = useState<number>(0)
   
   const toast = useToast()
   
@@ -67,13 +96,18 @@ console.log(prices[0][1])
       duration: 2000,
     })
     setCategory(value)
+    let valu = `${value}`.toLowerCase()
+    setPricePerKg(categoryPrices[valu])
+    console.log(categoryPrices[valu])
+    console.log(categoryPrices)
     console.log(category)
   }
+
+  console.log(props.post)
   
 
   const { value, getRootProps, getRadioProps } = useRadioGroup({
     name: 'framework',
-    defaultValue: 'Domestic',
     onChange: handleChange
   })
 
@@ -94,11 +128,19 @@ console.log(prices[0][1])
                 </Center>
             </Box>
 
+            <Box>
+              {
+                priceList.map(({category, price}) => (
+                   <Text key={price}>Category - {category} Price - {price}</Text>
+                ))
+              
+              }
+            </Box>
             <Box className='prices'>
                 <Text my={2} color={'grey.500'} fontSize='xl'>Prices</Text>
                 <HStack>
                 {[1, 3, 5, 6, 10, 12.5, 15, 25, 50].map((size) => (
-                   <PriceLabel key={size} kilogram='name' price={size}></PriceLabel>
+                   <PriceLabel key={size} kilogram={size} price={pricePerKg}></PriceLabel>
                 ))}
                 </HStack>
             </Box>
@@ -121,7 +163,7 @@ console.log(prices[0][1])
             </Box>
 
             <Box my={4}>
-                <SaleForm></SaleForm>
+                <SaleForm pricePerKg={pricePerKg}></SaleForm>
             </Box>
             
         </Box>
@@ -132,5 +174,12 @@ console.log(prices[0][1])
     </div>
     )
 }
-    
-    
+
+
+export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+  const post = await prisma.branch.findMany();
+  return {
+    props: { post },
+  };
+};
+  

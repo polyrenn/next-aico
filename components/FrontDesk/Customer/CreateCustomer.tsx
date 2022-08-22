@@ -3,6 +3,8 @@ import { FC } from "react"
 import { useDisclosure } from "@chakra-ui/react"
 import {  Formik, Field, Form, FormikHelpers } from "formik"
 import * as Yup from 'yup';
+import axios from "axios";
+import { useToast } from "@chakra-ui/react";
 
 //Layout Imports
 
@@ -45,6 +47,48 @@ const SignupSchema = Yup.object().shape({
 
 const CreateCustomer:FC<ModalProps> = (props) => {
 
+    const toast = useToast()
+
+    const createCustomer = async (values: {name: string, phone: string}, actions:any) => {
+
+
+      const data = {
+        name: values.name,
+        phone: values.phone,
+        date: new Date()
+      }
+
+      const datetime = data.date
+
+      const res = await fetch('/api/Customer/CreateCustomer', {
+        method: 'post',
+        body: JSON.stringify(data),
+      }).then( (res) => {
+  
+        if(res.ok) {
+            toast({
+                title: 'Customer Added.',
+                description: `New Customer Added Successfully. At ${datetime} `,
+                status: 'success',
+                duration: 10000,
+                isClosable: true,
+              }),
+              actions.setSubmitting(false);
+        } else {
+            toast({
+                title: 'Error',
+                description: "An Error Has Occured.",
+                status: 'error',
+                duration: 10000,
+                isClosable: true,
+              }),
+              actions.setSubmitting(false);
+        }
+        
+    }
+      )
+    }
+
     function validateName(value:string) {
         let error
         if (!value) {
@@ -84,8 +128,9 @@ const CreateCustomer:FC<ModalProps> = (props) => {
             onSubmit={(values, actions) => {
                 values.name = capitalizeName(values.name);
                 alert(JSON.stringify(values, null, 2))
+                createCustomer(values, actions)
                 // on callback 
-                actions.setSubmitting(false)
+                
         
       }}
     >

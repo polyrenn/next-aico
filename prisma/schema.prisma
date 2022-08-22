@@ -10,6 +10,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
+model Company {
+  id Int @default(autoincrement())
+  companyId Int @id @map(name: "company_id")
+  name String
+  branches Branch[]
+  @@map(name: "company")
+}
+
+model Branch {
+  id Int @default(autoincrement())
+  branchId Int @id @map(name: "branch_id")
+  address String
+  company Company? @relation(fields: [companyID], references: [companyId])
+  companyID Int @map(name: "company_id")
+  customers Customer[]
+  prices Prices[]
+  @@map(name: "branch")
+}
+
 model Post {
   id        String     @default(cuid()) @id
   title     String
@@ -23,8 +43,29 @@ model User {
   id            String       @default(cuid()) @id
   name          String?
   email         String?   @unique
-  createdAt     DateTime  @default(now()) @map(name: "created_at")
+  createdAt     DateTime  @default(now())  @db.Timestamptz() @map(name: "created_at")
   updatedAt     DateTime  @updatedAt @map(name: "updated_at")
   posts         Post[]
   @@map(name: "users")
+}
+
+model Prices {
+  id Int @id @default(autoincrement())
+  branch Branch @relation(fields: [branchId], references: [branchId])
+  branchId Int @map(name: "branch_id")
+  domestic Int
+  dealer Int
+  eatery Int
+  other Int?
+  @@map(name: "prices")
+}
+
+model Customer {
+  id Int @id @default(autoincrement())
+  name String @db.VarChar(100)
+  phone String @db.VarChar(12) @unique
+  date DateTime @db.Timestamptz()
+  branch Branch @relation(fields: [branchId], references: [branchId])
+  branchId Int @map(name: "branch_id")
+  @@map(name: "customer")
 }

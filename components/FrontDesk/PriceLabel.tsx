@@ -8,7 +8,7 @@ import { FC } from "react";
 import { useColorModeValue } from "@chakra-ui/react";
 
 interface PriceProps {
-    kilogram: String
+    kilogram: number
     price: number
 }
 
@@ -23,8 +23,8 @@ const PriceLabel:FC<PriceProps> = (props) => {
             color={'cyan.900'}
             rounded={'md'}
         >
-            <Text>{props.price} KG</Text>
-            <Text>{props.price * 720}</Text>
+            <Text>{props.kilogram} KG</Text>
+            <Text>{props.price * props.kilogram}</Text>
         </HStack>
     )
 }

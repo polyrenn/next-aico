@@ -40,6 +40,8 @@ import {
     AutoCompleteInput,
     AutoCompleteItem,
     AutoCompleteList,
+    AutoCompleteCreatable,
+    AutoCompleteGroup
 } from "@choc-ui/chakra-autocomplete";
 
 import {
@@ -55,30 +57,72 @@ import * as Yup from 'yup';
 
 import { useDisclosure } from "@chakra-ui/react";  
 import { useToast } from '@chakra-ui/react';
-import { useState, useEffect } from 'react';
-import SummaryCard from "./SummaryCard";
+import { useState, useEffect, MutableRefObject } from 'react';
 import ReactToPrint from "react-to-print";
 import { useRef } from "react";
 import { FC } from "react";
 
 //Custom Components
 import CreateCustomer from "./Customer/CreateCustomer";
+import SummaryCard from "./SummaryCard";
 
-const SaleForm:FC = (props) => {
-  let componentRef = useRef();
+interface SaleFormProps {
+  pricePerKg: number
+}
+
+const SaleForm:FC<SaleFormProps> = (props) => {
+
+  
+   //Formik Ref
+   const valuesRef:any = useRef();
+  
+
+
+  let componentRef = useRef<null | HTMLDivElement>(null);
+  
+ 
+
   // Loop & Get Kilograms
   let kgs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12.5, 15, 20, 25, 50];
   const listItems = kgs.map((kg) =>
   <option key={kg.toString()} value={kg}>{kg} Kg</option>
-);
+  );
+    const toast = useToast();
+    const [cart, setCart] = useState([]);
+    const [summary, setSummary] = useState<number[]>([])
 
-const countries = [
+
+    const handleSummary = () => {
+
+      const { current: { values } } = valuesRef;
+
+      let intKg = parseFloat(values.selectkg);
+      let intamount = parseInt(values.quantity);
+
+      setSummary((summary:any) => [
+        ...summary,
+        {kg: values.selectkg, amount: values.quantity, total: intKg * intamount }
+      ]);
+
+      toast({
+        title: 'Kg Added.',
+        description: "New Kg Added.",
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      })
+      
+    
+      
+    }
+
+  const countries = [
     { name: "Dan Abramov", image: "https://bit.ly/dan-abramov" },
     { name: "Kent Dodds", image: "https://bit.ly/kent-c-dodds" },
     { name: "Segun Adebayo", image: "https://bit.ly/sage-adebayo" },
     { name: "Prosper Otemuyiwa", image: "https://bit.ly/prosper-baba" },
     { name: "Ryan Florence", image: "https://bit.ly/ryan-florence" },
-];
+  ];
 
 const customerComplete = countries.map((person, oid) => (
     <AutoCompleteItem
@@ -93,14 +137,11 @@ const customerComplete = countries.map((person, oid) => (
 ))
 
 const { isOpen, onOpen, onClose } = useDisclosure()
-const [amount, setAmount] = useState({})
-const handleChange = (amount:any) => setAmount(amount)
-
-const valuesRef:any = useRef();
+const [customer, setCustomer] = useState('')
 
 
 console.log(valuesRef)
-
+console.log(componentRef)
 
 
  /*   
@@ -187,7 +228,6 @@ console.log(valuesRef)
 
 
   // Use Toast Component
-  const toast = useToast();
 
 // Cart
     interface SummaryType {
@@ -195,31 +235,7 @@ console.log(valuesRef)
         amount: number
         total: number
     }
-    const [cart, setCart] = useState([]);
-    const [summary, setSummary] = useState<any | null>(null)
-
-    const handleSummary = () => {
-      let intKg = parseFloat(formik.values.selectkg);
-      let intamount = parseInt(formik.values.amount);
-      formik.values.cart++
-
-      setSummary((summary:any) => [
-        ...summary,
-        {kg: formik.values.selectkg, amount: formik.values.amount, total: intKg * intamount }
-    ]);
-
-    toast({
-      title: 'Kg Added.',
-      description: "New Kg Added.",
-      status: 'success',
-      duration: 3000,
-      isClosable: true,
-    })
-
-    console.log(summary);
-    console.log(formik.values.cart)
-
-    }
+    
 
     const sidebar = (
         <Box w="300px">
@@ -320,18 +336,20 @@ console.log(valuesRef)
  
     <Flex justify="space-between" px={6} py={6} borderWidth='1px'  borderColor='gray.200' h="100vh">
       <Box bg="white" w="500px" p={4} rounded="md">
-      <Formik
-            initialValues={{selectkg: '', quantity: '', customer: ''}}
-            onSubmit={(values, actions) => {
-                alert(JSON.stringify(values, null, 2))
-                // on callback 
-                actions.setSubmitting(false)
-        
+   
+    <Formik
+      innerRef={valuesRef}
+      initialValues={{selectkg: '', quantity: '', user: ''}}
+      onSubmit={(values) => {
+        alert(JSON.stringify(values, null, 2));
+        console.log(valuesRef.current.values.quantity * 2)
       }}
     >
-      {({ handleChange, values, setFieldValue }) => (
+      {(props: FormikProps<any>) => (
         <Form>
-          <HStack>
+
+
+        <HStack>
           <Field name='selectkg'>
             {({ field, form }:any) => (
               <FormControl>
@@ -367,76 +385,11 @@ console.log(valuesRef)
         
           
           </HStack>     
-          <Button type="submit" my={4} colorScheme="purple" width="full">
+          <Button onClick={handleSummary} my={4} colorScheme="purple" width="full">
               Add
             </Button>
 
-            <VStack spacing={4} align="flex-start">
-            
-            <Field name="customer">
-            {({ field, form}:any) => (
-                <FormControl>
-                <HStack align='flex-end'>
-                <Box w='100%'>
-                <FormLabel color={'gray.500'} htmlFor="customer">Customer</FormLabel>
-                <AutoComplete
-                  onChange={(e, value) => {
-                    console.log(value);
-                    setFieldValue(
-                      "customer",
-                      value
-                    );
-                  }}
-                 >
-                  <AutoCompleteInput {...field} id="customer" h="56px" variant="outline" />
-                      <AutoCompleteList>
-                          {customerComplete}
-                      </AutoCompleteList>
-                  </AutoComplete>
-                  <FormHelperText>Customer Search. {field.value}</FormHelperText>
-                  </Box>  
-              
-               
-                </HStack>  
-              
-               <Button onClick={onOpen} my={4} width="full" leftIcon={<AddIcon />} colorScheme='gray'>New Customer</Button>
-  
-              </FormControl>
-            )}
-            </Field>
-            
-  
 
-            
-            
-            
-            <Divider orientation='horizontal' />
-           
-            <Text color="{grey.500}">Print First</Text>
-
-            <Button type="submit" colorScheme="purple" width="full">
-              Post Sales
-            </Button>
-            
-          </VStack>
-
-
-
-        
-
-        </Form>
-      )}
-    </Formik>
-
-    <Formik
-      innerRef={valuesRef}
-      initialValues={{user: ''}}
-      onSubmit={(values) => {
-        alert(JSON.stringify(values, null, 2));
-      }}
-    >
-      {(props: FormikProps<any>) => (
-        <Form>
           <Field name="user">
           {({
                field, // { name, value, onChange, onBlur }
@@ -448,18 +401,26 @@ console.log(valuesRef)
               <Box w='100%'>
               <FormLabel color={'gray.500'} htmlFor="renn">Customer</FormLabel>
               <AutoComplete
+                creatable
                 openOnFocus
                 onChange={(e, value:any) => {
-                console.log(value.value)
                 props.setFieldValue("user", value.value)
-                setAmount({value})
+                setCustomer(value.value)
                 }}
                 
                >
                 <AutoCompleteInput {...field} width="full" h="56px" variant="outline" />
                     <AutoCompleteList>
+                      <AutoCompleteGroup showDivider>
                         {customerComplete}
+                      </AutoCompleteGroup>
+
+                      <AutoCompleteCreatable>
+                        {({ value }) => <Text>Add {value} to List</Text>}
+                      </AutoCompleteCreatable>
+                       
                     </AutoCompleteList>
+                      
                 </AutoComplete>
                 <FormHelperText>Customer Search. </FormHelperText>
                 </Box>  
@@ -472,9 +433,11 @@ console.log(valuesRef)
             </FormControl>
              )}
           </Field>
-          <Button type="submit" colorScheme="purple" width="full">
-              Post Sales
-            </Button>
+          <ReactToPrint
+              trigger={() => <Button width="full">Print Receipt</Button>}
+              content={() => componentRef}
+              onAfterPrint={() => {alert("Hey")}}
+          />
         </Form>
       )}
 
@@ -484,25 +447,9 @@ console.log(valuesRef)
      
       <Divider orientation='vertical' />
 
-      <Box p={4} bg="white" w="500px" rounded="md">
-          <Stack spacing={1}>
-              <Heading size="md" >Summary</Heading>
-              <Text color={'grey.500'}>Sales Summary</Text>
-            </Stack>
-              <VStack w='100%'>
-                <Flex>
-                {}
-                </Flex>
-                
-              </VStack>
-              <Divider my={4} orientation='horizontal' />
-              <VStack my={4}>
-                <Text color={'grey.500'}>Total</Text>
-                <Heading size="md">{}</Heading>
-              </VStack>
-              
-  </Box> 
-  <CreateCustomer isOpen={isOpen} onClose={onClose}></CreateCustomer>
+      
+    <CreateCustomer isOpen={isOpen} onClose={onClose}></CreateCustomer>
+    <SummaryCard pricePerKg={props.pricePerKg} customer={customer} summary={summary} ref={(el:any) => (componentRef = el)}></SummaryCard>
       
     </Flex>
   );
