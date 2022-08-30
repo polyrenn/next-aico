@@ -8,10 +8,14 @@ import {
   VStack,
   Heading,
   Text,
+  Button,
+  Spinner,
+  Center
 } from "@chakra-ui/react";
 
+import useSWR from "swr";
 
-import React, { FC, useEffect, Ref } from "react";
+import React, { FC, useEffect, Ref, useState } from "react";
 
 type Summary = {
     kg: string,
@@ -24,6 +28,7 @@ interface SummaryProps {
   ref: any;
   customer: string
   pricePerKg: number
+  cancelSummary: any
 }
 
 import { useColorModeValue } from "@chakra-ui/react";
@@ -67,6 +72,42 @@ const SummaryCard:FC<SummaryProps> = React.forwardRef(
   );
 
 
+const handleCancel = () => {
+  props.cancelSummary([])
+}
+
+const CrbNumber = () => {
+
+  const [number, setNumber] = useState<number>(0)
+
+  const fetcher = (...args) => fetch(...args).then((res) => res.json())
+  const { data, error } = useSWR('/api/dummycrb', fetcher, {
+    onSuccess: (data) => {
+      setNumber(data.id)
+    }
+  });
+
+  if(!data) return <Center><Spinner></Spinner></Center>
+  
+
+
+  return (
+    <Text fontSize={'sm'}
+    fontWeight={500}
+    bg={useColorModeValue('cyan.50', 'cyan.900')}
+    p={2}
+    px={4}
+    my={2}
+    width="fit-content"
+    color={'cyan.900'}
+    rounded={'md'}> CRB #{data.id + 1}</Text>
+  )
+ 
+  
+
+};
+
+
     
 
     
@@ -77,21 +118,12 @@ const SummaryCard:FC<SummaryProps> = React.forwardRef(
           <Heading size="md">Summary</Heading>
           <Text color={"grey.500"}>Sales Summary</Text>
         </Stack>
-            <Text fontSize={'sm'}
-            fontWeight={500}
-            bg={useColorModeValue('cyan.50', 'cyan.900')}
-            p={2}
-            px={4}
-            my={2}
-            width="fit-content"
-            color={'cyan.900'}
-            rounded={'md'}> CRB #</Text>
+            <CrbNumber></CrbNumber>
         <VStack w="100%">
         </VStack>
         <Box>
             <Heading size="sm">Customer: {props.customer}</Heading>
           </Box>
-        {sidebar}
         <Divider my={4} orientation="horizontal" />
         <CrbTable pricePerKg={props.pricePerKg} summary={summary}></CrbTable>
         <VStack my={4}>

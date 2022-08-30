@@ -54,6 +54,7 @@ import {
     FieldProps,
   } from 'formik';
 import * as Yup from 'yup';
+import useSWR from "swr";
 
 import { useDisclosure } from "@chakra-ui/react";  
 import { useToast } from '@chakra-ui/react';
@@ -63,15 +64,36 @@ import { useRef } from "react";
 import { FC } from "react";
 
 //Custom Components
-import CreateCustomer from "./Customer/CreateCustomer";
+import CreateCustomer from "../Customer/CreateCustomer";
 import SummaryCard from "./SummaryCard";
 
 interface SaleFormProps {
   pricePerKg: number
+  post: any
+  branch: any
+  category: String | undefined
 }
+
+const fetcher = (...args) => fetch(...args).then((res) => res.json())
+
+
+
 
 const SaleForm:FC<SaleFormProps> = (props) => {
 
+    
+    const [returned, setReturned] = useState([]);
+    const { data, error } = useSWR('/api/Customer/GetCustomers', fetcher, {
+      onSuccess: (data) => {
+          setReturned(data)
+      }
+    });
+  
+    const returnData = () => {
+      console.log(data)
+    }
+
+  //Should be async
   
    //Formik Ref
    const valuesRef:any = useRef();
@@ -89,7 +111,7 @@ const SaleForm:FC<SaleFormProps> = (props) => {
   );
     const toast = useToast();
     const [cart, setCart] = useState([]);
-    const [summary, setSummary] = useState<number[]>([])
+    const [summary, setSummary] = useState<{kg: number, quantity: number, total: number, amount: number}[]>([])
 
 
     const handleSummary = () => {
@@ -98,10 +120,11 @@ const SaleForm:FC<SaleFormProps> = (props) => {
 
       let intKg = parseFloat(values.selectkg);
       let intamount = parseInt(values.quantity);
+      let totalkg = intKg * intamount
 
-      setSummary((summary:any) => [
+      setSummary((summary) => [
         ...summary,
-        {kg: values.selectkg, amount: values.quantity, total: intKg * intamount }
+        {kg: values.selectkg, quantity: values.quantity, total: totalkg, amount: totalkg * props.pricePerKg }
       ]);
 
       toast({
@@ -112,10 +135,10 @@ const SaleForm:FC<SaleFormProps> = (props) => {
         isClosable: true,
       })
       
-    
+    values.cart++
       
     }
-
+    // On focus run customer fetch function
   const countries = [
     { name: "Dan Abramov", image: "https://bit.ly/dan-abramov" },
     { name: "Kent Dodds", image: "https://bit.ly/kent-c-dodds" },
@@ -124,14 +147,15 @@ const SaleForm:FC<SaleFormProps> = (props) => {
     { name: "Ryan Florence", image: "https://bit.ly/ryan-florence" },
   ];
 
-const customerComplete = countries.map((person, oid) => (
+
+const customerComplete = returned.map((person, oid) => (
     <AutoCompleteItem
       key={`option-${oid}`}
       value={person.name}
       textTransform="capitalize"
       align="center"
     >
-      <Avatar size="sm" name={person.name} src={person.image} />
+      <Avatar size="sm" name={person.name}/>
       <Text ml="4">{person.name}</Text>
     </AutoCompleteItem>
 ))
@@ -143,194 +167,87 @@ const [customer, setCustomer] = useState('')
 console.log(valuesRef)
 console.log(componentRef)
 
+const SaleSchema = Yup.object().shape({
+  selectkg: Yup.string()
+    .required('Required'),
+  quantity: Yup.number()
+    .min(1, 'Not Enough Quantity')
+    .required('Required'),
+  customer: Yup.string()
+    .required('Required'),
+  cart: Yup.number()
+    .min(1, "Cart is empty, Add Kg to Cart")  
 
- /*   
-    //Print Ref
+
+    
+});
+
+const handleCancel = () => {
+  const { current: { values } } = valuesRef;
+  values.cart = 0
+  setSummary([])
+}
+
+// Compute Amount From Summary
+const computeTotal = (arr:any) => {
+  let res = 0;
+  for(let i = 0; i < arr.length; i++){
+     res += arr[i].total;
+  };
+  return res;
+};
+
+const handleSubmit = async (values: { customer: string }, actions:any) => {
+
+  const totalKg = computeTotal(summary)
+  const saleAmount = computeTotal(summary) * props.pricePerKg
+  const category = props.category
+
+  const data = {
+    branchId: props.branch.branchId,
+    amount: saleAmount,
+    category: category,
+    description: summary,
+    customer: values.customer,
+    timestamp: new Date(),
+    totalKg: totalKg
+  }
+
+  const datetime = data.timestamp
+
+  const res = await fetch('/api/FrontDesk/InsertQueue', {
+    method: 'post',
+    body: JSON.stringify(data),
+  }).then( (res) => {
+
+    if(res.ok) {
+        toast({
+            title: 'Added to Queue.',
+            description: `Sale Added to Queue Successfully. At ${datetime} `,
+            status: 'success',
+            duration: 10000,
+            isClosable: true,
+          }),
+          actions.setSubmitting(false);
+    } else {
+        toast({
+            title: 'Error',
+            description: "An Error Has Occured.",
+            status: 'error',
+            duration: 10000,
+            isClosable: true,
+          }),
+          actions.setSubmitting(false);
+    }
+    
+}
+  )
+
+}
+
+
+
  
-
-
-  // Price Per Kg
-  // Compute Total Kg
-  const computeTotal = arr => {
-    let res = 0;
-    for(let i = 0; i < arr.length; i++){
-       res += arr[i].total;
-    };
-    return res;
- };
-
-  //Category Prop
-  let category = props.category;
-
-  // Tank Prop 
-  let tank = props.currenttank;
-
-  // Should Reset 
-  const [shouldReset, setShouldReset] = useState();
-  
-
-  // Post Sales 
-  const updateSales = async () => {
-
-    let totalkg = computeTotal(summary);
-
-    let cash = formik.values.payment.cash
-    let pos = formik.values.payment.pos
-    let transfer = formik.values.payment.transfer
-
-
-    const userObj = {
-      customer: formik.values.customer,
-      kg: [
-        ...summary
-      ],
-      totalkg: totalkg,
-      payment: formik.values.payment,
-      totalvalue: formik.values.payment.cash + formik.values.payment.pos + formik.values.payment.transfer,
-      category: category,
-      date: new Date(),
-      currenttank: tank
-
-    }
-
-    const res = await fetch('/api/postsales', {
-      method: 'post',
-      body: JSON.stringify(userObj),
-    }).then( (res) => {
-
-      if(res.ok) {
-          toast({
-              title: 'Sales Added.',
-              description: "New Sales Added Successfully.",
-              status: 'success',
-              duration: 3000,
-              isClosable: true,
-            }),
-            setSummary(summary = []),
-            formik.values.cart = 0
-            setShouldReset(shouldReset = true)
-            console.log(shouldReset);
-      } else {
-          toast({
-              title: 'Error',
-              description: "An Error Has Occured.",
-              status: 'error',
-              duration: 10000,
-              isClosable: true,
-            }),
-            setShouldReset(shouldReset = false);
-      }
-      
-  }
-    )
-   
-  }
-
-
-  // Use Toast Component
-
-// Cart
-    interface SummaryType {
-        kg: number
-        amount: number
-        total: number
-    }
-    
-
-    const sidebar = (
-        <Box w="300px">
-          {summary.map((item:any) =>
-            <Box key={item.kg} w='100%'>
-              <Flex align="center" justify="space-between" rounded="sm" px={4} my={2} bg="#fafafa" h="48px">
-              <Text>{item.amount}x</Text>
-              <Text key={item.kg}>
-              {item.kg} Kg
-            </Text>
-            
-            </Flex>
-            </Box>
-            
-          )}  
-        </Box>
-      );
-
-    
-
-  let priceperkg = props.sales
-
-  //Refactor to State
-  
-
-
-
-  const formik = useFormik({
-    initialValues: {
-      customer: "",
-      rememberMe: true,
-      checkVal: priceperkg,
-      selectkg: "",
-      amount: "",
-      payment: {
-        cash: 0,
-        pos: 0,
-        transfer: 0,
-
-      },
-      cart: 0
-
-      
-      
-
-    },
-    validate: values => {
-      let errors = {};
-      if(values.cart < 1) {
-       errors.cart = 'Add Kg To Cart To Continue'
-      } 
-     
-      return errors;
-     },
-    onSubmit: (values, {resetForm}) => {
-      
-      setCart((cart) => [
-        ...summary,
-        {kg: formik.values.selectkg, amount: formik.values.amount}
-    ]); 
-      updateSales();
-      alert(JSON.stringify(values, null, 2));
-      // Price Per Kg Prop
-      console.log(parseInt(formik.values.selectkg) * props.sales);
-      let total = [
-        {...formik.values},
-        {...summary}
-      ]
-      alert(JSON.stringify(summary, null, 2));
-      console.log(summary);
-      console.log(total);
-      if(shouldReset) {
-
-        resetForm({
-          values: ""})
-      }
-    
-      
-    }
-
-  });
-
-  //Might Remove
-  function handleAdd(e) {
-      summary.push(...summary, ...formik.values.selectkg);
-      console.log(summary);
-  }
-
-   // Payment Methods
- 
-
-  
-  const isCartError = formik.values.cart < 1
-
-  */
    
   return (
  
@@ -339,10 +256,19 @@ console.log(componentRef)
    
     <Formik
       innerRef={valuesRef}
-      initialValues={{selectkg: '', quantity: '', user: ''}}
-      onSubmit={(values) => {
+      initialValues={{selectkg: '', quantity: '', customer: '', cart: 0}}
+      validationSchema={SaleSchema}
+     
+     
+      onSubmit={async (values, actions)  => {
         alert(JSON.stringify(values, null, 2));
         console.log(valuesRef.current.values.quantity * 2)
+        actions.setSubmitting(true)
+        await handleSubmit(values, actions)
+        actions.resetForm();
+        actions.setFieldValue("customer", "")
+        setCustomer("")
+        setSummary([])
       }}
     >
       {(props: FormikProps<any>) => (
@@ -378,24 +304,61 @@ console.log(componentRef)
           </Field> 
 
           <VStack>
+
             <FormControl>
-              <FormErrorMessage fontSize="lg"></FormErrorMessage>
+              <FormErrorMessage fontSize="lg">Inproper</FormErrorMessage>
             </FormControl>
           </VStack>
-        
           
-          </HStack>     
-          <Button onClick={handleSummary} my={4} colorScheme="purple" width="full">
-              Add
-            </Button>
+          </HStack>
+          
+          <Field>
+            {({ field, form }:any) => (
+              <FormControl isInvalid={form.errors.selectkg}>
+                 <FormErrorMessage fontSize="lg">Select Kg to continue</FormErrorMessage>
+              </FormControl>
+            )}
+          </Field>
 
+          <Field>
+            {({ field, form }:any) => (
+              <FormControl isInvalid={form.errors.quantity}>
+                 <FormErrorMessage fontSize="lg">Invalid Quantity</FormErrorMessage>
+              </FormControl>
+            )}
+          </Field>
 
-          <Field name="user">
+          <Field>
+            {({ field, form }:any) => (
+              <FormControl isInvalid={form.errors.cart}>
+                 <FormErrorMessage fontSize="lg">{form.errors.cart}</FormErrorMessage>
+              </FormControl>
+            )}
+          </Field>            
+
+          <Field>
+          {({ field, form }:any) => (
+                <Button isDisabled={!form.touched.customer ? true : false}
+                 onClick={handleSummary}
+                 mt={4}
+                 colorScheme="purple"
+                 width="full">
+                 Add
+                </Button>
+            )}
+          </Field>
+
+           <Button color="gray.100" mb={4} mt={2}  width="full"  onClick={handleCancel} bg="gray.700">
+                  Cancel
+                </Button>    
+         
+  
+          <Field name="customer">
           {({
                field, // { name, value, onChange, onBlur }
                form: { touched, errors }, // also values, setXXXX, handleXXXX, dirty, isValid, status, etc.
                meta,
-             }) => (
+             }:any) => (
               <FormControl>
               <HStack align='flex-end'>
               <Box w='100%'>
@@ -404,12 +367,13 @@ console.log(componentRef)
                 creatable
                 openOnFocus
                 onChange={(e, value:any) => {
-                props.setFieldValue("user", value.value)
+                props.setFieldValue("customer", value.value)
                 setCustomer(value.value)
+                returnData()
                 }}
                 
                >
-                <AutoCompleteInput {...field} width="full" h="56px" variant="outline" />
+                <AutoCompleteInput autoComplete="off" {...field} width="full" h="56px" variant="outline" />
                     <AutoCompleteList>
                       <AutoCompleteGroup showDivider>
                         {customerComplete}
@@ -426,18 +390,29 @@ console.log(componentRef)
                 </Box>  
             
              
-              </HStack>  
+              </HStack>
+              <Field>
+            {({ field, form }:any) => (
+              <FormControl isInvalid={form.errors.customer}>
+                 <FormErrorMessage fontSize="lg">Customer Required</FormErrorMessage>
+              </FormControl>
+            )}
+          </Field>  
             
              <Button onClick={onOpen} my={4} width="full" leftIcon={<AddIcon />} colorScheme='gray'>New Customer</Button>
 
             </FormControl>
              )}
           </Field>
+
+          <Divider my={4} orientation="horizontal"></Divider>
+
           <ReactToPrint
-              trigger={() => <Button width="full">Print Receipt</Button>}
+              trigger={() =>  <Button isDisabled={!props.isValid} isLoading={props.isSubmitting} colorScheme="purple" type="submit" width="full">Complete</Button>}
               content={() => componentRef}
               onAfterPrint={() => {alert("Hey")}}
           />
+         
         </Form>
       )}
 
@@ -446,10 +421,15 @@ console.log(componentRef)
       </Box>
      
       <Divider orientation='vertical' />
+      
 
       
     <CreateCustomer isOpen={isOpen} onClose={onClose}></CreateCustomer>
-    <SummaryCard pricePerKg={props.pricePerKg} customer={customer} summary={summary} ref={(el:any) => (componentRef = el)}></SummaryCard>
+    <SummaryCard pricePerKg={props.pricePerKg}
+     customer={customer}
+     summary={summary}
+     cancelSummary={setSummary}
+     ref={(el:any) => (componentRef = el)}></SummaryCard>
       
     </Flex>
   );

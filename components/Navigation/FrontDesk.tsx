@@ -22,8 +22,12 @@ import {
     ChevronRightIcon,
   } from '@chakra-ui/icons';
 import { FC } from 'react';
+
+interface NavProps {
+  branch: { address: string, branchId: number }
+}
   
-  export default function WithSubnavigation() {
+  export default function WithSubnavigation(props:NavProps) {
     const { isOpen, onToggle } = useDisclosure();
     const handleclick = () => {
       alert('Hey')
@@ -68,7 +72,7 @@ import { FC } from 'react';
               <DesktopNav />
             </Flex>
           </Flex>
-          <Text px={4}>Airport Road</Text>  
+          <Text px={4}>{props.branch.address}</Text>  
           <Text px={4}>{date1.toDateString()}</Text>
           <Stack
             flex={{ base: 1, md: 0 }}

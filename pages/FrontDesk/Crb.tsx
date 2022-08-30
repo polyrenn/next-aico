@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Head from '../../components/head';
 import Nav from '../../components/nav';
-import WithSubnavigation  from '../../components/Navigation/CashierNav';
+import WithSubnavigation  from '../../components/Navigation/FrontDesk';
 //Layout Imports
 import { Box, HStack, Center } from '@chakra-ui/react';
 // Element Imports
@@ -23,7 +23,7 @@ import {
 
 // Icons
 import { PhoneIcon, AddIcon, WarningIcon } from '@chakra-ui/icons'
-import SaleForm from '../../components/FrontDesk/SaleForm';
+import SaleForm from '../../components/FrontDesk/Crb/SaleForm';
 
 //React Imports
 import { useState } from 'react';
@@ -63,13 +63,10 @@ export default (props:any) => {
   domestic: number;
   dealer: number;
   eatery: number
+  other: number
 }
   
-  const categoryPrices:PriceType = {
-    domestic: 720,
-    dealer: 680,
-    eatery: 700
-  }
+  const categoryPrices:PriceType = props.prices
 
   let prices = [
     [
@@ -114,7 +111,7 @@ console.log(prices[0][1])
   const group = getRootProps()
     return (
         <div>
-        <WithSubnavigation></WithSubnavigation>
+        <WithSubnavigation branch={props.branch}></WithSubnavigation>
         <Head title="Crb Desk" />
         <Box className='main-content' mx={8}>
             {/* Optional Prop Number that determines Number of Stat to Render in the Block */}
@@ -163,7 +160,7 @@ console.log(prices[0][1])
             </Box>
 
             <Box my={4}>
-                <SaleForm pricePerKg={pricePerKg}></SaleForm>
+                <SaleForm category={category} branch={props.branch} post={props.post} pricePerKg={pricePerKg}></SaleForm>
             </Box>
             
         </Box>
@@ -177,9 +174,33 @@ console.log(prices[0][1])
 
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
-  const post = await prisma.branch.findMany();
+  const post = await prisma.customer.findMany({
+    select: {
+      name: true,
+      branchId: true
+    },
+  });
+
+  const branch = await prisma.branch.findFirst({
+    select: {
+      address: true,
+      branchId: true
+    },
+  });
+
+  const prices = await prisma.prices.findFirst({
+    where: {
+      branchId: 131313
+    },
+  });
+  
+  
+
   return {
-    props: { post },
+    props: { post, branch, prices },
   };
 };
+
+
+  
   
