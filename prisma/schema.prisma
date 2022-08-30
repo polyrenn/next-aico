@@ -69,3 +69,15 @@ model Customer {
   branchId Int @map(name: "branch_id")
   @@map(name: "customer")
 }
+
+model Queue {
+  id Int @id @default(autoincrement())
+  customer String
+  description Json
+  amount Int
+  totalKg Int @map(name: "total_kg") @default(0)
+  category String
+  timestamp DateTime @db.Timestamptz()
+  branchId Int @map(name: "branch_id")
+  @@map(name: "queue")
+}
