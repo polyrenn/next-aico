@@ -68,7 +68,7 @@ import CreateCustomer from "../Customer/CreateCustomer";
 import SummaryCard from "./SummaryCard";
 
 interface SaleFormProps {
-  pricePerKg: number
+  pricePerKg: number | undefined
   post: any
   branch: any
   category: String | undefined
@@ -81,7 +81,7 @@ const fetcher = (...args) => fetch(...args).then((res) => res.json())
 
 const SaleForm:FC<SaleFormProps> = (props) => {
 
-    
+
     const [returned, setReturned] = useState([]);
     const { data, error } = useSWR('/api/Customer/GetCustomers', fetcher, {
       onSuccess: (data) => {
@@ -92,6 +92,13 @@ const SaleForm:FC<SaleFormProps> = (props) => {
     const returnData = () => {
       console.log(data)
     }
+
+     const { data: crbData, error: crbError } = useSWR('/api/dummycrb', fetcher, {
+       onSuccess: (data) => {
+
+       }
+     });
+   
 
   //Should be async
   
@@ -124,7 +131,7 @@ const SaleForm:FC<SaleFormProps> = (props) => {
 
       setSummary((summary) => [
         ...summary,
-        {kg: values.selectkg, quantity: values.quantity, total: totalkg, amount: totalkg * props.pricePerKg }
+        {kg: values.selectkg, quantity: values.quantity, total: totalkg, amount: totalkg * props?.pricePerKg }
       ]);
 
       toast({
@@ -151,7 +158,7 @@ const SaleForm:FC<SaleFormProps> = (props) => {
 const customerComplete = returned.map((person, oid) => (
     <AutoCompleteItem
       key={`option-${oid}`}
-      value={person.name}
+      value={person}
       textTransform="capitalize"
       align="center"
     >
@@ -162,8 +169,9 @@ const customerComplete = returned.map((person, oid) => (
 
 const { isOpen, onOpen, onClose } = useDisclosure()
 const [customer, setCustomer] = useState('')
+const [customerId, setCustomerId] = useState('')
 
-
+console.log(customerId)
 console.log(valuesRef)
 console.log(componentRef)
 
@@ -208,16 +216,56 @@ const handleSubmit = async (values: { customer: string }, actions:any) => {
     amount: saleAmount,
     category: category,
     description: summary,
-    customer: values.customer,
+    customerId: customerId,
+    timestamp: new Date(),
+    totalKg: totalKg
+  }
+
+  const dataCrb = {
+    crbNumber: crbData ? crbData.crbNumber + 1 : 1,
+    branchId: props.branch.branchId,
+    amount: saleAmount,
+    category: category,
+    description: summary,
+    customerId: customerId,
     timestamp: new Date(),
     totalKg: totalKg
   }
 
   const datetime = data.timestamp
 
+
+  const resCrb = await fetch('/api/FrontDesk/InsertCrb', {
+    method: 'post',
+    body: JSON.stringify(dataCrb),
+  }).then( (res) => {
+
+    if(res.ok) {
+        toast({
+            title: 'Added to Crb.',
+            description: `Sale Added to Crb Successfully. At ${datetime} `,
+            status: 'success',
+            duration: 10000,
+            isClosable: true,
+          }),
+          actions.setSubmitting(false);
+    } else {
+        toast({
+            title: 'Error',
+            description: "An Error Has Occured.",
+            status: 'error',
+            duration: 10000,
+            isClosable: true,
+          }),
+          actions.setSubmitting(false);
+    }
+    
+}
+  )
+
   const res = await fetch('/api/FrontDesk/InsertQueue', {
     method: 'post',
-    body: JSON.stringify(data),
+    body: JSON.stringify(dataCrb),
   }).then( (res) => {
 
     if(res.ok) {
@@ -242,6 +290,10 @@ const handleSubmit = async (values: { customer: string }, actions:any) => {
     
 }
   )
+
+  
+  
+
 
 }
 
@@ -369,6 +421,8 @@ const handleSubmit = async (values: { customer: string }, actions:any) => {
                 onChange={(e, value:any) => {
                 props.setFieldValue("customer", value.value)
                 setCustomer(value.value)
+                setCustomerId(value.originalValue?.uniqueId /* == undefined ? value.value : value.originalValue?.uniqueId */)
+                console.log(value)
                 returnData()
                 }}
                 
@@ -419,12 +473,10 @@ const handleSubmit = async (values: { customer: string }, actions:any) => {
     </Formik>
         
       </Box>
-     
       <Divider orientation='vertical' />
       
-
       
-    <CreateCustomer isOpen={isOpen} onClose={onClose}></CreateCustomer>
+    <CreateCustomer branch={props.branch} isOpen={isOpen} onClose={onClose}></CreateCustomer>
     <SummaryCard pricePerKg={props.pricePerKg}
      customer={customer}
      summary={summary}

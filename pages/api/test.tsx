@@ -31,10 +31,16 @@ prisma.$on('query', (e) => {
 export default async (req, res) => {
   const data = req.body;
   try {
-    const result = await prisma.$queryRaw`SELECT branch.*, customer.*
-    FROM branch
-    RIGHT JOIN customer
-         ON branch.branch_id = customer.branch_id;`
+    const result = await prisma.prices.findMany({
+      where: {
+        branchId: 131313 // Context Fron Login
+      },
+  
+      select: {
+        category: true,
+        pricePerKg: true
+      }
+    });
     res.status(200).json(result);
     console.log(req.query)
   } catch (err) {

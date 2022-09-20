@@ -16,18 +16,24 @@ model Company {
   companyId Int @id @map(name: "company_id")
   name String
   branches Branch[]
-  @@map(name: "company")
+  @@map(name: "companies")
 }
 
 model Branch {
   id Int @default(autoincrement())
   branchId Int @id @map(name: "branch_id")
+  name String? 
   address String
-  company Company? @relation(fields: [companyID], references: [companyId])
+  company Company @relation(fields: [companyID], references: [companyId])
   companyID Int @map(name: "company_id")
+  currentTank String? @map(name: "current_tank")
   customers Customer[]
   prices Prices[]
-  @@map(name: "branch")
+  sales Sale[]
+  tanks Tank[]
+  crbs Crb[]
+  stocks Stock[]
+  @@map(name: "branches")
 }
 
 model Post {
@@ -53,31 +59,91 @@ model Prices {
   id Int @id @default(autoincrement())
   branch Branch @relation(fields: [branchId], references: [branchId])
   branchId Int @map(name: "branch_id")
-  domestic Int
-  dealer Int
-  eatery Int
-  other Int?
+  category String
+  pricePerKg Int @map(name: "price_per_kg")
   @@map(name: "prices")
 }
 
 model Customer {
   id Int @id @default(autoincrement())
+  uniqueId String @unique @map(name: "unique_id")
   name String @db.VarChar(100)
   phone String @db.VarChar(12) @unique
   date DateTime @db.Timestamptz()
   branch Branch @relation(fields: [branchId], references: [branchId])
   branchId Int @map(name: "branch_id")
-  @@map(name: "customer")
+  sales Sale[]
+  queue Queue[]
+  crbs Crb[]
+  @@map(name: "customers")
 }
 
-model Queue {
+
+model Crb {
   id Int @id @default(autoincrement())
-  customer String
+  crbNumber Int @map(name: "crb_number")
+  customer Customer? @relation(fields: [customerId], references: [uniqueId]) // Customer Optional
+  customerId String? @map(name: "customer_id") 
   description Json
   amount Int
   totalKg Int @map(name: "total_kg") @default(0)
   category String
   timestamp DateTime @db.Timestamptz()
   branchId Int @map(name: "branch_id")
+  branch Branch @relation(fields: [branchId], references: [branchId])
+  @@map(name: "crbs")
+}
+
+// Crb - Queue Relation
+
+model Queue {
+  id Int @id @default(autoincrement())
+  crbNumber Int @map(name: "crb_number")
+  customer Customer? @relation(fields: [customerId], references: [uniqueId]) // Customer Optional
+  customerId String? @map(name: "customer_id") 
+  description Json
+  amount Int
+  totalKg Int @map(name: "total_kg") @default(0)
+  category String
+  timestamp DateTime @db.Timestamptz()
+  branchId Int @map(name: "branch_id") // Relation ?
   @@map(name: "queue")
+}
+
+model Sale {
+  id Int @id @default(autoincrement())
+  branchId Int @map(name: "branch_id")
+  branch Branch @relation(fields: [branchId], references: [branchId])
+  saleNumber Int @map(name: "sale_number") @default(3)
+  totalKg Int @map(name: "total_kg") @default(0)
+  amount Int
+  category String
+  timestamp DateTime @db.Timestamptz()
+  customer Customer? @relation(fields: [customerId], references: [uniqueId])
+  customerId String @map(name: "customer_id")
+  description Json
+  @@map(name: "sales")
+}
+
+model Tank {
+  id Int @id @default(autoincrement())
+  tankId String @unique @map(name: "tank_id") // Combination String of Branch Id & Designation
+  branch Branch @relation(fields: [branchId], references: [branchId])
+  branchId Int @map(name: "branch_id")
+  designation String
+  amount Int // Max Tank Amount? Set Auto Switch On Specific Amount Maybe -- In Settings - Set Switch Minimum
+  stocks Stock[]
+  @@map(name: "tanks") 
+}
+
+model Stock {
+  id Int @id @default(autoincrement())
+  branch Branch @relation(fields: [branchId], references: [branchId])
+  branchId Int @map(name: "branch_id")
+  tank Tank @relation(fields: [tankId], references: [tankId])
+  tankId String @map(name: "tank_id")
+  date DateTime @db.Date
+  kg Int
+  value Int
+  @@map(name: "stock")
 }

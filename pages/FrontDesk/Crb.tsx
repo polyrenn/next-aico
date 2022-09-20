@@ -30,12 +30,15 @@ import { useState } from 'react';
 
 //Utilities 
 import { useRadioGroup } from '@chakra-ui/react';
-import prisma from '../../lib/prisma';
+import { prisma } from "../../lib/prisma";
 import { GetServerSideProps } from 'next';
 
 
 export default (props:any) => {
-  const options:string[] = ['Domestic', 'Dealer', 'Eatery', 'Other']
+  const categoryPrices: { category: string, pricePerKg: number }[] = props.prices
+
+  //const options:string[] = ['Domestic', 'Dealer', 'Eatery', 'Other']
+  const options:string[] = categoryPrices.map(a => a.category);
   const [category, setCategory] = useState<string>();
 
   const priceList: { category: string, price: number }[] = [
@@ -66,7 +69,7 @@ export default (props:any) => {
   other: number
 }
   
-  const categoryPrices:PriceType = props.prices
+  
 
   let prices = [
     [
@@ -82,7 +85,7 @@ export default (props:any) => {
 
 console.log(prices[0][1])
 
-  const [pricePerKg, setPricePerKg] = useState<number>(0)
+  const [pricePerKg, setPricePerKg] = useState<number | undefined>(0)
   
   const toast = useToast()
   
@@ -94,13 +97,17 @@ console.log(prices[0][1])
     })
     setCategory(value)
     let valu = `${value}`.toLowerCase()
-    setPricePerKg(categoryPrices[valu])
-    console.log(categoryPrices[valu])
+
+    const price = categoryPrices.find(element => element.category === value)?.pricePerKg;
+
+    setPricePerKg(price)
+  
     console.log(categoryPrices)
     console.log(category)
   }
 
-  console.log(props.post)
+  
+  console.log(props.prices)
   
 
   const { value, getRootProps, getRadioProps } = useRadioGroup({
@@ -188,10 +195,15 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     },
   });
 
-  const prices = await prisma.prices.findFirst({
+  const prices = await prisma.prices.findMany({
     where: {
-      branchId: 131313
+      branchId: 131313 // Context Fron Login
     },
+
+    select: {
+      category: true,
+      pricePerKg: true
+    }
   });
   
   

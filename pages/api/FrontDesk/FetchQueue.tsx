@@ -1,36 +1,10 @@
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient(
-    {
-        log: [
-            {
-            emit: 'event',
-            level: 'query',
-            },
-            {
-            emit: 'stdout',
-            level: 'error',
-            },
-            {
-            emit: 'stdout',
-            level: 'info',
-            },
-            {
-            emit: 'stdout',
-            level: 'warn',
-            },
-        ],
-    }
-);
+import { prisma } from '../../../lib/prisma';
 
-prisma.$on('query', (e) => {
-    console.log('Query: ' + e.query)
-    console.log('Params: ' + e.params)
-    console.log('Duration: ' + e.duration + 'ms')
-  })
 
 export default async (req, res) => {
     let data = req.body;
     const { id } = req.query
+    //Eventually Include Branch
       const result = await prisma.queue.findMany({
         where: {
             timestamp: {

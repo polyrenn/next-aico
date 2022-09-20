@@ -29,18 +29,17 @@ const CategoryRadios:FC<any> = (props:any) => {
         {...checkbox}
         cursor='pointer'
         borderWidth='1px'
-        borderRadius='md'
-        boxShadow='md'
+        borderRadius='full'
         _checked={{
-          bg: 'teal.600',
-          color: 'white',
-          borderColor: 'teal.600',
+          bg: 'green.200',
+          color: 'green.700',
+          borderColor: 'green.200',
         }}
         _focus={{
           boxShadow: 'outline',
         }}
         px={5}
-        py={3}
+        py={2}
       >
         {props.children}
       </Box>

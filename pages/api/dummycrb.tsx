@@ -31,10 +31,10 @@ prisma.$on('query', (e) => {
 export default async (req, res) => {
     let data = req.body;
     const { id } = req.query
-      const result = await prisma.queue.findFirst({
+      const result = await prisma.crb.findFirst({
         where: {
             timestamp: {
-              gte: new Date("2022-08-30"),
+              gte: new Date("2022-09-08"),
             },
         },
 

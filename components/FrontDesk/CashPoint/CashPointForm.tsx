@@ -76,6 +76,7 @@ interface CashFormProps {
 
 const CashPointForm: FC<any> = (props) => {
 
+  const toast = useToast();
     const formikRef = useRef<FormikProps<any>>(null);
  
 
@@ -119,6 +120,81 @@ const CashPointForm: FC<any> = (props) => {
     return null;
   };
 
+  const handleSubmit = async (actions:any) => {
+
+    const [destructuredSum] = props.summary;
+
+    const data = {
+      saleNumber: props.summary[0].crbNumber,
+      amount: destructuredSum.amount,
+      timestamp: destructuredSum.timestamp,
+      category: destructuredSum.category,
+      totalKg: destructuredSum.totalKg,
+      description: destructuredSum.description,
+    }
+  
+    const datetime = data.timestamp
+
+    alert(JSON.stringify(data, null, 2))
+  
+    
+    const res = await fetch(`/api/FrontDesk/InsertSale`, {
+      method: 'post',
+      body: JSON.stringify(data),
+    }).then( (res) => {
+  
+      if(res.ok) {
+          toast({
+              title: 'Sale Successful.',
+              description: `Sale Processed Successfully. At ${datetime} `,
+              status: 'success',
+              duration: 10000,
+              isClosable: true,
+            }),
+            actions.setSubmitting(false);
+      } else {
+          toast({
+              title: 'Error',
+              description: "An Error Has Occured.",
+              status: 'error',
+              duration: 10000,
+              isClosable: true,
+            }),
+            actions.setSubmitting(false);
+      }
+      
+  }
+    )
+
+    const resDelete = await fetch(`/api/FrontDesk/DeleteQueue?id=${props.currentSale}`, {
+      method: 'post',
+    }).then( (res) => {
+  
+      if(res.ok) {
+          toast({
+              title: 'Removed From Queue.',
+              description: `Removed From Queue. At ${datetime} `,
+              status: 'success',
+              duration: 10000,
+              isClosable: true,
+            }),
+            actions.setSubmitting(false);
+      } else {
+          toast({
+              title: 'Error',
+              description: "An Error Has Occured.",
+              status: 'error',
+              duration: 10000,
+              isClosable: true,
+            }),
+            actions.setSubmitting(false);
+      }
+      
+  }
+    )
+  
+  }
+
 
   return (
     <Flex
@@ -135,6 +211,7 @@ const CashPointForm: FC<any> = (props) => {
           initialValues={initialValues}
           onSubmit={(values, actions) => {
             alert(JSON.stringify(values, null, 2));
+            handleSubmit(actions)
           }}
         >
           {(props: FormikProps<any>) => (

@@ -9,7 +9,7 @@ import { useColorModeValue } from "@chakra-ui/react";
 
 interface PriceProps {
     kilogram: number
-    price: number
+    price: number | undefined
 }
 
 const PriceLabel:FC<PriceProps> = (props) => {

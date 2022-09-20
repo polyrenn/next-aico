@@ -1,12 +1,47 @@
 import Link from 'next/link';
 import Head from '../components/head';
 import Nav from '../components/nav';
-import WithSubnavigation  from '../components/Navigation/CashierNav';
-import { Box } from '@chakra-ui/react';
+import WithSubnavigation  from '../components/Navigation/FrontDesk';
+import { Box, Button, Text, Select } from '@chakra-ui/react';
+import { useState } from 'react';
+import { GetServerSideProps } from 'next';
 
-export default () => (
+export default (props) => {
+  
+  const [currentBranch, setCurrentBranch] = useState({})
+
+  console.log(currentBranch)
+
+  const handleChange = (branch) => {
+      setCurrentBranch(branch)
+      console.log(branch.tank)
+  }
+
+  const arrOfObjs = [
+    {
+      branch: "Airport",
+      branchId: 141414,
+      tankID: 242424,
+      tanks: ["TankAirA", "TankAirB"]
+    },
+    {
+      branch: "Ugbor",
+      branchId: 363636,
+      tankID: 646466,
+      tanks: ["TankUgbA", "TankUgbB"]
+    },
+
+    {
+      branch: "Aduwawa",
+      branchId: 734244,
+      tankID: 266524,
+      tanks: ["TankWawaA", "TankWawaB"]
+    },
+  ]
+
+  return(
   <div>
-    <WithSubnavigation></WithSubnavigation>
+    <WithSubnavigation branch={props.branch}></WithSubnavigation>
     <Head title="Home" />
     <Nav />
     <Box mx={8} className="hero">
@@ -26,6 +61,28 @@ export default () => (
           </a>
         </Link>
       </div>
+    </Box>
+
+    <Text>{currentBranch.branch}</Text>
+
+    <Box>
+      {arrOfObjs.map((item, counter) => 
+            <Button variant="outline" onClick={() => handleChange(item)} mx={4} key={counter}>
+                {item.branch}
+            </Button>
+        )}
+    </Box>
+
+    <Box>
+      <Select
+      placeholder="Tank"
+      width="300px"
+      onChange={(e) => console.log(e.target.value)}
+      >
+         {currentBranch?.tanks?.map((item, counter) => 
+           <option value={item}>{item}</option>
+        )}
+      </Select>
     </Box>
 
     <style jsx>{`
@@ -75,4 +132,32 @@ export default () => (
       }
     `}</style>
   </div>
-);
+)};
+
+export const getServerSideProps = async ({ params }) => {
+  const post = await prisma.customer.findMany({
+    select: {
+      name: true,
+      branchId: true
+    },
+  });
+
+  const branch = await prisma.branch.findFirst({
+    select: {
+      address: true,
+      branchId: true
+    },
+  });
+
+  const prices = await prisma.prices.findFirst({
+    where: {
+      branchId: 131313
+    },
+  });
+  
+  
+
+  return {
+    props: { post, branch, prices },
+  };
+};

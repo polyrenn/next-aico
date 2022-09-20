@@ -1,10 +1,12 @@
-import { FC } from "react"
+import { FC, useState } from "react"
 //Utility Imports
-import { useDisclosure } from "@chakra-ui/react"
+import { useDisclosure, VStack } from "@chakra-ui/react"
 import {  Formik, Field, Form, FormikHelpers } from "formik"
 import * as Yup from 'yup';
 import axios from "axios";
 import { useToast } from "@chakra-ui/react";
+import { useRef } from "react";
+import ReactToPrint from "react-to-print";
 
 //Layout Imports
 
@@ -28,9 +30,12 @@ import {
     Input,
 } from '@chakra-ui/react'
 
+import Barcode from './Barcode'
+
 interface ModalProps {
     isOpen: boolean
     onClose: any
+    branch: any
 }
 
 const SignupSchema = Yup.object().shape({
@@ -47,15 +52,22 @@ const SignupSchema = Yup.object().shape({
 
 const CreateCustomer:FC<ModalProps> = (props) => {
 
+    let barcodeRef = useRef<null | HTMLDivElement>(null);
+    const [name, setName] = useState<string>('')
+    const [phone, setPhone] = useState<string>('')
+
+    const branch = props.branch
     const toast = useToast()
 
     const createCustomer = async (values: {name: string, phone: string}, actions:any) => {
 
-
+      const name = values.name
+      const phone = values.phone
       const data = {
-        name: values.name,
-        phone: values.phone,
-        date: new Date()
+        name: name,
+        phone: phone,
+        date: new Date(),
+        uniqueId: `${phone.slice(-3)}` + `${name.slice(-3).toUpperCase()}`
       }
 
       const datetime = data.date
@@ -74,6 +86,8 @@ const CreateCustomer:FC<ModalProps> = (props) => {
                 isClosable: true,
               }),
               actions.setSubmitting(false);
+              setName(name)
+              setPhone(phone)
         } else {
             toast({
                 title: 'Error',
@@ -168,7 +182,12 @@ const CreateCustomer:FC<ModalProps> = (props) => {
         </Form>
       )}
     </Formik>
-
+          <Barcode
+          name={name}
+          phone={phone}
+          ref={(el:any) => (barcodeRef = el)}
+          
+          ></Barcode>
             <Center p={2} color={'blue.900'} bg={'blue.50'}>
                 <HStack spacing="8px">
                     <Text>AicoGas</Text>
@@ -182,7 +201,12 @@ const CreateCustomer:FC<ModalProps> = (props) => {
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme='blue' mr={3} onClick={props.onClose}>
+          <ReactToPrint
+              trigger={() =>  <Button colorScheme="purple" type="submit">Print Code</Button>}
+              content={() => barcodeRef}
+              onAfterPrint={() => {alert("Hey")}}
+          />
+            <Button mx={4} colorScheme='blue' mr={3} onClick={props.onClose}>
               Close
             </Button>
           </ModalFooter>

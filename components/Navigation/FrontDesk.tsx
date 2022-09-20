@@ -192,6 +192,7 @@ interface NavProps {
         {NAV_ITEMS.map((navItem) => (
           <MobileNavItem key={navItem.label} {...navItem} />
         ))}
+        <Button>Log Out</Button>
       </Stack>
     );
   };
@@ -290,6 +291,11 @@ interface NavProps {
     },
     {
       label: 'Report',
+      href: '#',
+    },
+
+    {
+      label: 'Renn',
       href: '#',
     },
   ];

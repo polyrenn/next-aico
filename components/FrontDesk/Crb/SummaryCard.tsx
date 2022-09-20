@@ -33,6 +33,7 @@ interface SummaryProps {
 
 import { useColorModeValue } from "@chakra-ui/react";
 import CrbTable from "../Common/CrbTable";
+import CrbNumber from "./CrbNumber";
 
 const SummaryCard:FC<SummaryProps> = React.forwardRef(
   (props, ref) => {
@@ -76,7 +77,7 @@ const handleCancel = () => {
   props.cancelSummary([])
 }
 
-const CrbNumber = () => {
+const CrbNumber2 = () => {
 
   const [number, setNumber] = useState<number>(0)
 

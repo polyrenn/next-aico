@@ -37,6 +37,8 @@ import CashPointTable from "./CashPointTable";
      const branch = useContext(BranchContext)   
 
       const summary = props.summary;
+
+      const [destructuredSum] = summary
       const sidebar = (
         
         branch.map((item) =>
@@ -75,7 +77,7 @@ import CashPointTable from "./CashPointTable";
           <VStack w="100%">
           </VStack>
           <Box className="sales-info">
-              <Heading my={2} size="sm">Customer: {summary.customer}</Heading>
+              <Heading my={2} size="sm">Customer: {destructuredSum?.customer?.name}</Heading>
               <Heading my={2} size="sm">Payment Method: {props.payment}</Heading>
               <Heading my={2} size="sm">Narrative: {props.narrative}</Heading>
             </Box>

@@ -30,7 +30,7 @@ import { useState, useContext, createContext } from "react";
 
 //Utilities
 import { useRadioGroup, useColorModeValue } from "@chakra-ui/react";
-import prisma from "../../lib/prisma";
+import { prisma } from "../../lib/prisma";
 import { GetServerSideProps } from "next";
 import CashPointForm from "../../components/FrontDesk/CashPoint/CashPointForm";
 import useSWR from "swr";
@@ -54,6 +54,7 @@ export default (props: any) => {
     branchId: number
   }
 
+  const [currentSale, setCurrentSale] = useState<number | undefined>(0)
   const [returned, setReturned] = useState<ReturnedQueue[]>([]);
     const { data, error } = useSWR('/api/dummycrb', fetcher, {
       onSuccess: (data) => {
@@ -61,6 +62,8 @@ export default (props: any) => {
       }
     });
 
+    let [tests] = returned
+    console.log(tests)
     
   const getData = async (id: number) => {
      await fetch(`/api/FrontDesk/FetchSaleDetails?id=${id}`)
@@ -68,6 +71,8 @@ export default (props: any) => {
       .then((data) => resultant = data)
 
       setReturned(resultant)
+      setCurrentSale(resultant[0].id)
+
   };
 
   const Queue = () => {
@@ -77,11 +82,11 @@ export default (props: any) => {
     const fetcher = (...args) => fetch(...args).then((res) => res.json())
     const { data, error } = useSWR('/api/FrontDesk/FetchQueue', fetcher, {
       onSuccess: (data) => {
-        setNumber(data.id)
+       
       }
     });
   
-    if(!data) return <Center><Spinner></Spinner></Center>
+    if(!data) return <Center><Spinner></Spinner></Center> // Or If returned equals empty array
     
   
   
@@ -131,7 +136,7 @@ export default (props: any) => {
 
         <Box my={4}>
         <BranchContext.Provider value={props.branch}>
-            <CashPointForm summary={returned}></CashPointForm>
+            <CashPointForm currentSale={currentSale} summary={returned}></CashPointForm>
         </BranchContext.Provider>
           
         </Box>
