@@ -7,7 +7,8 @@ import {
   Divider,
   Stack,
   Spacer,
-  Center
+  Center,
+  Radio
 } from "@chakra-ui/react";
 
 //Element Imports
@@ -60,9 +61,8 @@ import { useDisclosure } from "@chakra-ui/react";
 import { useToast } from '@chakra-ui/react';
 import { useState, useEffect, MutableRefObject } from 'react';
 import ReactToPrint from "react-to-print";
-import { useRef } from "react";
-import { FC } from "react";
-
+import { useRef, FC, useContext } from "react";
+import { BranchContext } from "../../../pages/FrontDesk/Crb";
 //Custom Components
 import CreateCustomer from "../Customer/CreateCustomer";
 import SummaryCard from "./SummaryCard";
@@ -74,14 +74,14 @@ interface SaleFormProps {
   category: String | undefined
 }
 
-const fetcher = (...args) => fetch(...args).then((res) => res.json())
+const fetcher = (url:string) => fetch(url).then((res) => res.json())
 
 
 
 
 const SaleForm:FC<SaleFormProps> = (props) => {
 
-
+    const { branchId: branch } = useContext(BranchContext)  
     const [returned, setReturned] = useState([]);
     const { data, error } = useSWR('/api/Customer/GetCustomers', fetcher, {
       onSuccess: (data) => {
@@ -116,6 +116,9 @@ const SaleForm:FC<SaleFormProps> = (props) => {
   const listItems = kgs.map((kg) =>
   <option key={kg.toString()} value={kg}>{kg} Kg</option>
   );
+  const checkboxes = kgs.map((kg) => 
+    <Checkbox>{kg}</Checkbox>
+  )
     const toast = useToast();
     const [cart, setCart] = useState([]);
     const [summary, setSummary] = useState<{kg: number, quantity: number, total: number, amount: number}[]>([])
@@ -170,6 +173,7 @@ const customerComplete = returned.map((person, oid) => (
 const { isOpen, onOpen, onClose } = useDisclosure()
 const [customer, setCustomer] = useState('')
 const [customerId, setCustomerId] = useState('')
+const [ customerType, setCustomerType ] = useState('')
 
 console.log(customerId)
 console.log(valuesRef)
@@ -211,8 +215,11 @@ const handleSubmit = async (values: { customer: string }, actions:any) => {
   const saleAmount = computeTotal(summary) * props.pricePerKg
   const category = props.category
 
+  const today = new Date();
+  today.setDate(today.getDate() + 1);
+
   const data = {
-    branchId: props.branch.branchId,
+    branchId: branch,
     amount: saleAmount,
     category: category,
     description: summary,
@@ -223,7 +230,7 @@ const handleSubmit = async (values: { customer: string }, actions:any) => {
 
   const dataCrb = {
     crbNumber: crbData ? crbData.crbNumber + 1 : 1,
-    branchId: props.branch.branchId,
+    branchId: branch,
     amount: saleAmount,
     category: category,
     description: summary,
@@ -304,8 +311,10 @@ const handleSubmit = async (values: { customer: string }, actions:any) => {
   return (
  
     <Flex justify="space-between" px={6} py={6} borderWidth='1px'  borderColor='gray.200' h="100vh">
+       <Flex flexFlow="column">
+      {checkboxes}
+      </Flex>
       <Box bg="white" w="500px" p={4} rounded="md">
-   
     <Formik
       innerRef={valuesRef}
       initialValues={{selectkg: '', quantity: '', customer: '', cart: 0}}
@@ -422,6 +431,7 @@ const handleSubmit = async (values: { customer: string }, actions:any) => {
                 props.setFieldValue("customer", value.value)
                 setCustomer(value.value)
                 setCustomerId(value.originalValue?.uniqueId /* == undefined ? value.value : value.originalValue?.uniqueId */)
+                setCustomerType(value.originalValue?.customerType)
                 console.log(value)
                 returnData()
                 }}
@@ -441,6 +451,15 @@ const handleSubmit = async (values: { customer: string }, actions:any) => {
                       
                 </AutoComplete>
                 <FormHelperText>Customer Search. </FormHelperText>
+                <Text
+                rounded="sm"
+                width="max-content"
+                bg="cyan.50"
+                color="cyan.900"
+                px={2}
+                py={2}
+                mt={1}
+                >{customerType}</Text>
                 </Box>  
             
              

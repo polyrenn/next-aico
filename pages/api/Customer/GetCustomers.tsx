@@ -6,7 +6,8 @@ export default async (req, res) => {
           name: true,
           branchId: true,
           phone: true,
-          uniqueId: true
+          uniqueId: true,
+          customerType: true
         },
       });
       res.status(200).json(result);

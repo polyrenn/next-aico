@@ -44,6 +44,7 @@ import { GetServerSideProps } from "next";
 import CashPointForm from "../../components/FrontDesk/CashPoint/CashPointForm";
 import useSWR from "swr";
 import Select from "react-select";
+import { withSessionSsr } from "../../lib/withSession";
 
 import summary from "../../data/data";
 import AdminNav from "../../components/Navigation/Admin";
@@ -73,6 +74,11 @@ interface PageProps<T> {
     companyId: number
     branches: {}[]
   }[];
+
+  user: {
+    id: number,
+    admin: boolean
+  }
 }
 export default (props: PageProps<[]>) => {
   const options = props.branches.map(function (row) {
@@ -84,7 +90,7 @@ export default (props: PageProps<[]>) => {
   });
 
   const companyCount = props.companies.length;
-
+  console.log(props.user)
   return (
     <Flex height="100vh" width="100vw">
       <Head title="Admin - Stock"></Head>
@@ -175,39 +181,67 @@ export default (props: PageProps<[]>) => {
 };
 
 // Auth Maybe
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
-  const branch = await prisma.branch.findFirst({
-    select: {
-      address: true,
-      branchId: true,
-    },
-  });
 
-  const company = await prisma.company.findFirst({
-    select: {
-      name: true,
-      companyId: true,
-    },
-  });
+export const getServerSideProps = withSessionSsr(
+  async function getServerSideProps({ req }) {
+    const user = req.session.user;
+    if (!user) {
+      return {
+        redirect: {
+          destination: '/',
+          permanent: false,
+        },
+      }
+    }
 
-  const companies = await prisma.company.findMany({
-    include: {
-      branches: {
-        include: {
-          tanks: true,
+    const branch = await prisma.branch.findFirst({
+      where: {
+        branchId: user?.branch
+      },
+      select: {
+        address: true,
+        branchId: true,
+      },
+    });
+  
+    const company = await prisma.company.findFirst({
+      select: {
+        name: true,
+        companyId: true,
+      },
+    });
+  
+    const companies = await prisma.company.findMany({
+      include: {
+        branches: {
+          include: {
+            tanks: true,
+          },
         },
       },
-    },
-  });
+    });
+  
+    const branches = await prisma.branch.findMany({
+      select: {
+        address: true,
+        branchId: true,
+      },
+    });
+  
 
-  const branches = await prisma.branch.findMany({
-    select: {
-      address: true,
-      branchId: true,
-    },
-  });
+    
 
-  return {
-    props: { branch, company, companies, branches },
-  };
-};
+    if (user.admin !== true) {
+      return {
+        notFound: true,
+      };
+    }
+    return {
+      props: {
+        user: req.session.user,
+        branch, company, companies, branches
+      },
+    };
+  },
+ 
+);

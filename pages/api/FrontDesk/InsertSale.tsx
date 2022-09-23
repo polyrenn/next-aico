@@ -4,11 +4,12 @@ export default async (req, res) => {
     let data = req.body;
     const { id } = req.query
     data = JSON.parse(data);
+    const branch = data.branch;
       const result = await prisma.sale.create({
         data: {
           ...data,
           branch: {
-            connect: { branchId: 131313 },
+            connect: { branchId: branch },
           },
 
           

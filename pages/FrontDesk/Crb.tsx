@@ -26,14 +26,15 @@ import { PhoneIcon, AddIcon, WarningIcon } from '@chakra-ui/icons'
 import SaleForm from '../../components/FrontDesk/Crb/SaleForm';
 
 //React Imports
-import { useState } from 'react';
+import { useState, createContext } from 'react';
 
 //Utilities 
 import { useRadioGroup } from '@chakra-ui/react';
 import { prisma } from "../../lib/prisma";
 import { GetServerSideProps } from 'next';
+import { withSessionSsr } from '../../lib/withSession';
 
-
+export const BranchContext = createContext<{ address: string, branchId: number } | undefined>(undefined);
 export default (props:any) => {
   const categoryPrices: { category: string, pricePerKg: number }[] = props.prices
 
@@ -82,6 +83,8 @@ export default (props:any) => {
      'Eatery', 700
     ]
 ]
+
+console.log(props.branch)
 
 console.log(prices[0][1])
 
@@ -167,7 +170,9 @@ console.log(prices[0][1])
             </Box>
 
             <Box my={4}>
+            <BranchContext.Provider value={props.branch}>
                 <SaleForm category={category} branch={props.branch} post={props.post} pricePerKg={pricePerKg}></SaleForm>
+            </BranchContext.Provider>    
             </Box>
             
         </Box>
@@ -180,7 +185,10 @@ console.log(prices[0][1])
 }
 
 
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+export const getServerSideProps = withSessionSsr(
+  async function getServerSideProps({ req }) {
+
+  const user = req.session.user;
   const post = await prisma.customer.findMany({
     select: {
       name: true,
@@ -189,6 +197,9 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   });
 
   const branch = await prisma.branch.findFirst({
+    where: {
+      branchId: user?.branch // Uses First Found on Undefined
+    },
     select: {
       address: true,
       branchId: true
@@ -197,7 +208,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
 
   const prices = await prisma.prices.findMany({
     where: {
-      branchId: 131313 // Context Fron Login
+      branchId: user?.branch // Context Fron Login
     },
 
     select: {
@@ -211,8 +222,8 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   return {
     props: { post, branch, prices },
   };
-};
 
-
+},
+);
   
   

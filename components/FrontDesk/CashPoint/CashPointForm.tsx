@@ -131,6 +131,7 @@ const CashPointForm: FC<any> = (props) => {
       category: destructuredSum.category,
       totalKg: destructuredSum.totalKg,
       description: destructuredSum.description,
+      branch: destructuredSum.branchId
     }
   
     const datetime = data.timestamp

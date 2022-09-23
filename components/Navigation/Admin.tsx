@@ -59,9 +59,11 @@ const AdminNav: FC<any> = (props) => {
           <MenuItem icon={<PriceIcon />}>
             <Link href="/Admin/Prices">Prices</Link>
           </MenuItem>
-          <MenuItem icon={<CustomerIcon />}>Customers</MenuItem>
+          <MenuItem icon={<CustomerIcon />}>
+          <Link href="/Admin/Customers">Customers</Link>
+          </MenuItem>
           <MenuItem icon={<StaffIcon />}>
-            <Link href="../FrontDesk/Crb">Staff</Link>
+            <Link href="/Admin/Staff">Staff</Link>
           </MenuItem>
         </Menu>
       </SidebarContent>

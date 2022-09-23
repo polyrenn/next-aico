@@ -33,6 +33,7 @@ model Branch {
   tanks Tank[]
   crbs Crb[]
   stocks Stock[]
+  staffs Staff[]
   @@map(name: "branches")
 }
 
@@ -69,6 +70,7 @@ model Customer {
   uniqueId String @unique @map(name: "unique_id")
   name String @db.VarChar(100)
   phone String @db.VarChar(12) @unique
+  customerType String? @map(name: "customer_type")
   date DateTime @db.Timestamptz()
   branch Branch @relation(fields: [branchId], references: [branchId])
   branchId Int @map(name: "branch_id")
@@ -146,4 +148,14 @@ model Stock {
   kg Int
   value Int
   @@map(name: "stock")
+}
+
+model Staff {
+  id Int @id @default(autoincrement())
+  branch Branch @relation(fields: [branchId], references: [branchId])
+  branchId Int @map(name: "branch_id")
+  username String @unique
+  password String
+  role String
+  @@map(name: "staffs")
 }

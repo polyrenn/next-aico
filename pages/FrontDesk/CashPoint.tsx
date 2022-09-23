@@ -45,7 +45,6 @@ export const BranchContext = createContext<{ address: string, branchId: number }
 export default (props: any) => {
   let resultant:any;
   // const [branch, setBranch] = useState<string | undefined>();
-
   interface ReturnedQueue {
     kg: number,
     quantity: number,
@@ -79,7 +78,7 @@ export default (props: any) => {
 
     const [number, setNumber] = useState<number>(0)
   
-    const fetcher = (...args) => fetch(...args).then((res) => res.json())
+    const fetcher = (url:any) => fetch(url).then((res) => res.json())
     const { data, error } = useSWR('/api/FrontDesk/FetchQueue', fetcher, {
       onSuccess: (data) => {
        
@@ -116,7 +115,7 @@ export default (props: any) => {
 
   return (
     <div>
-      <WithSubnavigation branch={props.branch}></WithSubnavigation>
+      <WithSubnavigation branch={props.branch[0]}></WithSubnavigation>
       <Head title="Cash Desk" />
       <Box className="main-content" mx={8}>
         {/* Optional Prop Number that determines Number of Stat to Render in the Block */}

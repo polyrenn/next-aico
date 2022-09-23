@@ -5,8 +5,9 @@ import {  Formik, Field, Form, FormikHelpers } from "formik"
 import * as Yup from 'yup';
 import axios from "axios";
 import { useToast } from "@chakra-ui/react";
-import { useRef } from "react";
+import { useRef, useContext } from "react";
 import ReactToPrint from "react-to-print";
+import Select from "react-select"
 
 //Layout Imports
 
@@ -30,6 +31,8 @@ import {
     Input,
 } from '@chakra-ui/react'
 
+import { BranchContext } from "../../../pages/FrontDesk/Crb";
+
 import Barcode from './Barcode'
 
 interface ModalProps {
@@ -52,27 +55,43 @@ const SignupSchema = Yup.object().shape({
 
 const CreateCustomer:FC<ModalProps> = (props) => {
 
+  const customStyles = {
+    control: (provided:any, state:any) => ({
+     ...provided,   
+     minHeight: "56px"
+    }),
+
+  }  
+
+  const customerTypes = [
+    { value: "Regular", label: "Regular" },
+    { value: "Civil", label: "Civil Servant" },
+  ]
+
+  const { branchId: branch } = useContext(BranchContext)  
+
     let barcodeRef = useRef<null | HTMLDivElement>(null);
     const [name, setName] = useState<string>('')
     const [phone, setPhone] = useState<string>('')
 
-    const branch = props.branch
     const toast = useToast()
 
-    const createCustomer = async (values: {name: string, phone: string}, actions:any) => {
+    const createCustomer = async (values: {name: string, phone: string, type: string}, actions:any) => {
 
       const name = values.name
       const phone = values.phone
+      const type = values.type
       const data = {
         name: name,
         phone: phone,
         date: new Date(),
-        uniqueId: `${phone.slice(-3)}` + `${name.slice(-3).toUpperCase()}`
+        uniqueId: `${phone.slice(-3)}` + `${name.slice(-3).toUpperCase()}`,
+        customerType: type
       }
 
       const datetime = data.date
 
-      const res = await fetch('/api/Customer/CreateCustomer', {
+      const res = await fetch(`/api/Customer/CreateCustomer?branch=${branch}`, {
         method: 'post',
         body: JSON.stringify(data),
       }).then( (res) => {
@@ -117,6 +136,8 @@ const CreateCustomer:FC<ModalProps> = (props) => {
           error = 'Number is required'
         } else if (/[a-zA-Z]/.test(value)) {
             error = "Invalid Number"
+          }  else if (value.length < 11) {
+            error = "Invalid Number"
           }
         return error
       }
@@ -127,7 +148,8 @@ const CreateCustomer:FC<ModalProps> = (props) => {
 
       const initialValues = {
         name: "",
-        phone: ""
+        phone: "",
+        type: "",
       }
     
     return (
@@ -170,6 +192,24 @@ const CreateCustomer:FC<ModalProps> = (props) => {
               </FormControl>
             )}
           </Field>
+
+          <Field validate={validateName} name='type'>
+            {({ field, form }:any) => (
+              <FormControl my={2} isInvalid={form.errors.type && form.touched.type}>
+                <FormLabel color={'gray.500'} htmlFor="type">Customer Type</FormLabel>
+                <Select
+                  styles={customStyles}
+                  instanceId="type-select"
+                  placeholder="Select Type"
+                  options={customerTypes}
+                  onChange={(option:any) => props.setFieldValue('type', option.value)}
+                 
+                />
+                  <FormErrorMessage>{form.errors.type}</FormErrorMessage>
+              </FormControl>
+            )}
+          </Field>
+
           <Button
             my={4}
             colorScheme='purple'
