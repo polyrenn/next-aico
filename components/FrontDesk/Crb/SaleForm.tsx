@@ -116,9 +116,6 @@ const SaleForm:FC<SaleFormProps> = (props) => {
   const listItems = kgs.map((kg) =>
   <option key={kg.toString()} value={kg}>{kg} Kg</option>
   );
-  const checkboxes = kgs.map((kg) => 
-    <Checkbox>{kg}</Checkbox>
-  )
     const toast = useToast();
     const [cart, setCart] = useState([]);
     const [summary, setSummary] = useState<{kg: number, quantity: number, total: number, amount: number}[]>([])
@@ -311,9 +308,6 @@ const handleSubmit = async (values: { customer: string }, actions:any) => {
   return (
  
     <Flex justify="space-between" px={6} py={6} borderWidth='1px'  borderColor='gray.200' h="100vh">
-       <Flex flexFlow="column">
-      {checkboxes}
-      </Flex>
       <Box bg="white" w="500px" p={4} rounded="md">
     <Formik
       innerRef={valuesRef}
