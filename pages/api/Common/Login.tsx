@@ -6,25 +6,42 @@ export default withSessionRoute(loginRoute);
 async function loginRoute(req:any, res:any) {
   // get user from database then:
   
-  const { username } = req.query
+  const {username, password} = req.body
+  const data = JSON.parse(req.body)
   try {
     const result = await prisma.staff.findFirstOrThrow({
         where: {
-            username: username
+            username: data.username
         },
         select: {
             username: true,
             branchId: true,
+            role: true,
+            password: true
           },
         
       });
-      req.session.user = {
-        id: 230,
-        admin: true,
-        branch: 141414 // Staff Branch Id
-      };
-      await req.session.save();
-      res.status(200).json(result);
+
+      
+
+      const userPassoword = result.password
+      const pass = req.body.username
+      if(userPassoword === data.password) {
+        req.session.user = {
+            id: 230,
+            admin: true,
+            username: result.username,
+            branch: result.branchId, // Staff Branch Id
+            role: result.role
+          };
+          await req.session.save();
+          res.status(200).json(req.session.user);
+      } else {
+        res.status(401).send("Unauthorized!")
+      }
+
+
+     
   } catch (e) {
     res.status(500).json({ error: 'failed to load data' })
   }

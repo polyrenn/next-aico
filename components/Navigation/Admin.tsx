@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { AddIcon, TimeIcon, ViewIcon } from "@chakra-ui/icons";
+import { AddIcon, TimeIcon, ViewIcon, MinusIcon } from "@chakra-ui/icons";
 import {
   ProSidebar,
   SidebarContent,
@@ -49,6 +49,15 @@ const AdminNav: FC<any> = (props) => {
       <SidebarContent>
         <Menu>
           <MenuItem icon={<TimeIcon></TimeIcon>}>Sales</MenuItem>
+
+          <SubMenu title="Stock" icon={<StockIcon />}>
+          <MenuItem style={{padding: "8px"}}>
+            <Link href="/Admin/#">View Stock Records</Link>
+          </MenuItem>
+          <MenuItem style={{padding: "8px"}}>
+            <Link href="/Admin/#">Add & Update Stock</Link>
+          </MenuItem>
+          </SubMenu>
           <MenuItem icon={<StockIcon />}>
             <Link href="/Admin/Stock">Stock</Link>
           </MenuItem>
@@ -56,9 +65,15 @@ const AdminNav: FC<any> = (props) => {
           <MenuItem icon={<TankIcon />}>
             <Link href="/Admin/Tanks">Tanks</Link>
           </MenuItem>
-          <MenuItem icon={<PriceIcon />}>
-            <Link href="/Admin/Prices">Prices</Link>
+          <SubMenu title="Prices" icon={<PriceIcon />}>
+          <MenuItem style={{padding: "8px"}}>
+            <Link href="/Admin/Prices">Add & Update Price</Link>
           </MenuItem>
+          <MenuItem style={{padding: "8px"}}>
+            <Link href="/Admin/Prices/PriceList">Price List</Link>
+          </MenuItem>
+          </SubMenu>
+          
           <MenuItem icon={<CustomerIcon />}>
           <Link href="/Admin/Customers">Customers</Link>
           </MenuItem>

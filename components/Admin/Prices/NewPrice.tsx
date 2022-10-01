@@ -1,7 +1,7 @@
 import { FC, useState } from "react"
 //Utility Imports
-import { useDisclosure, VStack } from "@chakra-ui/react"
-import {  Formik, Field, Form, FormikHelpers } from "formik"
+import { Checkbox, CheckboxGroup, useDisclosure, VStack } from "@chakra-ui/react"
+import {  Formik, Field, Form, FormikHelpers, FieldArray, FormikProps } from "formik"
 import * as Yup from 'yup';
 import axios from "axios";
 import { useToast } from "@chakra-ui/react";
@@ -11,7 +11,7 @@ import { BranchContext } from "../../../pages/Admin/Prices";
 
 //Layout Imports
 
-import { Center, Box, Flex, HStack, Stack } from "@chakra-ui/react"
+import { Center, Box, Flex, HStack, Stack, Wrap, WrapItem } from "@chakra-ui/react"
 
 // Element Import
 import {
@@ -50,6 +50,12 @@ const SignupSchema = Yup.object().shape({
       .required('Required'),
   });
 
+  const priceValidation = Yup.object().shape({
+    kgs: Yup.array()
+      .required('Must set kgs')
+      .min(1, 'Minimum of 1'),
+  });
+
 
 const CreatePrice:FC<ModalProps> = (props) => {
 
@@ -57,18 +63,24 @@ const CreatePrice:FC<ModalProps> = (props) => {
     const [name, setName] = useState<string>('')
     const [phone, setPhone] = useState<string>('')
 
+    const availableKgs = [1, 3, 5, 6, 10, 12.5, 15, 25, 50]
+
    const branch = useContext(BranchContext)  
     const toast = useToast()
 
-    const newCategory = async (values: {category: string, pricePerKg: string}, actions:any) => {
+    const newCategory = async (values: {category: string, pricePerKg: string, kgs: number[]}, actions:any) => {
 
+      const result = values.kgs.filter((word:any) => word?.kg == true);
+      //Map Sizes
+      const sizes = result.map((a:any) => a.size )
       const category = values.category
       const pricePerKg = values.pricePerKg
-      const data = {
+      const data: {availableKgs: number[], category:string, pricePerKg: string} = {
         category: category,
-        pricePerKg: pricePerKg
-      }
+        pricePerKg: pricePerKg,
+        availableKgs: sizes
 
+      }
 
       const res = await fetch(`/api/Prices/NewCategory?branch=${props.branch}`, {
         method: 'post',
@@ -109,6 +121,16 @@ const CreatePrice:FC<ModalProps> = (props) => {
         return error
       }
 
+      function validateCategory(value:string) {
+        let error
+        if (!value) {
+          error = 'Category is required'
+        } else if (/\d/.test(value)) {
+            error = "Invalid Category Name"
+      }
+      return error
+    }
+
       function validateNumber(value:string) {
         let error
         if (!value) {
@@ -123,9 +145,14 @@ const CreatePrice:FC<ModalProps> = (props) => {
         return name.replace(/\b(\w)/g, s => s.toUpperCase());
       }
 
-      const initialValues = {
+      const initialValues: {kgs: any, category: string, pricePerKg: string} = {
         category: "",
-        pricePerKg: ""
+        pricePerKg: "",
+        kgs: []
+      }
+
+      const handleChange = (counter:number, item:number, actions:FormikProps<any>) => {
+        actions.setFieldValue(`kgs.${counter}.size`, item)
       }
     
     return (
@@ -139,6 +166,7 @@ const CreatePrice:FC<ModalProps> = (props) => {
             Changing Price For {props.branch}
           </Box> 
           <Formik
+            validationSchema={priceValidation}
             initialValues={initialValues}
             onSubmit={(values, actions) => {
                 values.category = capitalizeName(values.category);
@@ -152,7 +180,7 @@ const CreatePrice:FC<ModalProps> = (props) => {
      
       {(props) => (
         <Form>
-          <Field name='category' validate={validateName}>
+          <Field name='category' validate={validateCategory}>
             {({ field, form }:any) => (
               <FormControl mb={2} isInvalid={form.errors.category && form.touched.category}>
                 <FormLabel color={'gray.500'} htmlFor="customer">Category Name</FormLabel>
@@ -169,6 +197,50 @@ const CreatePrice:FC<ModalProps> = (props) => {
                 <Input type="number" {...field} placeholder='Starting Kg' h="56px" maxLength="11" />
                 <FormHelperText>Price Per Kg Required</FormHelperText>
                 <FormErrorMessage>{form.errors.pricePerKg}</FormErrorMessage>
+              </FormControl>
+            )}
+          </Field>
+
+          <Text mt={4} color="gray.500" fontSize="sm">Set available kgs.</Text>
+          <Wrap spacing={[1, 2]} direction={['column', 'row']}>   
+          <FieldArray name="kgs">
+          {({ insert, remove, push }) => (
+                 availableKgs.map((item, counter) => (
+                  <WrapItem key={item}>
+                  <Field name={`kgs.${counter}.kg`}>
+                  {({ field, form, }: any) => (
+                       <FormControl isInvalid={form.errors.kgs} onChange={(e) => handleChange(counter, item, {...props})} mb={2}>
+                       <Checkbox isChecked={props.values.kgs[counter]?.kg} {...field}>{item} Kg</Checkbox>
+                      </FormControl>
+                  )}
+
+                  </Field>
+                  </WrapItem>
+                 )
+          ))}
+          </FieldArray>    
+          </Wrap> 
+          
+          <Field>
+            {({ field, form }:any) => (
+              <FormControl>
+                 <Button onClick={() => {
+                  availableKgs.map((item, counter) => {
+                    props.setFieldValue(`kgs.${counter}.kg`, true);
+                    props.setFieldValue(`kgs.${counter}.size`, item)
+                  }
+                  )
+                
+                  console.log(props.values.kgs[0]?.kg)
+                 }} size="sm">Select all</Button>
+              </FormControl>
+            )}
+          </Field>
+
+          <Field>
+            {({ field, form }:any) => (
+              <FormControl isInvalid={form.errors.kgs}>
+                 <FormErrorMessage>Add Kg</FormErrorMessage>
               </FormControl>
             )}
           </Field>

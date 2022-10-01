@@ -35,7 +35,7 @@ const Queue:FC<any> = (props) => {
             color={"cyan.900"}
             rounded={"md"}
           >
-            {item.id}
+            {item.crbNumber}
           </Button>
      
     )}

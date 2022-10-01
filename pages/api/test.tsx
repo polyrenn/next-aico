@@ -38,7 +38,8 @@ export default async (req, res) => {
   
       select: {
         category: true,
-        pricePerKg: true
+        pricePerKg: true,
+        availableKgs: true
       }
     });
     res.status(200).json(result);

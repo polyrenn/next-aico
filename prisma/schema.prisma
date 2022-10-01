@@ -34,6 +34,8 @@ model Branch {
   crbs Crb[]
   stocks Stock[]
   staffs Staff[]
+  declined DeclinedSales[]
+  queue Queue[]
   @@map(name: "branches")
 }
 
@@ -62,6 +64,7 @@ model Prices {
   branchId Int @map(name: "branch_id")
   category String
   pricePerKg Int @map(name: "price_per_kg")
+  availableKgs Float[] @default([1,2,3]) @map(name: "available_kgs") //Remove Default
   @@map(name: "prices")
 }
 
@@ -74,9 +77,11 @@ model Customer {
   date DateTime @db.Timestamptz()
   branch Branch @relation(fields: [branchId], references: [branchId])
   branchId Int @map(name: "branch_id")
+  change Int @default(0)
   sales Sale[]
   queue Queue[]
   crbs Crb[]
+  declined DeclinedSales[]
   @@map(name: "customers")
 }
 
@@ -88,7 +93,7 @@ model Crb {
   customerId String? @map(name: "customer_id") 
   description Json
   amount Int
-  totalKg Int @map(name: "total_kg") @default(0)
+  totalKg Float @map(name: "total_kg") @default(0)
   category String
   timestamp DateTime @db.Timestamptz()
   branchId Int @map(name: "branch_id")
@@ -100,15 +105,16 @@ model Crb {
 
 model Queue {
   id Int @id @default(autoincrement())
+  branch Branch? @relation(fields: [branchId], references: [branchId])
+  branchId Int? @map(name: "branch_id")
   crbNumber Int @map(name: "crb_number")
   customer Customer? @relation(fields: [customerId], references: [uniqueId]) // Customer Optional
   customerId String? @map(name: "customer_id") 
   description Json
   amount Int
-  totalKg Int @map(name: "total_kg") @default(0)
+  totalKg Float @map(name: "total_kg") @default(0)
   category String
   timestamp DateTime @db.Timestamptz()
-  branchId Int @map(name: "branch_id") // Relation ?
   @@map(name: "queue")
 }
 
@@ -117,13 +123,14 @@ model Sale {
   branchId Int @map(name: "branch_id")
   branch Branch @relation(fields: [branchId], references: [branchId])
   saleNumber Int @map(name: "sale_number") @default(3)
-  totalKg Int @map(name: "total_kg") @default(0)
+  totalKg Float @map(name: "total_kg") @default(0)
   amount Int
   category String
   timestamp DateTime @db.Timestamptz()
   customer Customer? @relation(fields: [customerId], references: [uniqueId])
   customerId String @map(name: "customer_id")
-  description Json
+  description Json // Meta Data
+
   @@map(name: "sales")
 }
 
@@ -142,6 +149,7 @@ model Stock {
   id Int @id @default(autoincrement())
   branch Branch @relation(fields: [branchId], references: [branchId])
   branchId Int @map(name: "branch_id")
+  loadNumber Int @map(name: "load_number")
   tank Tank @relation(fields: [tankId], references: [tankId])
   tankId String @map(name: "tank_id")
   date DateTime @db.Date
@@ -158,4 +166,19 @@ model Staff {
   password String
   role String
   @@map(name: "staffs")
+}
+
+model DeclinedSales {
+  id Int @id @default(autoincrement())
+  branchId Int @map(name: "branch_id")
+  branch Branch @relation(fields: [branchId], references: [branchId])
+  saleNumber Int @map(name: "sale_number") @default(3)
+  totalKg Int @map(name: "total_kg") @default(0)
+  amount Int
+  category String
+  timestamp DateTime @db.Timestamptz()
+  customer Customer? @relation(fields: [customerId], references: [uniqueId])
+  customerId String @map(name: "customer_id")
+  description Json
+  @@map(name: "declined_sales")
 }

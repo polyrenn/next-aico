@@ -36,11 +36,13 @@ import { withSessionSsr } from '../../lib/withSession';
 
 export const BranchContext = createContext<{ address: string, branchId: number } | undefined>(undefined);
 export default (props:any) => {
-  const categoryPrices: { category: string, pricePerKg: number }[] = props.prices
-
+  const categoryPrices: { category: string, pricePerKg: number, availableKgs: number[] }[] = props.prices
+  const visibility = false
   //const options:string[] = ['Domestic', 'Dealer', 'Eatery', 'Other']
   const options:string[] = categoryPrices.map(a => a.category);
   const [category, setCategory] = useState<string>();
+
+  const [availableKgs, setAvailableKgs] = useState<number[]>()
 
   const priceList: { category: string, price: number }[] = [
     {
@@ -88,6 +90,8 @@ console.log(props.branch)
 
 console.log(prices[0][1])
 
+  const [priceKgs, setPriceKgs] = useState<number[] | undefined>([1,2,3])
+
   const [pricePerKg, setPricePerKg] = useState<number | undefined>(0)
   
   const toast = useToast()
@@ -102,8 +106,9 @@ console.log(prices[0][1])
     let valu = `${value}`.toLowerCase()
 
     const price = categoryPrices.find(element => element.category === value)?.pricePerKg;
-
+    const kgs = categoryPrices.find(element => element.category === value)?.availableKgs;
     setPricePerKg(price)
+    setPriceKgs(kgs)
   
     console.log(categoryPrices)
     console.log(category)
@@ -111,6 +116,7 @@ console.log(prices[0][1])
 
   
   console.log(props.prices)
+  console.log(props.user)
   
 
   const { value, getRootProps, getRadioProps } = useRadioGroup({
@@ -134,7 +140,9 @@ console.log(prices[0][1])
                     <Button colorScheme='gray'>Report</Button>
                 </Center>
             </Box>
-
+          {
+            /*
+          
             <Box>
               {
                 priceList.map(({category, price}) => (
@@ -151,9 +159,13 @@ console.log(prices[0][1])
                 ))}
                 </HStack>
             </Box>
-
+                */}
             <Box className='category'>
-                <Text my={2} color={'grey.500'} fontSize='xl'>Category - {category}</Text>
+                <Text style={ visibility ? {
+                  visibility: 'hidden'
+                }: {
+                  visibility: 'visible'
+                }} my={2} color={'grey.500'} fontSize='xl'>Category - {category}</Text>
                 <HStack {...group}>
       {options.map((value) => {
         const radio = getRadioProps({ value })
@@ -171,7 +183,9 @@ console.log(prices[0][1])
 
             <Box my={4}>
             <BranchContext.Provider value={props.branch}>
-                <SaleForm category={category} branch={props.branch} post={props.post} pricePerKg={pricePerKg}></SaleForm>
+                <SaleForm
+                 availableKgs={priceKgs}
+                 category={category} branch={props.branch} post={props.post} pricePerKg={pricePerKg}></SaleForm>
             </BranchContext.Provider>    
             </Box>
             
@@ -180,6 +194,15 @@ console.log(prices[0][1])
         <Box my={4} className='sales-form'>
             
         </Box>
+        <style jsx global>{`
+       .css-1zts0j {
+        color: #0d0d0d !important;
+        font-size: 14px !important;
+       }
+       .renn {
+        background-color: red
+       }
+      `}</style>
     </div>
     )
 }
@@ -208,19 +231,20 @@ export const getServerSideProps = withSessionSsr(
 
   const prices = await prisma.prices.findMany({
     where: {
-      branchId: user?.branch // Context Fron Login
+      branchId: user?.branch // Context From Login
     },
 
     select: {
       category: true,
-      pricePerKg: true
+      pricePerKg: true,
+      availableKgs: true
     }
   });
   
   
 
   return {
-    props: { post, branch, prices },
+    props: { post, branch, prices, user },
   };
 
 },

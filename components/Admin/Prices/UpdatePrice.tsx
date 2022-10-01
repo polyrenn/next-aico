@@ -1,7 +1,7 @@
 import { FC, useState } from "react"
 //Utility Imports
 import { useDisclosure, VStack } from "@chakra-ui/react"
-import {  Formik, Field, Form, FormikHelpers } from "formik"
+import {  Formik, Field, Form, FormikHelpers, FormikFormProps, FormikProps, FieldArray } from "formik"
 import * as Yup from 'yup';
 import axios from "axios";
 import { useToast } from "@chakra-ui/react";
@@ -13,7 +13,7 @@ import useSWR from "swr";
 
 //Layout Imports
 
-import { Center, Box, Flex, HStack, Stack } from "@chakra-ui/react"
+import { Center, Box, Flex, HStack, Stack, Wrap, WrapItem } from "@chakra-ui/react"
 
 // Element Import
 import {
@@ -31,6 +31,7 @@ import {
     FormLabel,
     FormHelperText,
     Input,
+    Checkbox
 } from '@chakra-ui/react'
 
 
@@ -77,14 +78,28 @@ const UpdatePrice:FC<ModalProps> = (props) => {
    const branch = useContext(BranchContext)  
     const toast = useToast()
 
-    const updatePrice = async (values: {category: string, pricePerKg: string}, actions:any) => {
+    const updatePrice = async (values: {category: string, pricePerKg: string, kgs: number[]}, actions:any) => {
 
-      const category = values.category
-      const pricePerKg = values.pricePerKg
-      const data = {
-        category: category,
-        pricePerKg: pricePerKg
-      }
+        const result = values.kgs.filter((word:any) => word?.kg == true);
+        //Map Sizes
+        const sizes = result.map((a:any) => a.size )
+        const category = values.category
+        const pricePerKg = values.pricePerKg
+        
+        let data: {category:string, pricePerKg: string, availableKgs?: number[]}
+        if(sizes.length > 0) {
+            data = {
+                category: category,
+                pricePerKg: pricePerKg,
+                availableKgs: sizes
+        
+              }
+        } else {
+            data = {
+                category: category,
+                pricePerKg: pricePerKg,
+        }
+    }
 
 
       const res = await fetch(`/api/Prices/UpdatePrice?branch=${props.branch}&category=${category}`, {
@@ -116,6 +131,8 @@ const UpdatePrice:FC<ModalProps> = (props) => {
       )
     }
 
+    const availableKgs = [1, 3, 5, 6, 10, 12.5, 15, 25, 50]
+
     function validateName(value:string) {
         let error
         if (!value) {
@@ -123,6 +140,16 @@ const UpdatePrice:FC<ModalProps> = (props) => {
         } 
         return error
       }
+
+      function validateCategory(value:string) {
+        let error
+        if (!value) {
+          error = 'Category is required'
+        } else if (/\d/.test(value)) {
+            error = "Invalid Category Name"
+      }
+      return error
+    }
 
       function validateNumber(value:string) {
         let error
@@ -140,7 +167,12 @@ const UpdatePrice:FC<ModalProps> = (props) => {
 
       const initialValues = {
         category: "",
-        pricePerKg: ""
+        pricePerKg: "",
+        kgs: []
+      }
+
+      const handleChange = (counter:number, item:number, actions:FormikProps<any>) => {
+        actions.setFieldValue(`kgs.${counter}.size`, item)
       }
     
     return (
@@ -194,6 +226,26 @@ const UpdatePrice:FC<ModalProps> = (props) => {
               </FormControl>
             )}
           </Field>
+
+          <Text mt={4} color="gray.500" fontSize="sm">Set available kgs.</Text>
+          <Wrap spacing={[1, 2]} direction={['column', 'row']}>   
+          <FieldArray name="kgs">
+          {({ insert, remove, push }) => (
+                 availableKgs.map((item, counter) => (
+                  <WrapItem key={item}>
+                  <Field name={`kgs.${counter}.kg`}>
+                  {({ field, form, }: any) => (
+                       <FormControl onChange={(e) => handleChange(counter, item, {...props})} mb={2}>
+                       <Checkbox {...field}>{item} Kg</Checkbox>
+                      </FormControl>
+                  )}
+
+                  </Field>
+                  </WrapItem>
+                 )
+          ))}
+          </FieldArray>    
+          </Wrap> 
 
           
           <Button

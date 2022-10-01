@@ -33,8 +33,7 @@ import useSWR from "swr";
 import { useDisclosure } from "@chakra-ui/react";
 import BranchRadios from "../ChangeBranch";
 import CreateTank from "../Tanks/NewTank";
-import PriceComponent from "./PriceComponent";
-import Category from "./Category";
+import TankComponent from "./TankComponent";
 
 
 
@@ -46,7 +45,7 @@ interface Tank {
     tankId: string;
 }
 
-const CompanyComponent: FC<any> = (props) => {
+const AllBranches: FC<any> = (props) => {
   const [currentTank, setCurrentTank] = useState<Tank[] | undefined>();
   const toast = useToast();
   // const [branch, setBranch] = useState<{ tanks: {}[]; address: string }>();
@@ -67,7 +66,7 @@ const CompanyComponent: FC<any> = (props) => {
     });
 
     let branchId = branches.find(
-      (element) => element.name === value
+        (element) => element.name === value
     )?.branchId;
     const tanks = branches.find((element) => element.name === value)?.tanks;
     current = branches.find((element) => element.name === value)?.currentTank;
@@ -90,7 +89,7 @@ const CompanyComponent: FC<any> = (props) => {
 
   const group = getRootProps();
   const branches: { name: string, address: string; branchId: number; tanks: Tank[], currentTank: string }[] =
-    props.company.branches;
+    props.branches;
   const options: string[] = branches.map((a) => a.name);
   console.log(branches);
 
@@ -100,7 +99,7 @@ const CompanyComponent: FC<any> = (props) => {
         {props.comapany?.name}
       </Heading>
       <Text color="gray.500">Select Branch {branch}</Text>
-      <HStack my={2}>
+      <HStack spacing={{base: 0, md: 4}} flexFlow={{ base: 'row wrap',}} my={2}>
         {options.map((value, index) => {
           const radio = getRadioProps({ value });
           return (
@@ -116,11 +115,10 @@ const CompanyComponent: FC<any> = (props) => {
             <Box key={branch.id}></Box>
           ))}
         </HStack>
-        <PriceComponent branch={branch} tanks={currentTank}></PriceComponent>
-        <Category branch={branch}></Category>
+        <TankComponent branch={branch} currBranchTank={current} tanks={currentTank}></TankComponent>
       </Box>
     </Box>
   );
 };
 
-export default CompanyComponent;
+export default AllBranches;

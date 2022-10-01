@@ -31,7 +31,7 @@ import { useRadioGroup, useColorModeValue } from "@chakra-ui/react";
 
 import useSWR from "swr";
 import { useDisclosure } from "@chakra-ui/react";
-import CategoryRadios from "../../FrontDesk/ChangeCategory";
+import BranchRadios from "../ChangeBranch";
 import CreateTank from "../Tanks/NewTank";
 import TankComponent from "./TankComponent";
 
@@ -103,9 +103,9 @@ const CompanyComponent: FC<any> = (props) => {
         {options.map((value, index) => {
           const radio = getRadioProps({ value });
           return (
-            <CategoryRadios key={value} {...radio}>
+            <BranchRadios key={value} {...radio}>
               {value}
-            </CategoryRadios>
+            </BranchRadios>
           );
         })}
       </HStack>

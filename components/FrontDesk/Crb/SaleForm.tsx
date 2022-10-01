@@ -50,10 +50,24 @@ import {
     Formik,
     FormikHelpers,
     FormikProps,
+    FieldArray,
     Form,
     Field,
     FieldProps,
   } from 'formik';
+
+import {
+    Table,
+    Thead,
+    Tbody,
+    Tfoot,
+    Tr,
+    Th,
+    Td,
+    TableCaption,
+    TableContainer,
+} from "@chakra-ui/react";  
+
 import * as Yup from 'yup';
 import useSWR from "swr";
 
@@ -72,6 +86,7 @@ interface SaleFormProps {
   post: any
   branch: any
   category: String | undefined
+  availableKgs: number[] | undefined
 }
 
 const fetcher = (url:string) => fetch(url).then((res) => res.json())
@@ -80,6 +95,8 @@ const fetcher = (url:string) => fetch(url).then((res) => res.json())
 
 
 const SaleForm:FC<SaleFormProps> = (props) => {
+
+    const availableKgs = props.availableKgs
 
     const { branchId: branch } = useContext(BranchContext)  
     const [returned, setReturned] = useState([]);
@@ -295,119 +312,162 @@ const handleSubmit = async (values: { customer: string }, actions:any) => {
 }
   )
 
-  
-  
+}
+// NEW Formik Use Values & Helpers
 
+const [priceKgs, setPriceKgs] = useState<number[]>([1,2,3])
 
+const formRef = useRef<FormikProps<FormValues>>(null);
+
+type FormValues = {
+  friends: []
+};
+
+const initialValues = {
+  friends: [
+    
+  ],
+  other: [
+
+  ],
+};
+
+const saleValidation = Yup.object().shape({
+  friends: Yup.array()
+    .required('Must have friends')
+    .min(1, 'Minimum of 3 friends')   
+});
+
+const createSummary = (values:any, actions:any ) => { // Type Values Actions:FormikHelpers<FormValues>
+  let result
+
+  if(values.friends.length > 0) {
+    result = values.friends.filter((word:any) => word?.isChecked == true);
+  }
+ 
+  if(values.other.length > 0) {
+    result = values.other.filter((word:any) => word?.isChecked == true);
+  }
+  setSummary(result)
+  console.log(summary)
+  actions.setSubmitting(false)
 }
 
+const handleSaleCompletion = async (values:any, {...actions}:FormikProps<any>) => {
+  const totalKg = computeTotal(summary)
+  const saleAmount = computeTotal(summary) * props.pricePerKg
+  const category = props.category
 
+  const today = new Date();
+  today.setDate(today.getDate() + 1);
+
+  const data = {
+    branchId: branch,
+    amount: saleAmount,
+    category: category,
+    description: summary,
+    customerId: customerId,
+    timestamp: new Date(),
+    totalKg: totalKg
+  }
+
+  const dataCrb = {
+    crbNumber: crbData ? crbData.crbNumber + 1 : 1,
+    branchId: branch,
+    amount: saleAmount,
+    category: category,
+    description: summary,
+    customerId: customerId,
+    timestamp: new Date(),
+    totalKg: totalKg
+  }
+
+  const datetime = data.timestamp
+
+
+  const resCrb = await fetch('/api/FrontDesk/InsertCrb', {
+    method: 'post',
+    body: JSON.stringify(dataCrb),
+  }).then( (res) => {
+
+    if(res.ok) {
+        toast({
+            title: 'Added to Crb.',
+            description: `Sale Added to Crb Successfully. At ${datetime} `,
+            status: 'success',
+            duration: 10000,
+            isClosable: true,
+          }),
+          actions.setSubmitting(false);
+    } else {
+        toast({
+            title: 'Error',
+            description: "An Error Has Occured.",
+            status: 'error',
+            duration: 10000,
+            isClosable: true,
+          }),
+          actions.setSubmitting(false);
+    }
+    
+}
+  )
+
+  const res = await fetch('/api/FrontDesk/InsertQueue', {
+    method: 'post',
+    body: JSON.stringify(dataCrb),
+  }).then( (res) => {
+
+    if(res.ok) {
+        toast({
+            title: 'Added to Queue.',
+            description: `Sale Added to Queue Successfully. At ${datetime} `,
+            status: 'success',
+            duration: 10000,
+            isClosable: true,
+          }),
+          actions.setSubmitting(false);
+    } else {
+        toast({
+            title: 'Error',
+            description: "An Error Has Occured.",
+            status: 'error',
+            duration: 10000,
+            isClosable: true,
+          }),
+          actions.setSubmitting(false);
+    }
+    
+}
+  )
+
+  actions.resetForm()
+  actions.setFieldValue("friends", [])
+  setSummary([])
+}
+
+const pricePerKg = props.pricePerKg
 
  
    
   return (
  
-    <Flex justify="space-between" px={6} py={6} borderWidth='1px'  borderColor='gray.200' h="100vh">
-      <Box bg="white" w="500px" p={4} rounded="md">
+    <Flex justify="space-between" px={6} py={6} borderWidth='1px'  borderColor='gray.200' h="fit-content">
+      <Box bg="white" w="container.md" p={4} rounded="md">     
     <Formik
-      innerRef={valuesRef}
-      initialValues={{selectkg: '', quantity: '', customer: '', cart: 0}}
-      validationSchema={SaleSchema}
-     
-     
-      onSubmit={async (values, actions)  => {
-        alert(JSON.stringify(values, null, 2));
-        console.log(valuesRef.current.values.quantity * 2)
-        actions.setSubmitting(true)
-        await handleSubmit(values, actions)
-        actions.resetForm();
-        actions.setFieldValue("customer", "")
-        setCustomer("")
-        setSummary([])
-      }}
-    >
-      {(props: FormikProps<any>) => (
-        <Form>
+        innerRef={formRef}
+        initialValues={initialValues}
+        //validationSchema={saleValidation}
+        onSubmit={(values, actions) => {
+          alert(JSON.stringify(values, null, 2));
+      
+          createSummary(values, actions)
+        }}
+      >
+        {(props: FormikProps<any>) => (
+          <Form>
 
-
-        <HStack>
-          <Field name='selectkg'>
-            {({ field, form }:any) => (
-              <FormControl>
-              <FormLabel color={'gray.500'} htmlFor="category">Select Kg</FormLabel>
-              <Select
-                {...field}
-                id="selectkg"
-                name="selectkg"
-                h="56px"
-                placeholder="Select Kg"
-          >
-          {listItems}
-          </Select>
-            </FormControl>
-            )}
-          </Field>
-
-
-          <Field name='quantity'>
-            {({ field, form, onChange }:any) => (
-              <FormControl>
-              <FormLabel color={'gray.500'} htmlFor="quantity">Quantity</FormLabel>
-                <Input {...field} id="quantity" h='56px' type="number" min="1" />
-            </FormControl>
-            )}
-          </Field> 
-
-          <VStack>
-
-            <FormControl>
-              <FormErrorMessage fontSize="lg">Inproper</FormErrorMessage>
-            </FormControl>
-          </VStack>
-          
-          </HStack>
-          
-          <Field>
-            {({ field, form }:any) => (
-              <FormControl isInvalid={form.errors.selectkg}>
-                 <FormErrorMessage fontSize="lg">Select Kg to continue</FormErrorMessage>
-              </FormControl>
-            )}
-          </Field>
-
-          <Field>
-            {({ field, form }:any) => (
-              <FormControl isInvalid={form.errors.quantity}>
-                 <FormErrorMessage fontSize="lg">Invalid Quantity</FormErrorMessage>
-              </FormControl>
-            )}
-          </Field>
-
-          <Field>
-            {({ field, form }:any) => (
-              <FormControl isInvalid={form.errors.cart}>
-                 <FormErrorMessage fontSize="lg">{form.errors.cart}</FormErrorMessage>
-              </FormControl>
-            )}
-          </Field>            
-
-          <Field>
-          {({ field, form }:any) => (
-                <Button isDisabled={!form.touched.customer ? true : false}
-                 onClick={handleSummary}
-                 mt={4}
-                 colorScheme="purple"
-                 width="full">
-                 Add
-                </Button>
-            )}
-          </Field>
-
-           <Button color="gray.100" mb={4} mt={2}  width="full"  onClick={handleCancel} bg="gray.700">
-                  Cancel
-                </Button>    
-         
-  
+            
           <Field name="customer">
           {({
                field, // { name, value, onChange, onBlur }
@@ -472,18 +532,206 @@ const handleSubmit = async (values: { customer: string }, actions:any) => {
              )}
           </Field>
 
-          <Divider my={4} orientation="horizontal"></Divider>
+            <FieldArray name="crb">
+              {({ insert, remove, push }) => (
+                <TableContainer borderWidth="1px" width="container.md">
+                  <Table variant="simple">
+                    <Thead>
+                      <Tr>
+                        <Th></Th>
+                        <Th>Qty</Th>
+                        <Th>Cyliner Price</Th>
+                        <Th>Total Kg</Th>
+                        <Th isNumeric>Amount</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                    {availableKgs?.map((item, counter) => (
+                    <Tr key={counter}>
+                      <Td>
+                      <Field name={`friends.${counter}.kg`}>
+        {({ field, form }:any) => (
+              <FormControl mb={2}>
+               <Checkbox size="lg" isChecked={props.values.friends[counter]?.isChecked} {...field}>{item}</Checkbox>
+              </FormControl>
+            )}
+        </Field>
+                      </Td>
+                      <Td>
+                      <Field name={`friends.${counter}.name`}>
+                        {({ field, form, onChange }: any) => (
+                          <FormControl
+                            w="min-content"
+                            mb={2}
+                          >
+                            <Input
+                              type="number"
+                              onKeyUp={(e) => {
+                                props.setFieldValue(`friends.${counter}.isChecked`, true);
+                                props.setFieldValue(`friends.${counter}.kg`, item);
+                                props.setFieldValue(`friends.${counter}.quantity`, field.value);
+                                props.setFieldValue(`friends.${counter}.total`, item * field.value);
+                                props.setFieldValue(`friends.${counter}.amount`, field.value * item * pricePerKg );
+                                !field.value
+                                  ? props.setFieldValue(`friends.${counter}.isChecked`, false)
+                                  : console.log("Populated");
+                              }}
+                              w="min-content"
+                              {...field}
+                              placeholder="Customer Name"
+                              h="56px"
+                              textTransform="capitalize"
+                              min={1}
+                            />
+                            <FormErrorMessage>
+                              {form.errors.name}
+                            </FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+                      </Td>
+                      <Td>
+                      <Box className="price-per-kg" p={4} bg="gray.50">
+                        {760 * item}
+                      </Box>
+                      </Td>
 
-          <ReactToPrint
-              trigger={() =>  <Button isDisabled={!props.isValid} isLoading={props.isSubmitting} colorScheme="purple" type="submit" width="full">Complete</Button>}
-              content={() => componentRef}
-              onAfterPrint={() => {alert("Hey")}}
-          />
-         
-        </Form>
-      )}
+                      <Td>
+                      <Box className="total-kg" p={4} bg="gray.50">
+                        {item * props.values?.friends[counter]?.name }
+                      </Box>
+                      </Td>
 
-    </Formik>
+                      <Td>
+                      <Box p={4} bg="gray.50">
+                        {item * 760 * props.values.friends[counter]?.name }
+                      </Box>
+                      </Td>
+                     
+                     
+
+                      
+                    </Tr>
+                  ))}
+                    </Tbody>
+                  </Table>
+                 
+                </TableContainer>
+              )}
+            </FieldArray>
+
+
+            <Heading mb={2} mt={2} size="md">Other</Heading>  
+            <FieldArray name="other">
+            {({ insert, remove, push }) => (
+                <TableContainer borderWidth="1px" width="container.md">
+                  <Table variant="simple">
+                    <Thead>
+                      <Tr>
+                        <Th></Th>
+                        <Th>Qty</Th>
+                        <Th>Cyliner Price</Th>
+                        <Th>Total Kg</Th>
+                        <Th isNumeric>Amount</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                    {[1]?.map((item, counter) => (
+                    <Tr key={counter}>
+                      <Td>
+                      <Field name={`other.${counter}.kg`}>
+        {({ field, form }:any) => (
+              <FormControl mb={2}>
+               <Checkbox size="lg" isChecked={props.values?.other[counter]?.isChecked} {...field}>{item}</Checkbox>
+              </FormControl>
+            )}
+        </Field>
+                      </Td>
+                      <Td>
+                      <Field name={`other.${counter}.name`}>
+                        {({ field, form, onChange }: any) => (
+                          <FormControl
+                            w="min-content"
+                            mb={2}
+                          >
+                            <Input
+                              type="number"
+                              onKeyUp={(e) => {
+                                props.setFieldValue(`other.${counter}.isChecked`, true);
+                                props.setFieldValue(`other.${counter}.kg`, item);
+                                props.setFieldValue(`other.${counter}.quantity`, field.value);
+                                props.setFieldValue(`other.${counter}.total`, item * field.value);
+                                props.setFieldValue(`other.${counter}.amount`, field.value * item * pricePerKg );
+                                !field.value
+                                  ? props.setFieldValue(`other.${counter}.isChecked`, false)
+                                  : console.log("Populated");
+                              }}
+                              w="min-content"
+                              {...field}
+                              placeholder="Customer Name"
+                              h="56px"
+                              textTransform="capitalize"
+                              min={1}
+                            />
+                            <FormErrorMessage>
+                              {form.errors.name}
+                            </FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+                      </Td>
+                      <Td>
+                      <Box className="price-per-kg" p={4} bg="gray.50">
+                        {760 * item }
+                      </Box>
+                      </Td>
+
+                      <Td>
+                      <Box className="total-kg" p={4} bg="gray.50">
+                        {item * props.values?.other[counter]?.name }
+                      </Box>
+                      </Td>
+
+                      <Td>
+                      <Box p={4} bg="gray.50">
+                        {item * 760 * props.values.other[counter]?.name }
+                      </Box>
+                      </Td>
+                     
+                     
+
+                      
+                    </Tr>
+                  ))}
+                    </Tbody>
+                  </Table>
+                 
+                </TableContainer>
+              )}        
+            </FieldArray>
+            <Flex mt={4} justifyContent="space-between" className="action-buttons">
+              <HStack>
+              <Button type="submit">
+              Check
+            </Button>
+            <Button color="gray.100" bg="gray.900" >
+              Cancel
+              </Button>          
+              </HStack>
+
+              <HStack>
+                <Button isDisabled={summary.length == 0 ? true : false} isLoading={props.isSubmitting}
+                 onClick={() => handleSaleCompletion(props.values, {...props})} colorScheme="purple">
+                  Complete
+                </Button>
+                  
+              </HStack>
+               
+            </Flex>
+           
+          </Form>
+        )}
+      </Formik>
         
       </Box>
       <Divider orientation='vertical' />

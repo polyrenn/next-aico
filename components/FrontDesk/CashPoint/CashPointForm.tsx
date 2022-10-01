@@ -193,8 +193,84 @@ const CashPointForm: FC<any> = (props) => {
       
   }
     )
+
+    actions.resetForm()
   
   }
+
+const delcineSale = async (actions:FormikProps<any>) => {
+
+  const [destructuredSum] = props.summary;
+
+  const data = {
+    saleNumber: props.summary[0].crbNumber,
+    amount: destructuredSum.amount,
+    timestamp: destructuredSum.timestamp,
+    category: destructuredSum.category,
+    totalKg: destructuredSum.totalKg,
+    description: destructuredSum.description,
+    branch: destructuredSum.branchId
+  }
+
+    
+  const res = await fetch(`/api/FrontDesk/DeclineSale`, {
+    method: 'post',
+    body: JSON.stringify(data),
+  }).then( (res) => {
+
+    if(res.ok) {
+        toast({
+            title: 'Sale Declined.',
+            description: `Sale Declined. `,
+            status: 'error',
+            duration: 5000,
+            isClosable: true,
+          }),
+          actions.setSubmitting(false);
+    } else {
+        toast({
+            title: 'Error',
+            description: "An Error Has Occured.",
+            status: 'error',
+            duration: 5000,
+            isClosable: true,
+          }),
+          actions.setSubmitting(false);
+    }
+    
+}
+  )
+
+  const resDelete = await fetch(`/api/FrontDesk/DeleteQueue?id=${props.currentSale}`, {
+    method: 'post',
+  }).then( (res) => {
+
+    if(res.ok) {
+        toast({
+            title: 'Removed From Queue.',
+            description: `Removed From Queue. `,
+            status: 'success',
+            duration: 10000,
+            isClosable: true,
+          }),
+          actions.setSubmitting(false);
+    } else {
+        toast({
+            title: 'Error',
+            description: "An Error Has Occured.",
+            status: 'error',
+            duration: 10000,
+            isClosable: true,
+          }),
+          actions.setSubmitting(false);
+    }
+    
+}
+  )
+
+  actions.resetForm()
+
+}  
 
 
   return (
@@ -223,6 +299,14 @@ const CashPointForm: FC<any> = (props) => {
               <Text color={'grey.500'}>Enter payment information</Text>
             </Stack>
 
+
+             {/* Customer */}
+          <Box mt={4} p={2} rounded="sm" borderWidth="1px">
+            <HStack justifyContent="space-between">
+              <Text>Customer</Text>
+              <Text>Details</Text>
+            </HStack>
+          </Box> 
 
               <Field validate={validateEmpty} name="payment">
                 {({ field, form }: any) => (
@@ -284,7 +368,15 @@ const CashPointForm: FC<any> = (props) => {
                 <FormErrorMessage>{form.errors.amount}</FormErrorMessage>
             </FormControl>
             )}
-          </Field> 
+          </Field>
+          
+          {/* Change */}
+          <Box mt={4} p={2} bgColor="purple.200">
+            <HStack justifyContent="space-between">
+              <Text>New Amount Due</Text>
+              <Text>{props.values.amount - 200}</Text>
+            </HStack>
+          </Box> 
 
           
           <ReactToPrint
@@ -295,6 +387,7 @@ const CashPointForm: FC<any> = (props) => {
               trigger={() => <Button my={4} colorScheme="purple" type="submit" width="full">Print Receipt</Button>}
               content={() => cashPointRef}
           />
+          <Button w="full" color="white" onClick={() => delcineSale({...props})} bg="red.500">Decline Sale</Button>
           <AutoSubmitToken></AutoSubmitToken>
             </Form>
           )}

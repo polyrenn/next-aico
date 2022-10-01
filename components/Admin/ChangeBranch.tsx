@@ -18,7 +18,7 @@ interface CategoryProps {
     price: number
 }
 
-const CategoryRadios:FC<any> = (props:any) => {
+const BranchRadios:FC<any> = (props:any) => {
   const { state, getInputProps, getCheckboxProps } = useRadio(props)
 
   const input = getInputProps()
@@ -33,8 +33,9 @@ const CategoryRadios:FC<any> = (props:any) => {
         borderWidth='1px'
         borderRadius='full'
         _checked={{
-          bg: `${colorCode(props.children)}`,
-          color: 'black.700',
+          bg: `green.200`,
+          color: 'green.700',
+          borderColor: 'green.200',
         }}
         _focus={{
           boxShadow: 'outline',
@@ -48,4 +49,4 @@ const CategoryRadios:FC<any> = (props:any) => {
   )
 }
 
-export default CategoryRadios
+export default BranchRadios

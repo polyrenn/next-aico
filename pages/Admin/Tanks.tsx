@@ -28,6 +28,7 @@ import { useDisclosure } from "@chakra-ui/react";
 
 import AdminNav from "../../components/Navigation/Admin";
 import CompanyComponent from "../../components/Admin/Tanks/CompanyComponent";
+import BranchRadios from "../../components/Admin/ChangeBranch";
 
 
 export const BranchContext = createContext<{ address: string, branchId: number }[]>([]);
@@ -80,6 +81,8 @@ const BranchComponent:FC<any> = (props) => {
 
 
 export default (props: PageProps<[]>) => {
+
+  const toast = useToast()
     
   console.log(props.companies)
   const [ branchId, setBranchId ] = useState<number>()  
@@ -94,6 +97,36 @@ export default (props: PageProps<[]>) => {
   const handleBranchChange = (branchId:number) => {
     setBranchId(branchId)
   }
+
+  let current
+
+  const handleChange = (value: any) => {
+    toast({
+      title: `The value got changed to ${value}!`,
+      status: "success",
+      duration: 2000,
+    });
+
+    let branchId = branches.find(
+        (element) => element.name === value
+    )?.branchId;
+    const tanks = branches.find((element) => element.name === value)?.tanks;
+    current = branches.find((element) => element.name === value)?.currentTank;
+    setBranchId(branchId)
+    console.log(current)
+
+  };
+
+  const { value, getRootProps, getRadioProps } = useRadioGroup({
+    name: "framework",
+    onChange: handleChange,
+  });
+
+  const group = getRootProps();
+  const branches: { name: string, address: string; branchId: number; tanks: Tank[], currentTank: string }[] =
+    props.branches;
+  const options: string[] = branches.map((a) => a.name);
+  console.log(branches);
 
 
   return (
@@ -114,7 +147,32 @@ export default (props: PageProps<[]>) => {
                 <CompanyComponent handleBranchChange={handleBranchChange} company={item}></CompanyComponent>
                 </Box>
                 )}  
-            </Box>  
+            </Box>
+
+            <Box p={6} className="stocks">
+            <Flex my={2} justify="space-between">
+            <HStack {...group}>
+      {options.map((value) => {
+        const radio = getRadioProps({ value })
+        return (
+          <Box>
+           <BranchRadios key={value} {...radio}>
+            {value}
+          </BranchRadios>
+          </Box>
+         
+        )
+      })}
+    </HStack>
+
+                <Text fontSize="medium" color="gray.500">AicoGas - {branchId}</Text>
+                <Button onClick={() => console.log("stockBranch")} colorScheme="blue">Add Stock</Button>
+            </Flex>
+            
+        </Box>
+           
+
+
         </Box>
     </Flex>
  

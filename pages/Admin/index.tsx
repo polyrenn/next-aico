@@ -9,6 +9,8 @@ import {
   Grid,
   GridItem,
   HStack,
+  Stack,
+  VStack,
   Center,
   Heading,
   Select as ChakraSelect,
@@ -46,6 +48,7 @@ import useSWR from "swr";
 import Select from "react-select";
 import { withSessionSsr } from "../../lib/withSession";
 
+
 import summary from "../../data/data";
 import AdminNav from "../../components/Navigation/Admin";
 
@@ -75,10 +78,23 @@ interface PageProps<T> {
     branches: {}[]
   }[];
 
+  branchAggregations: {
+    company: {
+      name: string;
+  };
+  branchId: number;
+  name: string | null;
+  _count: {
+      declined: number;
+      queue: number;
+      sales: number;
+  };
+  }[]
+
   user: {
     id: number,
     admin: boolean
-  }
+  };
 }
 export default (props: PageProps<[]>) => {
   const options = props.branches.map(function (row) {
@@ -174,8 +190,70 @@ export default (props: PageProps<[]>) => {
             </HStack>
           </Flex>     
 
-</Box>
-      </Box>
+        </Box>
+
+        <Flex flexFlow="row wrap" className="sales-summary">
+          
+        {props.branchAggregations.map((item:any) => 
+            <Flex ml={2} mb={4} flexFlow="column" width="30%" className="item" borderWidth="1px" rounded="sm">
+
+            <Stack p={4} borderBottomWidth="1px" width="full" justifyContent="space-between" direction="row" className="heading">
+                <Stack spacing={0} direction="column">
+                 <Heading size="sm">{item.company_name}</Heading>
+                 <Text color="gray.500">{item.name}</Text>
+                </Stack>
+
+                <HStack>
+                  <Text
+                   fontSize={'sm'}
+                   fontWeight={500}
+                   bg="gray.100"
+                   py={1}
+                   px={2}
+                   rounded={'sm'}
+                  >Tank A</Text>
+                </HStack>
+               
+            </Stack>
+
+            <Stack my={4} mx={4} spacing={4} p={2} bgColor="gray.50" className="content">
+
+                <HStack justifyContent="space-between">
+                  <Text>Successful Sales</Text>
+                  <Text>{item.sales_count}</Text>
+                </HStack>
+
+                <HStack justifyContent="space-between">
+                  <Text>Kg Sold</Text>
+                  <Text>{item.total_kg}</Text>
+                </HStack>
+
+                <HStack justifyContent="space-between">
+                  <Text>Total Amount</Text>
+                  <Text>{item.amount_sold}</Text>
+                </HStack>
+
+                <HStack justifyContent="space-between">
+                  <Text>Delcined Sales</Text>
+                  <Text>{item.declined_count}</Text>
+                </HStack>
+
+                <HStack justifyContent="space-between">
+                  <Text>Crbs on queue</Text>
+                  <Text>{item.queue_count}</Text>
+                </HStack>
+
+
+            </Stack>
+
+          </Flex>     
+        )}      
+         
+
+        </Flex>
+
+     
+    </Box>
     </Flex>
   );
 };
@@ -188,7 +266,7 @@ export const getServerSideProps = withSessionSsr(
     if (!user) {
       return {
         redirect: {
-          destination: '/',
+          destination: '/Login',
           permanent: false,
         },
       }
@@ -220,6 +298,35 @@ export const getServerSideProps = withSessionSsr(
         },
       },
     });
+
+     
+const today = new Date().toISOString()
+const formattedDate = today.split('T')[0]
+
+const branchAggregations = await prisma.$queryRaw
+`SELECT b.id,
+b.name, 
+(select cast(count(*) as integer) as sales_count from sales s where b.branch_id = s.branch_id
+     and timestamp > ${formattedDate}::timestamp
+),
+(select cast(count(*) as integer) as queue_count from queue q where b.branch_id = q.branch_id
+     and timestamp > ${formattedDate}::timestamp
+),
+(select cast(count(*) as integer) as declined_count from declined_sales d where b.branch_id = d.branch_id
+     and timestamp > ${formattedDate}::timestamp
+),
+(select cast(sum(s.total_kg) as float) as total_kg from sales s where b.branch_id = s.branch_id
+     and timestamp > ${formattedDate}::timestamp
+),
+(select cast(sum(s.amount) as float) as amount_sold from sales s where b.branch_id = s.branch_id
+     and timestamp > ${formattedDate}::timestamp
+),
+companies.name as company_name
+FROM branches b
+Left JOIN companies
+ON b.company_id = companies.company_id
+ORDER BY b.id asc 
+`; // Refactor to Swr
   
     const branches = await prisma.branch.findMany({
       select: {
@@ -239,7 +346,7 @@ export const getServerSideProps = withSessionSsr(
     return {
       props: {
         user: req.session.user,
-        branch, company, companies, branches
+        branch, company, companies, branches, branchAggregations
       },
     };
   },

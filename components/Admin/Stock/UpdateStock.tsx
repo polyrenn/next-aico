@@ -21,7 +21,7 @@ import { Radio, RadioGroup } from "@chakra-ui/react";
 import { useToast } from "@chakra-ui/react";
 
 // Icons
-import { PhoneIcon, AddIcon, WarningIcon } from "@chakra-ui/icons";
+import { PhoneIcon, AddIcon, WarningIcon, UpDownIcon } from "@chakra-ui/icons";
 
 //React Imports
 import { useState, useContext, createContext, FC } from "react";
@@ -32,10 +32,11 @@ import { useRadioGroup, useColorModeValue } from "@chakra-ui/react";
 import useSWR from "swr";
 import { useDisclosure } from "@chakra-ui/react";
 import CategoryRadios from "../../FrontDesk/ChangeCategory";
-import CreatePrice from "./NewPrice";
+import CreateTank from "../Tanks/NewTank";
+import UpdateStockModal from "./UpdateStockModal";
 
 
-const PriceComponent: FC<any> = (props) => {
+const UpdateStock: FC<any> = (props) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
   
     const [tank, setTank] = useState<string>("");
@@ -47,20 +48,19 @@ const PriceComponent: FC<any> = (props) => {
   
     return (
       <Flex mt={4} direction="column">
-        <Heading fontWeight="400" size="md">
-          Category
-        </Heading>
-        <Text mb={2} color="gray.500">Add New Category. ex Domestic</Text>
-        <Button onClick={onOpen} leftIcon={<AddIcon />} w="80px" h="80px">
-          Add
+        <Box mb={2}>
+        </Box>
+
+        <Button px={2} onClick={onOpen} leftIcon={<UpDownIcon />}  h="80px">
+          Update
         </Button>
-        <CreatePrice
-          branch={props.branch}
-          isOpen={isOpen}
-          onClose={onClose}
-        ></CreatePrice>
+       <UpdateStockModal
+        isOpen={isOpen}
+        onClose={onClose}
+        branch={props.branch}
+       ></UpdateStockModal>
       </Flex>
     );
   };
 
-  export default PriceComponent
+  export default UpdateStock

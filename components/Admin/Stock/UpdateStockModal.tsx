@@ -53,7 +53,7 @@ const SignupSchema = Yup.object().shape({
   });
 
 const fetcher = (url:any) => fetch(url).then((res) => res.json())
-const NewStockModal:FC<ModalProps> = (props) => {
+const UpdateStockModal:FC<ModalProps> = (props) => {
 
     interface FormValues {
         kg: string;
@@ -168,7 +168,7 @@ const NewStockModal:FC<ModalProps> = (props) => {
         <Modal size="lg" isOpen={props.isOpen} onClose={props.onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Add Stock</ModalHeader>
+          <ModalHeader>Update Stock</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
           <Formik
@@ -277,4 +277,4 @@ const NewStockModal:FC<ModalProps> = (props) => {
     )
 }
 
-export default NewStockModal
+export default UpdateStockModal

@@ -15,6 +15,25 @@ interface CategoryProps {
   branch: number | undefined;
 }
 
+export const colorCode = (item:string) => {
+    switch (item) {
+        case 'Domestic':
+            return 'teal.300'
+    
+        case 'Dealer':
+            return 'green.300'
+
+        case 'Eatery':
+            return 'blue.300'
+        
+        case 'Civil Servant':
+            return 'yellow.300'
+                    
+        default:
+            break;
+    }
+}
+
 
 
 const fetcher = (url: any) => fetch(url).then((res) => res.json());
@@ -43,10 +62,9 @@ const Category: FC<CategoryProps> = (props) => {
           key={counter}
           fontSize={"sm"}
           fontWeight={500}
-          bg="cyan.50"
+          bg={colorCode(item.category)}
           p={2}
           px={4}
-          color={"cyan.900"}
           rounded={"md"}
         >
           <Text>{item.category}</Text>

@@ -12,7 +12,7 @@ const sessionOptions = {
   cookieOptions: {
    // secure: process.env.NODE_ENV === "production",
   },
-  ttl: 1000
+  ttl: 5000
 };
 
 export function withSessionRoute(handler: NextApiHandler) {
@@ -35,7 +35,9 @@ declare module "iron-session" {
       user?: {
         id: number;
         admin?: boolean;
+        username: string;
         branch: number;
+        role: string;
       };
     }
   }

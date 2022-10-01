@@ -30,8 +30,9 @@ import { useRadioGroup, useColorModeValue } from "@chakra-ui/react";
 
 import useSWR from "swr";
 import { useDisclosure } from "@chakra-ui/react";
-import CategoryRadios from "../../FrontDesk/ChangeCategory";
+import BranchRadios from "../ChangeBranch";
 import NewStock from "./NewStock";
+import UpdateStock from "./UpdateStock";
 const CompanyComponent: FC<any> = (props) => {
 
     const toast = useToast()
@@ -82,16 +83,23 @@ const CompanyComponent: FC<any> = (props) => {
         {options.map((value, index) => {
         const radio = getRadioProps({ value })
         return (
-           <CategoryRadios key={value} {...radio}>
+           <BranchRadios key={value} {...radio}>
             {value}
-          </CategoryRadios>
+          </BranchRadios>
          
         )
       })}
       </HStack>
-        <Box mt={2} className="add-stock">
+      <Stack direction="row">
+      <Box className="add-stock">
           <NewStock branch={branch}></NewStock>
         </Box>
+
+        <Box  className="update-stock">
+        <UpdateStock branch={branch}></UpdateStock>
+        </Box>
+      </Stack>
+        
       </Box>
     );
   };

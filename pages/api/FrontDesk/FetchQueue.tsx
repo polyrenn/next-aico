@@ -4,11 +4,13 @@ import { prisma } from '../../../lib/prisma';
 export default async (req, res) => {
     let data = req.body;
     const { id } = req.query
+    const today = new Date().toISOString()
+    const formattedDate = today.split('T')[0]
     //Eventually Include Branch
       const result = await prisma.queue.findMany({
         where: {
             timestamp: {
-                gte: new Date("2022-08-28"),
+                gte:  new Date(`${formattedDate}`),
             },
             
         }

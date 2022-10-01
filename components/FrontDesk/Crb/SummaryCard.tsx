@@ -108,13 +108,16 @@ const CrbNumber2 = () => {
 
 };
 
-
     
 
     
     
        return (
-      <Box ref={ref} p={4} bg="white" w="500px" rounded="md">
+      <Box style={{
+        position: 'sticky',
+        top: 0,
+        alignSelf: 'flex-start'
+      }} className="summary-card" ref={ref} p={4} bg="white" w="fit-content" rounded="md">
         <Stack spacing={1}>
           <Heading size="md">Summary</Heading>
           <Text color={"grey.500"}>Sales Summary</Text>

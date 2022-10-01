@@ -102,7 +102,7 @@ export default (props: any) => {
             color={"cyan.900"}
             rounded={"md"}
           >
-            {item.id}
+            {item.crbNumber}
           </Button>
      
     )}
@@ -140,6 +140,15 @@ export default (props: any) => {
           
         </Box>
       </Box>
+      <style jsx global>{`
+       .css-1zts0j {
+        color: #0d0d0d !important;
+        font-size: 14px !important;
+       }
+       .renn {
+        background-color: red
+       }
+      `}</style>
     </div>
   );
 };
