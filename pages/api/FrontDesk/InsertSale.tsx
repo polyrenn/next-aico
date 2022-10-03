@@ -2,22 +2,58 @@ import { prisma } from "../../../lib/prisma";
 
 export default async (req, res) => {
     let data = req.body;
-    const { id } = req.query
+    let { id, change, ischange, usechange, tank } = req.query
     data = JSON.parse(data);
+    const customerId = data.customerId
     const branch = data.branch;
+    const amount = data.amount
+    
       const result = await prisma.sale.create({
         data: {
           ...data,
           branch: {
             connect: { branchId: branch },
           },
-
-          
-          customer: {
-            connect: { uniqueId: '637MAN' }, // Sale Needs Customer Relation
-          }, 
         },
         
       });
+
+      if(ischange == 'true') {
+        const updateUser = await prisma.customer.update({
+          where: {
+            uniqueId: customerId,
+          },
+          data: {
+            change: 
+              parseInt(change)
+          },
+        })
+      }
+
+      if(usechange == 'true') {
+        const updateChange = await prisma.customer.update({
+          where: {
+            uniqueId: customerId,
+          },
+          data: {
+            change: 0
+          },
+        })
+      }
+
+      const updateTank = await prisma.tank.updateMany({
+          where: { 
+            branchId: branch,
+            tankId: tank
+          },
+
+          data: {
+            amount: {
+              decrement: data.totalKg
+            }
+          }
+      });
+
+      
       res.status(200).json(result);
   };

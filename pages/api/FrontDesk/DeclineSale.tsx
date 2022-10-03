@@ -11,11 +11,6 @@ export default async (req, res) => {
           branch: {
             connect: { branchId: branch },
           },
-
-          
-          customer: {
-            connect: { uniqueId: '637MAN' }, // Sale Needs Customer Relation
-          }, 
         },
         
       });

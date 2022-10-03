@@ -25,6 +25,11 @@ import {
     customer: string
     pricePerKg: number
   }
+
+  interface BranchAddressId {
+    address: string
+    branchId: number
+  }[]
   
   import { useColorModeValue } from "@chakra-ui/react";
   import CrbTable from "../Common/CrbTable";
@@ -34,14 +39,15 @@ import CashPointTable from "./CashPointTable";
   const ReceiptCard:FC<any> = React.forwardRef(
     (props, ref) => {
 
-     const branch = useContext(BranchContext)   
+     const { branchList }  = useContext(BranchContext)  as any
 
       const summary = props.summary;
+      let customer
 
       const [destructuredSum] = summary
       const sidebar = (
         
-        branch.map((item) =>
+        branchList.map((item) =>
         <Box key={item.branchId}>
           <Text color={"grey.500"}>{item.address}</Text>
            </Box>
@@ -77,7 +83,7 @@ import CashPointTable from "./CashPointTable";
           <VStack w="100%">
           </VStack>
           <Box className="sales-info">
-              <Heading my={2} size="sm">Customer: {destructuredSum?.customer?.name}</Heading>
+              <Heading my={2} size="sm">Customer: {props.customer ? props.customer?.name : destructuredSum?.customerId}</Heading>
               <Heading my={2} size="sm">Payment Method: {props.payment}</Heading>
               <Heading my={2} size="sm">Narrative: {props.narrative}</Heading>
             </Box>

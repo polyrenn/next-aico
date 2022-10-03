@@ -34,15 +34,40 @@ import { prisma } from "../../lib/prisma";
 import { GetServerSideProps } from "next";
 import CashPointForm from "../../components/FrontDesk/CashPoint/CashPointForm";
 import useSWR from "swr";
+import { withSessionSsr } from "../../lib/withSession";
 
 import summary from '../../data/data'
 
-const fetcher = (...args) => fetch(...args).then((res) => res.json())
+const fetcher = (url:string) => fetch(url).then((res) => res.json())
+interface BranchDetails {
+  id: number
+  name: string
+  current_tank: string
+  desig: string
+  balance_stock: number
+  company_name: string
+}[]
+
+interface BranchAddressId {
+  address: string
+  branchId: number
+}[]
+
+interface BranchContext {
+  branchList: any
+  data: any
+
+}
 
 
-export const BranchContext = createContext<{ address: string, branchId: number }[]>([]);
+
+export const BranchContext = createContext<BranchContext | null>(null);
+
 
 export default (props: any) => {
+
+  const branch = props.branch
+  const branchList = props.branches
   let resultant:any;
   // const [branch, setBranch] = useState<string | undefined>();
   interface ReturnedQueue {
@@ -55,11 +80,13 @@ export default (props: any) => {
 
   const [currentSale, setCurrentSale] = useState<number | undefined>(0)
   const [returned, setReturned] = useState<ReturnedQueue[]>([]);
-    const { data, error } = useSWR('/api/dummycrb', fetcher, {
+  const [customer, setCustomer] = useState(null);
+  const [isRegistered, setIsRegistered] = useState<boolean | null>(null)
+
+    const { data, error } = useSWR(`/api/Common/BranchDetails?id=${branch.branchId}`, fetcher, {
       onSuccess: (data) => {
        
-      }
-    });
+  }});
 
     let [tests] = returned
     console.log(tests)
@@ -68,7 +95,33 @@ export default (props: any) => {
      await fetch(`/api/FrontDesk/FetchSaleDetails?id=${id}`)
       .then((response) => response.json())
       .then((data) => resultant = data)
-
+      .then((data) => {
+        fetch(`/api/Customer/IsRegistered?id=${data[0].customerId}`, {
+        method: 'post',
+        body: JSON.stringify(data.customerId),
+      }).then( (res) => {
+    
+        if(res.ok) {
+          return res.json()
+        } 
+        
+    }
+      ).then((data) => {
+        if(!data) {
+          console.log("Not Registered")
+          setIsRegistered(false)
+        } else {
+          console.log("Registered")
+          setCustomer(data)
+          setIsRegistered(true)
+        }
+        const merged = {
+          ...data
+        }
+      })
+    
+    }
+      )
       setReturned(resultant)
       setCurrentSale(resultant[0].id)
 
@@ -82,8 +135,7 @@ export default (props: any) => {
     const { data, error } = useSWR('/api/FrontDesk/FetchQueue', fetcher, {
       onSuccess: (data) => {
        
-      }
-    });
+  }});
   
     if(!data) return <Center><Spinner></Spinner></Center> // Or If returned equals empty array
     
@@ -115,7 +167,7 @@ export default (props: any) => {
 
   return (
     <div>
-      <WithSubnavigation branch={props.branch[0]}></WithSubnavigation>
+      <WithSubnavigation branch={props.branch}></WithSubnavigation>
       <Head title="Cash Desk" />
       <Box className="main-content" mx={8}>
         {/* Optional Prop Number that determines Number of Stat to Render in the Block */}
@@ -134,8 +186,8 @@ export default (props: any) => {
         </Box>
 
         <Box my={4}>
-        <BranchContext.Provider value={props.branch}>
-            <CashPointForm currentSale={currentSale} summary={returned}></CashPointForm>
+        <BranchContext.Provider value={{branchList, data}}>
+            <CashPointForm isRegistered={isRegistered} customer={customer} currentSale={currentSale} summary={returned}></CashPointForm>
         </BranchContext.Provider>
           
         </Box>
@@ -154,14 +206,53 @@ export default (props: any) => {
 };
 
 // Auth Maybe
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
-  const branch = await prisma.branch.findMany({
+export const getServerSideProps = withSessionSsr(
+  async function getServerSideProps({ req }) {
+
+  const user = req.session.user;
+
+  if (user?.role !== 'CashPoint Attendant') {
+    return {
+      redirect: {
+        destination: '/Login',
+        permanent: false,
+      },
+    }
+  }
+
+  if (!user) {
+    return {
+      redirect: {
+        destination: '/Login',
+        permanent: false,
+      },
+    }
+  }
+
+  const branch = await prisma.branch.findFirst({
+    where: {
+      branchId: user?.branch // Uses First Found on Undefined
+    },
     select: {
       address: true,
-      branchId: true,
+      branchId: true
     },
   });
+
+  const branches = await prisma.branch.findMany({
+    where: {
+      companyID: user?.company
+    },
+    select: {
+      address: true,
+      branchId: true
+    },
+  });
+  
+
   return {
-    props: { branch },
+    props: { branch, user, branches },
   };
-};
+
+},
+);

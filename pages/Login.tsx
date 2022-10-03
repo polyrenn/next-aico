@@ -145,7 +145,7 @@ export default (props: PageProps<[]>) => {
             case 'Crb Attendant':
                 Router.push(`/FrontDesk/Crb`)
                 break;    
-            case 'Cash Point Attendant':
+            case 'CashPoint Attendant':
                 Router.push(`/FrontDesk/CashPoint`)
                 break;              
             default:
@@ -341,7 +341,7 @@ export const getServerSideProps = withSessionSsr(
   
     const branch = await prisma.branch.findFirst({
       where: {
-        branchId: /*user? user?.branch */  141414 // Uses First Found on Undefined // Not Needed On Login Route // Redirect On Protected Pages
+        branchId: /*user? user?.branch */  131313 // Uses First Found on Undefined // Not Needed On Login Route // Redirect On Protected Pages
       },
       select: {
         address: true,

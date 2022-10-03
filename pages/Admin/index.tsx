@@ -263,6 +263,15 @@ export default (props: PageProps<[]>) => {
 export const getServerSideProps = withSessionSsr(
   async function getServerSideProps({ req }) {
     const user = req.session.user;
+    if (user?.role !== 'Admin') {
+      return {
+        redirect: {
+          destination: '/Login',
+          permanent: false,
+        },
+      }
+    }
+
     if (!user) {
       return {
         redirect: {

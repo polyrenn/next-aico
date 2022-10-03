@@ -16,6 +16,7 @@ model Company {
   companyId Int @id @map(name: "company_id")
   name String
   branches Branch[]
+  staff Staff[]
   @@map(name: "companies")
 }
 
@@ -36,6 +37,7 @@ model Branch {
   staffs Staff[]
   declined DeclinedSales[]
   queue Queue[]
+  switchLog SwitchLog[]
   @@map(name: "branches")
 }
 
@@ -78,26 +80,21 @@ model Customer {
   branch Branch @relation(fields: [branchId], references: [branchId])
   branchId Int @map(name: "branch_id")
   change Int @default(0)
-  sales Sale[]
-  queue Queue[]
-  crbs Crb[]
-  declined DeclinedSales[]
   @@map(name: "customers")
 }
 
 
 model Crb {
   id Int @id @default(autoincrement())
+  branch Branch @relation(fields: [branchId], references: [branchId])
+  branchId Int @map(name: "branch_id")
   crbNumber Int @map(name: "crb_number")
-  customer Customer? @relation(fields: [customerId], references: [uniqueId]) // Customer Optional
   customerId String? @map(name: "customer_id") 
   description Json
   amount Int
   totalKg Float @map(name: "total_kg") @default(0)
   category String
   timestamp DateTime @db.Timestamptz()
-  branchId Int @map(name: "branch_id")
-  branch Branch @relation(fields: [branchId], references: [branchId])
   @@map(name: "crbs")
 }
 
@@ -105,10 +102,9 @@ model Crb {
 
 model Queue {
   id Int @id @default(autoincrement())
-  branch Branch? @relation(fields: [branchId], references: [branchId])
-  branchId Int? @map(name: "branch_id")
+  branch Branch @relation(fields: [branchId], references: [branchId])
+  branchId Int @map(name: "branch_id")
   crbNumber Int @map(name: "crb_number")
-  customer Customer? @relation(fields: [customerId], references: [uniqueId]) // Customer Optional
   customerId String? @map(name: "customer_id") 
   description Json
   amount Int
@@ -127,10 +123,15 @@ model Sale {
   amount Int
   category String
   timestamp DateTime @db.Timestamptz()
-  customer Customer? @relation(fields: [customerId], references: [uniqueId])
   customerId String @map(name: "customer_id")
   description Json // Meta Data
-
+  narrative String 
+  paymentMethod String @map(name: "payment_method")
+  change Float 
+  currentTank String @map(name: "current_tank")
+  opening Float 
+  balance Float 
+  closing Float
   @@map(name: "sales")
 }
 
@@ -140,7 +141,7 @@ model Tank {
   branch Branch @relation(fields: [branchId], references: [branchId])
   branchId Int @map(name: "branch_id")
   designation String
-  amount Int // Max Tank Amount? Set Auto Switch On Specific Amount Maybe -- In Settings - Set Switch Minimum
+  amount Float // Max Tank Amount? Set Auto Switch On Specific Amount Maybe -- In Settings - Set Switch Minimum
   stocks Stock[]
   @@map(name: "tanks") 
 }
@@ -153,13 +154,15 @@ model Stock {
   tank Tank @relation(fields: [tankId], references: [tankId])
   tankId String @map(name: "tank_id")
   date DateTime @db.Date
-  kg Int
-  value Int
+  kg Float
+  value Float
   @@map(name: "stock")
 }
 
 model Staff {
   id Int @id @default(autoincrement())
+  company Company @relation(fields: [companyID], references: [companyId])
+  companyID Int @map(name: "company_id") 
   branch Branch @relation(fields: [branchId], references: [branchId])
   branchId Int @map(name: "branch_id")
   username String @unique
@@ -177,8 +180,16 @@ model DeclinedSales {
   amount Int
   category String
   timestamp DateTime @db.Timestamptz()
-  customer Customer? @relation(fields: [customerId], references: [uniqueId])
   customerId String @map(name: "customer_id")
   description Json
   @@map(name: "declined_sales")
+}
+
+model SwitchLog {
+  id Int @id @default(autoincrement())
+  branchId Int @map(name: "branch_id")
+  branch Branch @relation(fields: [branchId], references: [branchId])
+  meta Json
+  timestamp DateTime @db.Timestamptz()
+  @@map(name: "switch_log")
 }

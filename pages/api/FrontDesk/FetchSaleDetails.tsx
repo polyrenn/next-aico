@@ -8,14 +8,6 @@ export default async (req, res) => {
         where: {
             id: parseInt(id)
         },
-        include: {
-            customer: {
-                select: {
-                    name: true,
-                    phone: true
-                }
-            }
-        }
         
       });
 // Lost type saftey with query raw

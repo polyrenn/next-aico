@@ -33,9 +33,19 @@ import { useRadioGroup } from '@chakra-ui/react';
 import { prisma } from "../../lib/prisma";
 import { GetServerSideProps } from 'next';
 import { withSessionSsr } from '../../lib/withSession';
-
+import useSWR from 'swr';
+const fetcher = (url:string) => fetch(url).then((res) => res.json())
 export const BranchContext = createContext<{ address: string, branchId: number } | undefined>(undefined);
+
+
 export default (props:any) => {
+
+  //Pass Branch From Login Context
+  const { data, error } = useSWR('/api/Common/BranchDetails', fetcher, {
+    onSuccess: (data) => {
+     
+}});
+
   const categoryPrices: { category: string, pricePerKg: number, availableKgs: number[] }[] = props.prices
   const visibility = false
   //const options:string[] = ['Domestic', 'Dealer', 'Eatery', 'Other']
@@ -92,7 +102,7 @@ console.log(prices[0][1])
 
   const [priceKgs, setPriceKgs] = useState<number[] | undefined>([1,2,3])
 
-  const [pricePerKg, setPricePerKg] = useState<number | undefined>(0)
+  const [pricePerKg, setPricePerKg] = useState<number>(0)
   
   const toast = useToast()
   
@@ -105,7 +115,7 @@ console.log(prices[0][1])
     setCategory(value)
     let valu = `${value}`.toLowerCase()
 
-    const price = categoryPrices.find(element => element.category === value)?.pricePerKg;
+    const price = categoryPrices.find(element => element.category === value)?.pricePerKg as number
     const kgs = categoryPrices.find(element => element.category === value)?.availableKgs;
     setPricePerKg(price)
     setPriceKgs(kgs)
@@ -212,6 +222,14 @@ export const getServerSideProps = withSessionSsr(
   async function getServerSideProps({ req }) {
 
   const user = req.session.user;
+  if (!user) {
+    return {
+      redirect: {
+        destination: '/Login',
+        permanent: false,
+      },
+    }
+  }
   const post = await prisma.customer.findMany({
     select: {
       name: true,

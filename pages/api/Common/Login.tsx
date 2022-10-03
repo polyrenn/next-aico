@@ -16,6 +16,7 @@ async function loginRoute(req:any, res:any) {
         select: {
             username: true,
             branchId: true,
+            companyID: true,
             role: true,
             password: true
           },
@@ -32,6 +33,7 @@ async function loginRoute(req:any, res:any) {
             admin: true,
             username: result.username,
             branch: result.branchId, // Staff Branch Id
+            company: result.companyID,
             role: result.role
           };
           await req.session.save();

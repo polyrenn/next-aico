@@ -51,23 +51,21 @@ export default async (req:NextApiRequest, res:NextApiResponse) => {
 
     const branchAggregations = await prisma.$queryRaw
 `SELECT b.id,
-b.name, 
+b.name,
+b.current_tank,
 (select cast(count(*) as integer) as sales_count from sales s where b.branch_id = s.branch_id
-     and timestamp > '2022-09-26T18:21:57+00:00'
+     and timestamp > '2022-09-30T01:21:57+00:00'
 ),
-(select cast(count(*) as integer) as queue_count from queue q where b.branch_id = q.branch_id
-     and timestamp > '2022-09-20T18:21:57+00:00'
-),
-(select cast(count(*) as integer) as declined_count from declined_sales d where b.branch_id = d.branch_id),
+(select ts.designation as desig from tanks ts where b.current_tank = ts.tank_id),
 (select cast(sum(s.total_kg) as float) as total_kg from sales s where b.branch_id = s.branch_id
    and timestamp > '2022-09-26T18:21:57+00:00'
 ),
-(select cast(sum(s.amount) as float) as amount_sold from sales s where b.branch_id = s.branch_id),
 companies.name as company_name
 FROM branches b
 Left JOIN companies
-ON b.company_id = companies.company_id
+ON b.company_id = companies.company_id 
 ORDER BY b.id asc 
+
 
 `;
     

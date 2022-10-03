@@ -59,10 +59,13 @@ import useSWR from "swr";
 
 import { useDisclosure } from "@chakra-ui/react";
 import { useToast } from "@chakra-ui/react";
-import { useState, useEffect, MutableRefObject } from "react";
+import { useState, useEffect, MutableRefObject, useContext } from "react";
 import ReactToPrint from "react-to-print";
 import { useRef } from "react";
 import { FC } from "react";
+
+//Context
+import { BranchContext } from "../../../pages/FrontDesk/CashPoint";
 
 //Custom Components
 import CreateCustomer from "../Customer/CreateCustomer";
@@ -76,14 +79,20 @@ interface CashFormProps {
 
 const CashPointForm: FC<any> = (props) => {
 
+  const { data: branchDetails }  = useContext(BranchContext)  as any
+  console.log(branchDetails)
   const toast = useToast();
     const formikRef = useRef<FormikProps<any>>(null);
+
  
 
-
+   const isRegistered = props.isRegistered
+   console.log(isRegistered)
    const [payment, setPayment] = useState('Renn');
    const [narrative, setNarrative] = useState('')
    const [amount, setAmount] = useState<number | null>()
+   const customerProp = props.customer
+   const currentChange = props.customer?.change
 
     let cashPointRef = useRef<null | HTMLDivElement>(null);
 
@@ -95,19 +104,42 @@ const CashPointForm: FC<any> = (props) => {
         return error
       }
 
-      function validateAmount(value:number) {
+      function validateAmount(value:number, amount:any) {
         let error
         if (!value) {
           error = 'Amount is required'
         } 
+        if(value < amount ) {
+          error = 'Cannot Be Less Than Sales Amount'
+        }
         return error
       }    
 
   const initialValues = {
     payment: "",
     amount: "",
-    narrative: ""
+    narrative: "",
+    change: false,
+    usechange: false
   };
+
+  const CustomerDetails = () => {
+      if(!props.isRegistered) return null
+      return(
+        <Box mt={4} p={2} rounded="sm" borderWidth="1px">
+            <HStack justifyContent="space-between">
+              <Text>Customer</Text>
+              <Text>Details</Text>
+            </HStack>
+            <HStack justifyContent="space-between">
+              <Text>Change</Text>
+              <Text>{customerProp?.change}</Text>
+            </HStack>
+          </Box> 
+      );
+  }
+    
+  
 
   const AutoSubmitToken = () => {
     // Grab values and submitForm from context
@@ -120,7 +152,9 @@ const CashPointForm: FC<any> = (props) => {
     return null;
   };
 
-  const handleSubmit = async (actions:any) => {
+  const handleSubmit = async (
+    values: {payment: string, amount: string, narrative: string, change: boolean, usechange: boolean}, 
+    actions:any) => {
 
     const [destructuredSum] = props.summary;
 
@@ -131,15 +165,28 @@ const CashPointForm: FC<any> = (props) => {
       category: destructuredSum.category,
       totalKg: destructuredSum.totalKg,
       description: destructuredSum.description,
-      branch: destructuredSum.branchId
+      branch: destructuredSum.branchId,
+      customerId: destructuredSum.customerId,
+      paymentMethod: values.payment,
+      narrative: values.narrative,
+      change: parseInt(values.amount) - destructuredSum.amount,
+      currentTank: branchDetails[0].desig,
+      opening: branchDetails[0].balance_stock,
+      balance: branchDetails[0].balance_stock - destructuredSum.totalKg,
+      closing: branchDetails[0].balance_stock - destructuredSum.totalKg,
     }
   
     const datetime = data.timestamp
 
+    // Check For Sale Change
+
+    const change = parseInt(values.amount)  - destructuredSum?.amount
+
     alert(JSON.stringify(data, null, 2))
   
     
-    const res = await fetch(`/api/FrontDesk/InsertSale`, {
+    const res = await
+    fetch(`/api/FrontDesk/InsertSale?change=${change}&ischange=${values.change}&usechange=${values.usechange}&tank=${branchDetails[0].current_tank}`, {
       method: 'post',
       body: JSON.stringify(data),
     }).then( (res) => {
@@ -209,6 +256,7 @@ const delcineSale = async (actions:FormikProps<any>) => {
     category: destructuredSum.category,
     totalKg: destructuredSum.totalKg,
     description: destructuredSum.description,
+    customerId: destructuredSum.customerId,
     branch: destructuredSum.branchId
   }
 
@@ -270,8 +318,9 @@ const delcineSale = async (actions:FormikProps<any>) => {
 
   actions.resetForm()
 
-}  
+}
 
+const [destructuredSum] = props.summary
 
   return (
     <Flex
@@ -288,7 +337,7 @@ const delcineSale = async (actions:FormikProps<any>) => {
           initialValues={initialValues}
           onSubmit={(values, actions) => {
             alert(JSON.stringify(values, null, 2));
-            handleSubmit(actions)
+            handleSubmit(values, actions)
           }}
         >
           {(props: FormikProps<any>) => (
@@ -300,13 +349,9 @@ const delcineSale = async (actions:FormikProps<any>) => {
             </Stack>
 
 
-             {/* Customer */}
-          <Box mt={4} p={2} rounded="sm" borderWidth="1px">
-            <HStack justifyContent="space-between">
-              <Text>Customer</Text>
-              <Text>Details</Text>
-            </HStack>
-          </Box> 
+             {/* Customer Details */}
+             <CustomerDetails></CustomerDetails>
+          
 
               <Field validate={validateEmpty} name="payment">
                 {({ field, form }: any) => (
@@ -360,21 +405,54 @@ const delcineSale = async (actions:FormikProps<any>) => {
                 
 
               
-              <Field validate={validateAmount} name='amount'>
+              <Field validate={() => validateAmount(props.values.amount, destructuredSum?.amount)} name='amount'>
             {({ field, form, onChange }:any) => (
               <FormControl isInvalid={form.errors.amount && form.touched.amount}>
-              <FormLabel color={'gray.500'} htmlFor="amount">Amount</FormLabel>
+              <FormLabel color={'gray.500'} htmlFor="amount">Amount Paid</FormLabel>
                 <Input {...field} id="amount" h='56px' type="number" min="1" />
                 <FormErrorMessage>{form.errors.amount}</FormErrorMessage>
             </FormControl>
             )}
           </Field>
+
+          <HStack mt={4}>    
+          <Field name='change'>
+            {({ field, form, onChange }:any) => (
+              <FormControl>
+              <Checkbox isDisabled={!isRegistered} isChecked={props.values.change} size="lg" {...field}>Keep Change</Checkbox>
+            </FormControl>
+            )}
+          </Field>
+
+          <Field name='usechange'>
+            {({ field, form, onChange }:any) => (
+              <FormControl>
+              <Checkbox isDisabled={customerProp?.change < 0} isChecked={props.values.usechange} size="lg" {...field}>Use Change</Checkbox>
+            </FormControl>
+            )}
+          </Field>
+          </HStack>
+
           
-          {/* Change */}
+          {/* Change, Use Set State for Amount Due */}
           <Box mt={4} p={2} bgColor="purple.200">
             <HStack justifyContent="space-between">
-              <Text>New Amount Due</Text>
-              <Text>{props.values.amount - 200}</Text>
+              {isRegistered ? <Box>
+                <Text>New Amount Due</Text>
+              <Text>{props.values.amount ? destructuredSum?.amount - customerProp?.change: 0}</Text>
+              </Box> : 
+                <Box>
+                <Text>New Amount Due</Text>
+              <Text>{props.values.amount ? destructuredSum?.amount : 0}</Text>
+              </Box>
+              }
+            </HStack>
+          </Box> 
+
+          <Box mt={4} p={2} borderWidth="1px">
+            <HStack justifyContent="space-between">
+              <Text>Sale Change</Text>
+              <Text>{props.values.amount ? props.values.amount - destructuredSum?.amount: 0}</Text>
             </HStack>
           </Box> 
 
@@ -396,6 +474,7 @@ const delcineSale = async (actions:FormikProps<any>) => {
 
       <Divider orientation="vertical" />
       <ReceiptCard
+      customer={props.customer}
       values={formikRef}
       narrative={narrative}
       payment={payment}

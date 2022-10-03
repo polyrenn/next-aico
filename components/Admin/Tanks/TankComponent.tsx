@@ -34,10 +34,15 @@ import { useDisclosure } from "@chakra-ui/react";
 import CategoryRadios from "../../FrontDesk/ChangeCategory";
 import CreateTank from "../Tanks/NewTank";
 
-
+const fetcher = (url:string) => fetch(url).then((res) => res.json())
 const TankComponent: FC<any> = (props) => {
 
     const toast = useToast()
+
+    const { data, error } = useSWR(`/api/Common/BranchDetails?id=${props.branch}`, fetcher, {
+        onSuccess: (data) => {
+         
+    }});
 
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [ isSwitching, setIsSwitching ] = useState<boolean>(false)
@@ -82,14 +87,23 @@ const TankComponent: FC<any> = (props) => {
           Tanks
         </Heading>
         <Box mb={2}>
-          <Text>Current Tank:</Text>
+          <Text>Current Tank: {data ? data[0]?.desig: null}</Text>
           <Text>{props.currBranchTank}</Text>
+
+          <Box my={2} width="xs" p={2} bgColor="purple.200">
+            <HStack>
+                <Text>Balance Stock</Text>
+                <Text>{data ? data[0]?.balance_stock: null}</Text>
+            </HStack>
+          </Box>
         </Box>
+
         <Text>{/* props.branch.currentTank */}</Text>
-        {props?.tanks?.map((item:any) => 
+
+
                   <HStack justify="space-between" px={2} width="xs" mb={2} py={6} borderWidth='1px' borderRadius='lg'>
                   <Box className="tank-info">
-                    <Text>{item.designation}</Text>
+                    <Text>{data ? data[0]?.desig : null}</Text>
                     <Divider orientation="vertical"/>
                     <Text
                      fontSize={'sm'}
@@ -99,12 +113,10 @@ const TankComponent: FC<any> = (props) => {
                      px={4}
                      color={'cyan.900'}
                      rounded={'sm'}
-                    >{item.amount}</Text>
+                    >{data ? data[0]?.balance_stock : null}</Text>
                   </Box>
-                  <Button isLoading={isSwitching} rounded="full" colorScheme="blue" onClick={() => switchTank(item.tankId)}>Switch</Button>
+                  <Button isLoading={isSwitching} rounded="full" colorScheme="blue" onClick={() => switchTank(data ? data[0]?.other_tank : null)}>Switch</Button>
                 </HStack>
-                 
-              )}
         <Button onClick={onOpen} leftIcon={<AddIcon />} w="80px" h="80px">
           Add
         </Button>

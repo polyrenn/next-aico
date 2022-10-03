@@ -13,8 +13,21 @@ const Queue:FC<any> = (props) => {
   
     const fetcher = (...args) => fetch(...args).then((res) => res.json())
     const { data, error } = useSWR('/api/FrontDesk/FetchQueue', fetcher, {
-      onSuccess: (data) => {
-        setNumber(data.id)
+      onSuccess: async (data) => {
+        const resCrb = await fetch(`/api/Customer/IsRegistered?id=${data.customerId}`, {
+          method: 'post',
+          body: JSON.stringify(data.customerId),
+        }).then( (res) => {
+      
+          if(res.ok) {
+            res.json()
+          } 
+          
+      }
+        ).then((data) => {
+          console.log(data)
+        })
+      
       }
     });
   

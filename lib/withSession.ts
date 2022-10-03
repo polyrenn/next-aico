@@ -37,6 +37,7 @@ declare module "iron-session" {
         admin?: boolean;
         username: string;
         branch: number;
+        company: number;
         role: string;
       };
     }

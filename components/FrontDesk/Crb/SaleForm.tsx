@@ -82,7 +82,7 @@ import CreateCustomer from "../Customer/CreateCustomer";
 import SummaryCard from "./SummaryCard";
 
 interface SaleFormProps {
-  pricePerKg: number | undefined
+  pricePerKg: number 
   post: any
   branch: any
   category: String | undefined
@@ -191,7 +191,6 @@ const [ customerType, setCustomerType ] = useState('')
 
 console.log(customerId)
 console.log(valuesRef)
-console.log(componentRef)
 
 const SaleSchema = Yup.object().shape({
   selectkg: Yup.string()
@@ -244,7 +243,7 @@ const handleSubmit = async (values: { customer: string }, actions:any) => {
 
   const dataCrb = {
     crbNumber: crbData ? crbData.crbNumber + 1 : 1,
-    branchId: branch,
+    branch: branch,
     amount: saleAmount,
     category: category,
     description: summary,
@@ -318,7 +317,7 @@ const handleSubmit = async (values: { customer: string }, actions:any) => {
 const [priceKgs, setPriceKgs] = useState<number[]>([1,2,3])
 
 const formRef = useRef<FormikProps<FormValues>>(null);
-
+console.log(formRef)
 type FormValues = {
   friends: []
 };
@@ -484,7 +483,7 @@ const pricePerKg = props.pricePerKg
                 onChange={(e, value:any) => {
                 props.setFieldValue("customer", value.value)
                 setCustomer(value.value)
-                setCustomerId(value.originalValue?.uniqueId /* == undefined ? value.value : value.originalValue?.uniqueId */)
+                setCustomerId(value.originalValue?.uniqueId || value.value /* == undefined ? value.value : value.originalValue?.uniqueId */)
                 setCustomerType(value.originalValue?.customerType)
                 console.log(value)
                 returnData()
@@ -592,7 +591,7 @@ const pricePerKg = props.pricePerKg
                       </Td>
                       <Td>
                       <Box className="price-per-kg" p={4} bg="gray.50">
-                        {760 * item}
+                        {pricePerKg * item}
                       </Box>
                       </Td>
 
@@ -604,7 +603,7 @@ const pricePerKg = props.pricePerKg
 
                       <Td>
                       <Box p={4} bg="gray.50">
-                        {item * 760 * props.values.friends[counter]?.name }
+                        {item * pricePerKg * props.values.friends[counter]?.name }
                       </Box>
                       </Td>
                      
@@ -682,7 +681,7 @@ const pricePerKg = props.pricePerKg
                       </Td>
                       <Td>
                       <Box className="price-per-kg" p={4} bg="gray.50">
-                        {760 * item }
+                        {pricePerKg * item }
                       </Box>
                       </Td>
 
@@ -694,7 +693,7 @@ const pricePerKg = props.pricePerKg
 
                       <Td>
                       <Box p={4} bg="gray.50">
-                        {item * 760 * props.values.other[counter]?.name }
+                        {item * pricePerKg * props.values.other[counter]?.name }
                       </Box>
                       </Td>
                      
