@@ -67,6 +67,7 @@ export const BranchContext = createContext<BranchContext | null>(null);
 export default (props: any) => {
 
   const branch = props.branch
+  const branchId = props.branch.branchId
   const branchList = props.branches
   let resultant:any;
   // const [branch, setBranch] = useState<string | undefined>();
@@ -132,7 +133,7 @@ export default (props: any) => {
     const [number, setNumber] = useState<number>(0)
   
     const fetcher = (url:any) => fetch(url).then((res) => res.json())
-    const { data, error } = useSWR('/api/FrontDesk/FetchQueue', fetcher, {
+    const { data, error } = useSWR(`/api/FrontDesk/FetchQueue?id=${branch.branchId}`, fetcher, {
       onSuccess: (data) => {
        
   }});
@@ -172,7 +173,7 @@ export default (props: any) => {
       <Box className="main-content" mx={8}>
         {/* Optional Prop Number that determines Number of Stat to Render in the Block */}
         <Box my={4} className="stats">
-          <StatBlock></StatBlock>
+          <StatBlock branch={branchId} ></StatBlock>
         </Box>
 
         <Box className="Utils">

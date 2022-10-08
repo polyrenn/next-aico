@@ -34,7 +34,7 @@ import { GetServerSideProps } from "next";
 import useSWR from "swr";
 import { prisma } from "../../../lib/prisma";
 import { useDisclosure } from "@chakra-ui/react";
-
+import { withSessionSsr } from "../../../lib/withSession";
 import AdminNav from "../../../components/Navigation/Admin";
 import CategoryRadios from "../../../components/FrontDesk/ChangeCategory";
 import PriceList from "../../../components/Admin/Prices/PriceList";
@@ -70,6 +70,7 @@ interface Tank {
 }
 
 const CompanyComponent: FC<any> = (props) => {
+
     const toast = useToast();
     // const [branch, setBranch] = useState<{ tanks: {}[]; address: string }>();
     const [branch, setBranch] = useState<number>();
@@ -88,13 +89,18 @@ const CompanyComponent: FC<any> = (props) => {
         duration: 2000,
       });
   
+      let branchName = branches.find(
+        (element) => element.name === value
+      )?.name;
+
       let branchId = branches.find(
         (element) => element.name === value
       )?.branchId;
+
       const tanks = branches.find((element) => element.name === value)?.tanks;
       current = branches.find((element) => element.name === value)?.currentTank;
       setBranch(branchId)
-      props.handleBranchChange(branchId);
+      props.handleBranchChange(branchName, branchId);
       console.log(current)
   
     };
@@ -121,7 +127,7 @@ const CompanyComponent: FC<any> = (props) => {
           {props.comapany?.name}
         </Heading>
         <Text color="gray.500">Select Branch {branch}</Text>
-        <HStack my={2}>
+        <Flex alignContent="flex-start" flexFlow={{ base: 'row wrap',}} my={2}>
           {options.map((value, index) => {
             const radio = getRadioProps({ value });
             return (
@@ -130,7 +136,7 @@ const CompanyComponent: FC<any> = (props) => {
               </BranchRadios>
             );
           })}
-        </HStack>
+        </Flex>
         <Box mt={2} className="branch-blocks">
           <HStack>
             {props.company.branches.map((branch: any) => (
@@ -143,9 +149,27 @@ const CompanyComponent: FC<any> = (props) => {
   };
 
 export default (props: PageProps<[]>) => {
+
+  //Navigation Helpers
+  const [collapsed, setCollapsed] = useState<boolean>(false);
+  const [toggled, setToggled] = useState<boolean>(false);
+
+  const handleCollapsedChange = (checked:boolean) => {
+    setCollapsed(checked);
+  };
+
+  const handleToggleSidebar = (value:boolean) => {
+    setToggled(value);
+  };
+
+  const handleToggleClose = (value:boolean) => {
+    setToggled(value);
+  };
+
   console.log(props.companies);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [ stockBranch, setStockBranch ] = useState<number>()
+  const [ stockBranch, setStockBranch ] = useState<string>()
+  const [ branchId, setBranchId ] = useState<number>()
   const [tank, setTank] = useState<string | null>(null);
   const logInfo = (info: string) => {
     console.log(info);
@@ -153,8 +177,9 @@ export default (props: PageProps<[]>) => {
     return info;
   };
 
-  const handleBranchChange = (branchId:number) => {
-    setStockBranch(branchId)
+  const handleBranchChange = (branchName: string, branchId: number) => {
+    setStockBranch(branchName)
+    setBranchId(branchId)
   }
 
 
@@ -162,18 +187,20 @@ export default (props: PageProps<[]>) => {
     <Flex height="100vh" width="100vw">
       <Head title="Admin - Price List"></Head>
       <Box height="100%" className="navigation">
-        <AdminNav company={props.company}></AdminNav>
+        <AdminNav  handleToggleClose={handleToggleClose} toggled={toggled} company={props.company}></AdminNav>
       </Box>
 
       <Box overflowY="auto" w="100%" className="main-content">
-        <WithSubnavigation branch={props.branch}></WithSubnavigation>
+        <WithSubnavigation handleToggleSidebar={handleToggleSidebar}
+        handleCollapsedChange={handleCollapsedChange}
+         branch={props.branch}></WithSubnavigation>
         <Box p={6} className="branches">
           {props.companies.map((item: any) => (
             <Box key={item.id}>
               <Heading key={item.id} size="sm">
                 {item.name}
               </Heading>
-              <BranchContext.Provider value={stockBranch}>
+              <BranchContext.Provider value={branchId}>
                  <CompanyComponent priceBranch handleBranchChange={handleBranchChange} company={item}></CompanyComponent>
               </BranchContext.Provider>
              
@@ -183,10 +210,9 @@ export default (props: PageProps<[]>) => {
 
         <Box p={6} className="price-list">
             <Flex my={2} justify="space-between">
-                <Text fontSize="medium" color="gray.500">AicoGas - {stockBranch}</Text>
-                <Button onClick={() => console.log(stockBranch)} colorScheme="blue">Add Stock</Button>
+            <Heading color="gray.500" size="lg">Price List for {stockBranch}</Heading>
             </Flex>
-            <PriceList branch={stockBranch}></PriceList>
+            <PriceList branch={branchId}></PriceList>
         </Box>
       </Box>
     </Flex>
@@ -194,7 +220,27 @@ export default (props: PageProps<[]>) => {
 };
 
 // Auth Maybe
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+export const getServerSideProps = withSessionSsr(
+  async function getServerSideProps({ req }) {
+
+const user = req.session.user;
+    if (user?.role !== 'Admin') {
+      return {
+        redirect: {
+          destination: '/Login',
+          permanent: false,
+        },
+      }
+    }
+
+    if (!user) {
+      return {
+        redirect: {
+          destination: '/Login',
+          permanent: false,
+        },
+      }
+    }
   const branch = await prisma.branch.findFirst({
     select: {
       address: true,
@@ -230,4 +276,4 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   return {
     props: { branch, company, branches, companies },
   };
-};
+});

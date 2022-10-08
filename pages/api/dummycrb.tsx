@@ -7,6 +7,7 @@ export default async (req, res) => {
     const formattedDate = today.split('T')[0]
       const result = await prisma.crb.findFirst({
         where: {
+          branchId: parseInt(id),
             timestamp: {
               gte: new Date(`${formattedDate}`),
             },

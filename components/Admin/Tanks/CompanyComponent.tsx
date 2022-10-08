@@ -99,16 +99,17 @@ const CompanyComponent: FC<any> = (props) => {
         {props.comapany?.name}
       </Heading>
       <Text color="gray.500">Select Branch {branch}</Text>
-      <HStack spacing={{base: 0, md: 4}} flexFlow={{ base: 'row wrap',}} my={2}>
+      <Flex alignContent="flex-start" flexFlow={{ base: 'row wrap',}} my={2}>
         {options.map((value, index) => {
-          const radio = getRadioProps({ value });
-          return (
-            <BranchRadios key={value} {...radio}>
-              {value}
-            </BranchRadios>
-          );
-        })}
-      </HStack>
+        const radio = getRadioProps({ value })
+        return (
+           <BranchRadios key={value} {...radio}>
+            {value}
+          </BranchRadios>
+         
+        )
+      })}
+      </Flex>
       <Box mt={2} className="branch-blocks">
         <HStack>
           {props.company.branches.map((branch: any) => (

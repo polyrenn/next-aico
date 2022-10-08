@@ -14,7 +14,7 @@ import useSWR from "swr";
 const fetcher = (url:string) => fetch(url).then((res) => res.json())
 const StatBlock:FC<any> = (props) => {
     // Refactor to Singular Stat With Props Suffix
-    const { data, error } = useSWR('/api/Common/Stats', fetcher, {
+    const { data, error } = useSWR(`/api/Common/Stats?id=${props.branch}`, fetcher, {
         onSuccess: (data) => {
          console.log(data)
         }

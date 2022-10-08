@@ -161,7 +161,7 @@ const CashPointForm: FC<any> = (props) => {
     const data = {
       saleNumber: props.summary[0].crbNumber,
       amount: destructuredSum.amount,
-      timestamp: destructuredSum.timestamp,
+      timestamp: new Date(),
       category: destructuredSum.category,
       totalKg: destructuredSum.totalKg,
       description: destructuredSum.description,
@@ -252,7 +252,7 @@ const delcineSale = async (actions:FormikProps<any>) => {
   const data = {
     saleNumber: props.summary[0].crbNumber,
     amount: destructuredSum.amount,
-    timestamp: destructuredSum.timestamp,
+    timestamp: new Date(),
     category: destructuredSum.category,
     totalKg: destructuredSum.totalKg,
     description: destructuredSum.description,

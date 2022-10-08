@@ -1,6 +1,7 @@
+import { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../../lib/prisma";
 
-export default async (req, res) => {
+export default async (req:NextApiRequest, res:NextApiResponse) => {
     let data = req.body;
     const { id } = req.query
     data = JSON.parse(data);

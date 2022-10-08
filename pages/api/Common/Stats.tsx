@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../../lib/prisma";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
+    const { id } = req.query
     const today = new Date().toISOString()
     const formattedDate = today.split('T')[0]  
   const branchAggregations = await prisma.$queryRaw`SELECT b.id,
@@ -23,6 +24,7 @@ companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id 
+WHERE b.branch_id = ${id}::float 
 ORDER BY b.id asc 
 
 

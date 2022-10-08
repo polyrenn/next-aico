@@ -46,6 +46,8 @@ export default (props:any) => {
      
 }});
 
+  const branchId = props.branch.branchId
+
   const categoryPrices: { category: string, pricePerKg: number, availableKgs: number[] }[] = props.prices
   const visibility = false
   //const options:string[] = ['Domestic', 'Dealer', 'Eatery', 'Other']
@@ -142,7 +144,7 @@ console.log(prices[0][1])
         <Box className='main-content' mx={8}>
             {/* Optional Prop Number that determines Number of Stat to Render in the Block */}
             <Box my={4} className='stats'>
-                <StatBlock></StatBlock>
+                <StatBlock branch={branchId}></StatBlock>
             </Box>
 
             <Box className='Utils'>
@@ -212,6 +214,9 @@ console.log(prices[0][1])
        .renn {
         background-color: red
        }
+       .css-1dgdoa4 {
+        color: #0d0d0d !important;
+       }
       `}</style>
     </div>
     )
@@ -222,6 +227,16 @@ export const getServerSideProps = withSessionSsr(
   async function getServerSideProps({ req }) {
 
   const user = req.session.user;
+
+  if (user?.role !== 'Crb Attendant') {
+    return {
+      redirect: {
+        destination: '/Login',
+        permanent: false,
+      },
+    }
+  }
+
   if (!user) {
     return {
       redirect: {
@@ -230,6 +245,7 @@ export const getServerSideProps = withSessionSsr(
       },
     }
   }
+
   const post = await prisma.customer.findMany({
     select: {
       name: true,

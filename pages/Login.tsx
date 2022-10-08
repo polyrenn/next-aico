@@ -52,6 +52,7 @@ import { GetServerSideProps } from "next";
 import useSWR from "swr";
 import Select from "react-select";
 import Router from "next/router";
+import { useRouter } from "next/router";
 import { Formik, Field, Form, FormikHelpers, FormikProps } from "formik";
 import { withSessionSsr } from "../lib/withSession";
 
@@ -91,6 +92,8 @@ interface PageProps<T> {
   }
 }
 export default (props: PageProps<[]>) => {
+
+  const router = useRouter()
   const toast = useToast();
 
   console.log(props.user)
@@ -137,16 +140,17 @@ export default (props: PageProps<[]>) => {
     })
     .then((data) => {
         console.log(data)
+        console.log(router.route)
         switch (data?.role) {
             case 'Admin':
-                Router.push(`/Admin`)
+                router.push('/Admin')
                 break;
 
             case 'Crb Attendant':
-                Router.push(`/FrontDesk/Crb`)
+                router.push('/FrontDesk/Crb')
                 break;    
             case 'CashPoint Attendant':
-                Router.push(`/FrontDesk/CashPoint`)
+                router.push('/FrontDesk/CashPoint')
                 break;              
             default:
                 break;
@@ -204,7 +208,7 @@ export default (props: PageProps<[]>) => {
       <Box height="100%" className="navigation"></Box>
 
       <Box overflowY="auto" w="100%" h="100%" className="main-content">
-        <WithSubnavigation branch={props.branch}></WithSubnavigation>
+        
         <Center h="100%">
           <Flex
             alignItems="space-between"
@@ -244,14 +248,14 @@ export default (props: PageProps<[]>) => {
                         mb={2}
                         isInvalid={form.errors.name && form.touched.name}
                       >
-                        <FormLabel color={"gray.500"} htmlFor="customer">
+                        <FormLabel color={"gray.500"} htmlFor="username">
                           Username
                         </FormLabel>
                         <Input
                           errorBorderColor="red.300"
                           variant="flushed"
                           {...field}
-                          placeholder="Customer Name"
+                          placeholder="Username"
                           h="56px"
                         />
                         <FormErrorMessage>{form.errors.name}</FormErrorMessage>

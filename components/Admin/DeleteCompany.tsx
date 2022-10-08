@@ -1,12 +1,14 @@
 import { FC, useState } from "react"
 //Utility Imports
 import { useDisclosure, VStack } from "@chakra-ui/react"
-import {  Formik, Field, Form, FormikHelpers } from "formik"
+import {  Formik, Field, Form, FormikHelpers, FormikProps } from "formik"
 import * as Yup from 'yup';
 import axios from "axios";
 import { useToast } from "@chakra-ui/react";
 import { useRef } from "react";
 import ReactToPrint from "react-to-print";
+import Select from "react-select";
+import useSWR from "swr";
 
 //Layout Imports
 
@@ -31,7 +33,6 @@ import {
 } from '@chakra-ui/react'
 
 
-
 interface ModalProps {
     isOpen: boolean
     onClose: any
@@ -49,32 +50,42 @@ const SignupSchema = Yup.object().shape({
   });
 
 
-const CreateCompany:FC<ModalProps> = (props) => {
+const fetcher = (url:string) => fetch(url).then((res) => res.json())
+
+const DeleteCompany:FC<ModalProps> = (props) => {
+
+    const { data, error } = useSWR('/api/Common/GetCompanies', fetcher, {
+        onSuccess: (data) => {
+        }
+    })
+    
+      const companyOptions = data?.map(function (row:any) {
+        return { value: row.companyId, label: row.name };
+      });
+      
+      const customStyles = {
+        input: () => ({
+         padding: 8
+        })
+      }  
 
     const [name, setName] = useState<string>('')
     const [phone, setPhone] = useState<string>('')
 
     const toast = useToast()
 
-    const createCompany = async (values: {name: string, phone: string}, actions:any) => {
+    const deleteCompany = async (values: { company: string}, actions:any) => {
 
-      const name = values.name
-      const phone = values.phone
-      const data = {
-        name: name,
-        companyId: Math.floor(100000 + Math.random() * 900000)
-      }
+      const company = values.company
 
-
-      const res = await fetch('/api/Common/CreateCompany', {
+      const res = await fetch(`/api/Common/DeleteCompany?id=${company}`, {
         method: 'post',
-        body: JSON.stringify(data),
       }).then( (res) => {
   
         if(res.ok) {
             toast({
-                title: 'Company Added.',
-                description: `New Company Added Successfully.`,
+                title: 'Company Deleted.',
+                description: `Company Deleted Successfully.`,
                 status: 'success',
                 duration: 10000,
                 isClosable: true,
@@ -118,48 +129,53 @@ const CreateCompany:FC<ModalProps> = (props) => {
       }
 
       const initialValues = {
-        name: "",
-        phone: ""
+        company: "",
       }
     
     return (
-        <Modal size={{base: 'md', md: 'lg'}} isOpen={props.isOpen} onClose={props.onClose}>
+        <Modal size="lg" isOpen={props.isOpen} onClose={props.onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>New Company</ModalHeader>
+          <ModalHeader>Delete Company</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
           <Formik
             initialValues={initialValues}
             onSubmit={(values, actions) => {
-                values.name = capitalizeName(values.name);
                 alert(JSON.stringify(values, null, 2))
-               createCompany(values, actions)
+                deleteCompany(values, actions)
                 // on callback 
                 
         
       }}
     >
-      {(props) => (
+      {(props: FormikProps<any>) => (
         <Form>
-          <Field name='name' validate={validateName}>
+
+          <Field name='company'>
             {({ field, form }:any) => (
               <FormControl mb={2} isInvalid={form.errors.name && form.touched.name}>
-                <FormLabel color={'gray.500'} htmlFor="customer">Company Name</FormLabel>
-                <Input {...field} placeholder='AicoGas' h="56px" textTransform="capitalize" />
-                <FormErrorMessage>{form.errors.name}</FormErrorMessage>
+                <FormLabel color={'gray.500'} htmlFor="customer">Select Company</FormLabel>
+                <Select
+                  
+                  instanceId="branch-select"
+                  placeholder="Select Company"
+                  options={companyOptions}
+                  onChange={(option:any) => props.setFieldValue('company', option.value)}
+                 
+                />
               </FormControl>
             )}
           </Field>
 
           <Button
             my={4}
-            colorScheme='purple'
+            colorScheme='red'
             isLoading={props.isSubmitting}
             type='submit'
             width="full"
           >
-            Create
+           Delete
           </Button>
         </Form>
       )}
@@ -178,4 +194,4 @@ const CreateCompany:FC<ModalProps> = (props) => {
     )
 }
 
-export default CreateCompany
+export default DeleteCompany

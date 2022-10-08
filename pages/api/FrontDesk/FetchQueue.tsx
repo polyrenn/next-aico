@@ -1,7 +1,7 @@
 import { prisma } from '../../../lib/prisma';
 
 
-export default async (req, res) => {
+export default async (req:any, res:any) => {
     let data = req.body;
     const { id } = req.query
     const today = new Date().toISOString()
@@ -9,9 +9,13 @@ export default async (req, res) => {
     //Eventually Include Branch
       const result = await prisma.queue.findMany({
         where: {
+          branchId: parseInt(id),
+
             timestamp: {
                 gte:  new Date(`${formattedDate}`),
-            },
+            }
+
+           
             
         }
         

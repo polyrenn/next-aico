@@ -35,6 +35,7 @@ import { prisma } from "../../lib/prisma";
 import { GetServerSideProps } from "next";
 import useSWR from "swr";
 import { useDisclosure } from "@chakra-ui/react";
+import { withSessionSsr } from "../../lib/withSession";
 
 import AdminNav from "../../components/Navigation/Admin";
 import CategoryRadios from "../../components/FrontDesk/ChangeCategory";
@@ -65,6 +66,22 @@ interface PageProps<T> {
 }
 
 export default (props: PageProps<[]>) => {
+
+   //Navigation Helpers
+   const [collapsed, setCollapsed] = useState<boolean>(true);
+   const [toggled, setToggled] = useState<boolean>(false);
+ 
+   const handleCollapsedChange = (checked:boolean) => {
+     setCollapsed(checked);
+   };
+ 
+   const handleToggleSidebar = (value:boolean) => {
+     setToggled(value);
+   };
+ 
+   const handleToggleClose = (value:boolean) => {
+     setToggled(value);
+   };
   console.log(props.companies);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [ stockBranch, setStockBranch ] = useState<number>()
@@ -84,11 +101,11 @@ export default (props: PageProps<[]>) => {
     <Flex height="100vh" width="100vw">
       <Head title="Admin - Stock"></Head>
       <Box height="100%" className="navigation">
-        <AdminNav company={props.company}></AdminNav>
+        <AdminNav toggled={toggled}  handleToggleClose={handleToggleClose} company={props.company}></AdminNav>
       </Box>
 
       <Box overflowY="auto" w="100%" className="main-content">
-        <WithSubnavigation branch={props.branch}></WithSubnavigation>
+        <WithSubnavigation handleCollapsedChange={handleCollapsedChange} handleToggleSidebar={handleToggleSidebar} branch={props.branch}></WithSubnavigation>
         <Box p={6} className="branches">
           {props.companies.map((item: any) => (
             <Box key={item.id}>
@@ -113,7 +130,28 @@ export default (props: PageProps<[]>) => {
 };
 
 // Auth Maybe
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+export const getServerSideProps = withSessionSsr(
+  async function getServerSideProps({ req }) {
+
+    const user = req.session.user;
+    if (user?.role !== 'Admin') {
+      return {
+        redirect: {
+          destination: '/Login',
+          permanent: false,
+        },
+      }
+    }
+
+    if (!user) {
+      return {
+        redirect: {
+          destination: '/Login',
+          permanent: false,
+        },
+      }
+    }
+
   const branch = await prisma.branch.findFirst({
     select: {
       address: true,
@@ -149,4 +187,4 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   return {
     props: { branch, company, branches, companies },
   };
-};
+});

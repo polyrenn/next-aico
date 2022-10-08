@@ -1,7 +1,11 @@
 import { prisma } from "../../../lib/prisma";
 
-export default async (req, res) => {
+export default async (req:any, res:any) => {
+    const { branch } = req.query
     const result = await prisma.customer.findMany({
+        where: {
+          branchId: parseInt(branch)
+        },
         select: {
           name: true,
           branchId: true,

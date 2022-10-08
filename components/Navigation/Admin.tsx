@@ -10,7 +10,8 @@ import {
   SubMenu,
 } from "react-pro-sidebar";
 import "react-pro-sidebar/dist/css/styles.css";
-import { Link } from "@chakra-ui/react";
+import { Link, IconButton, } from "@chakra-ui/react";
+import { CloseIcon } from "@chakra-ui/icons";
 import { Icon, createIcon } from "@chakra-ui/react";
 import {
   TankIcon,
@@ -30,25 +31,40 @@ const AdminNav: FC<any> = (props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const { isOpen:isOpenBranch, onOpen:onOpenBranch, onClose:onCloseBranch } = useDisclosure();
- 
+
   
 
 
   return (
-    <ProSidebar breakPoint="md">
+    <ProSidebar toggled={props.toggled} collapsed={props.collapsed} breakPoint="md">
       <SidebarHeader
         style={{
           marginBottom: "24px",
           paddingBottom: "8px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
         }}
       >
         <Menu>
           <MenuItem>{props.company?.name}</MenuItem>
         </Menu>
+
+        <IconButton display={{base: 'block', md: 'none'}}
+              onClick={() => props.handleToggleClose(false)}
+              icon={
+                 <CloseIcon w={3} h={3} />
+              }
+              variant={'ghost'}
+              aria-label={'Toggle Navigation'}
+            />
+        
       </SidebarHeader>
       <SidebarContent>
         <Menu>
-          <MenuItem icon={<TimeIcon></TimeIcon>}>Sales</MenuItem>
+          <MenuItem icon={<TimeIcon></TimeIcon>}>
+          <Link href="/Admin/Sales">Sales</Link>
+          </MenuItem>
 
           <SubMenu title="Stock" icon={<StockIcon />}>
           <MenuItem style={{padding: "8px"}}>
@@ -88,6 +104,7 @@ const AdminNav: FC<any> = (props) => {
           paddingTop: "8px",
         }}
       >
+        { /*
         <Menu>
           <SubMenu style={{ marginBottom: "8px" }} title="Company">
             <MenuItem icon={<AddIcon />}>
@@ -105,6 +122,7 @@ const AdminNav: FC<any> = (props) => {
             </MenuItem>
           </SubMenu>
         </Menu>
+      */}
       </SidebarFooter>
       <CreateCompany isOpen={isOpen} onClose={onClose}></CreateCompany>
       <CreateBranch isOpen={isOpenBranch} onClose={onCloseBranch}></CreateBranch>

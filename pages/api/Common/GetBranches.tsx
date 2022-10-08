@@ -2,10 +2,11 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../../lib/prisma";
 
 export default async (req:NextApiRequest, res:NextApiResponse) => {
-      const result = await prisma.company.findMany({
+      const result = await prisma.branch.findMany({
         select: {
             name: true,
-            companyId: true,
+            address: true,
+            branchId: true,
           },
         
       });

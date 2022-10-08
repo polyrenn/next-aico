@@ -77,7 +77,7 @@ const CompanyComponent: FC<any> = (props) => {
           {props.comapany?.name}
         </Heading>
         <Text color="gray.500">Select Branch {branch}</Text>
-        <HStack my={2}>
+        <Flex alignContent="flex-start" flexFlow={{ base: 'row wrap',}} my={2}>
         {options.map((value, index) => {
         const radio = getRadioProps({ value })
         return (
@@ -87,7 +87,7 @@ const CompanyComponent: FC<any> = (props) => {
          
         )
       })}
-      </HStack>
+      </Flex>
         
       </Box>
     );

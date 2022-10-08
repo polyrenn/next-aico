@@ -34,6 +34,7 @@ import {
 
 // Icons
 import { PhoneIcon, AddIcon, WarningIcon } from "@chakra-ui/icons";
+import { EditIcon } from "../../components/Icons/Icons";
 import SaleForm from "../../components/FrontDesk/Crb/SaleForm";
 
 //React Imports
@@ -47,10 +48,15 @@ import CashPointForm from "../../components/FrontDesk/CashPoint/CashPointForm";
 import useSWR from "swr";
 import Select from "react-select";
 import { withSessionSsr } from "../../lib/withSession";
+import { useDisclosure } from "@chakra-ui/react";
 
 
-import summary from "../../data/data";
 import AdminNav from "../../components/Navigation/Admin";
+import EditBranch from "../../components/Admin/EditBranch";
+import CreateCompany from "../../components/Admin/CreateCompany";
+import CreateBranch from "../../components/Admin/CreateBranch";
+import DeleteCompany from "../../components/Admin/DeleteCompany";
+import DeleteBranch from "../../components/Admin/DeleteBranch";
 
 export const BranchContext = createContext<
   { address: string; branchId: number }[]
@@ -65,6 +71,7 @@ interface PageProps<T> {
   branches: {
     address: string;
     branchId: number;
+    name: string;
   }[];
 
   company: {
@@ -97,8 +104,32 @@ interface PageProps<T> {
   };
 }
 export default (props: PageProps<[]>) => {
+
+    //Navigation Helpers
+    const [collapsed, setCollapsed] = useState<boolean>(true);
+    const [toggled, setToggled] = useState<boolean>(false);
+  
+    const handleCollapsedChange = (checked:boolean) => {
+      setCollapsed(checked);
+    };
+  
+    const handleToggleSidebar = (value:boolean) => {
+      setToggled(value);
+    };
+  
+    const handleToggleClose = (value:boolean) => {
+      setToggled(value);
+    };
+
+  // Modal Helpers For Quick Actions
+  const { isOpen:isopenEditBranch, onClose:closeEditBranch, onOpen:onOpenEditBranch } = useDisclosure()
+  const { isOpen:isopenNewBranch, onClose:closeNewBranch, onOpen:onOpenNewBranch } = useDisclosure()
+  const { isOpen:isopenDeleteBranch, onClose:closeDeleteBranch, onOpen:onOpenDeleteBranch } = useDisclosure()
+  const { isOpen:isopenNewCompany, onClose:closeNewCompany, onOpen:onOpenNewCompany } = useDisclosure()
+  const { isOpen:isopenDeleteCompany, onClose:closeDeleteCompany, onOpen:onOpenDeleteCompany } = useDisclosure()
+
   const options = props.branches.map(function (row) {
-    return { value: row.address.toLowerCase(), label: row.address };
+    return { value: row.name.toLowerCase(), label: row.name };
   });
 
   const companyOptions = props.companies.map(function (row) {
@@ -106,97 +137,22 @@ export default (props: PageProps<[]>) => {
   });
 
   const companyCount = props.companies.length;
+  const branchCount = props.branches.length;
   console.log(props.user)
   return (
     <Flex height="100vh" width="100vw">
-      <Head title="Admin - Stock"></Head>
+      <Head title="Admin"></Head>
       <Box height="100%" className="navigation">
-        <AdminNav company={props.company}></AdminNav>
+        <AdminNav toggled={toggled}  handleToggleClose={handleToggleClose} company={props.company}></AdminNav>
       </Box>
 
       <Box overflowY="auto" w="100%" className="main-content">
-        <WithSubnavigation branch={props.branch}></WithSubnavigation>
-        <Box p={6} className="company-block">
-          <Flex justify="space-between">
-            <HStack>
-              <Heading size="sm">Company</Heading>
-              <Center
-                rounded="sm"
-                w="24px"
-                h="24px"
-                bg="green.200"
-                color="green.500"
-              >
-                {companyCount}
-              </Center>
-              <Button leftIcon={<AddIcon/>}>New</Button>
-            </HStack>
+        <WithSubnavigation handleCollapsedChange={handleCollapsedChange} handleToggleSidebar={handleToggleSidebar} branch={props.branch}></WithSubnavigation>
 
-            <HStack>
-              <Box width={48}>
-                <Select
-                  instanceId="branch-select"
-                  placeholder="Select Branch"
-                  options={companyOptions}
-                />
-              </Box>
-              <Button colorScheme="green">Add Branch</Button>
-            </HStack>
-          </Flex>
-        {/*
-          <Box>
-            {props.companies.map((item) =>
-              <Box>
-                 <Select
-                  instanceId={item.id}
-                  placeholder="Select Branch"
-                  options={options}
-                />
-                <Heading size="sm">{item.name}</Heading>
-                {item.branches.map((branch) =>
-                  <Text>{branch.address}</Text>
-                )}
-               </Box> 
-            )}
-          </Box>
-
-                */}
-
-
-<Flex justify="space-between">
-            <HStack>
-              <Heading size="sm">Staff</Heading>
-              <Center
-                rounded="sm"
-                w="24px"
-                h="24px"
-                bg="green.200"
-                color="green.500"
-              >
-                {companyCount}
-              </Center>
-              <Button leftIcon={<AddIcon/>}>New</Button>
-            </HStack>
-
-            <HStack>
-              <Box width={48}>
-                <Select
-                  instanceId="branch-select"
-                  placeholder="Select Branch"
-                  options={companyOptions}
-                />
-              </Box>
-              <Button colorScheme="green">Add Staff</Button>
-            </HStack>
-          </Flex>     
-
-        </Box>
-
-        <Flex flexFlow="row wrap" className="sales-summary">
-          
+        <Heading mt={6} px={6} mb={2} color="gray.500" size="lg">Statistics</Heading> 
+        <Flex px={6} flexFlow="row wrap" className="sales-summary">
         {props.branchAggregations.map((item:any) => 
-            <Flex ml={2} mb={4} flexFlow="column" width="30%" className="item" borderWidth="1px" rounded="sm">
-
+            <Flex key={item.name} mr={2} mb={4} flexFlow="column" w={{base: "100%", md: "30%"}} className="item" borderWidth="1px" rounded="sm">
             <Stack p={4} borderBottomWidth="1px" width="full" justifyContent="space-between" direction="row" className="heading">
                 <Stack spacing={0} direction="column">
                  <Heading size="sm">{item.company_name}</Heading>
@@ -211,7 +167,7 @@ export default (props: PageProps<[]>) => {
                    py={1}
                    px={2}
                    rounded={'sm'}
-                  >Tank A</Text>
+                  >{item.desig}</Text>
                 </HStack>
                
             </Stack>
@@ -252,8 +208,79 @@ export default (props: PageProps<[]>) => {
 
         </Flex>
 
+        <Box p={6} className="actions">
+
+        <Heading mt={6} mb={2} color="gray.500" size="lg">Quick Actions</Heading> 
+  <Flex flexFlow={{ base: 'row wrap',}} mb={4} justify="space-between">
+    <HStack mb={{base: 2, md: 0}}>
+      <Heading size="sm">Company</Heading>
+      <Center
+        rounded="sm"
+        w="24px"
+        h="24px"
+        bg="green.200"
+        color="green.500"
+      >
+        {companyCount}
+      </Center>
      
-    </Box>
+    </HStack>
+
+    <HStack>
+      <Button onClick={onOpenNewCompany} leftIcon={<AddIcon/>}>New</Button>
+      <Button onClick={onOpenDeleteCompany} colorScheme="red">Delete Company</Button>
+    </HStack>
+  </Flex>
+{/*
+  <Box>
+    {props.companies.map((item) =>
+      <Box>
+         <Select
+          instanceId={item.id}
+          placeholder="Select Branch"
+          options={options}
+        />
+        <Heading size="sm">{item.name}</Heading>
+        {item.branches.map((branch) =>
+          <Text>{branch.address}</Text>
+        )}
+       </Box> 
+    )}
+  </Box>
+
+        */}
+
+
+<Flex flexFlow={{ base: 'row wrap',}} justify="space-between">
+    <HStack mb={{base: 2, md: 0}}>
+      <Heading size="sm">Branch</Heading>
+      <Center
+        rounded="sm"
+        w="24px"
+        h="24px"
+        bg="green.200"
+        color="green.500"
+      >
+        {branchCount}
+      </Center>
+    </HStack>
+
+    <HStack>
+      
+      <Button onClick={onOpenNewBranch} leftIcon={<AddIcon/>}>New</Button>
+      <Button onClick={onOpenEditBranch} leftIcon={<EditIcon/>}>Edit</Button>
+      <Button onClick={onOpenDeleteBranch} colorScheme="red">Delete</Button>
+    </HStack>
+  </Flex>     
+
+</Box>  
+
+     <EditBranch isOpen={isopenEditBranch} onClose={closeEditBranch}></EditBranch>
+     <CreateBranch isOpen={isopenNewBranch} onClose={closeNewBranch}></CreateBranch>
+     <DeleteBranch isOpen={isopenDeleteBranch} onClose={closeDeleteBranch}></DeleteBranch>
+     <CreateCompany isOpen={isopenNewCompany} onClose={closeNewCompany}></CreateCompany>
+     <DeleteCompany isOpen={isopenDeleteCompany} onClose={closeDeleteCompany}></DeleteCompany>
+    </Box> {/*  Main Content */}
     </Flex>
   );
 };
@@ -312,9 +339,9 @@ export const getServerSideProps = withSessionSsr(
 const today = new Date().toISOString()
 const formattedDate = today.split('T')[0]
 
-const branchAggregations = await prisma.$queryRaw
-`SELECT b.id,
-b.name, 
+const branchAggregations = await prisma.$queryRaw`SELECT b.id,
+b.name,
+(select ts.designation as desig from tanks ts where b.current_tank = ts.tank_id),
 (select cast(count(*) as integer) as sales_count from sales s where b.branch_id = s.branch_id
      and timestamp > ${formattedDate}::timestamp
 ),
@@ -341,6 +368,7 @@ ORDER BY b.id asc
       select: {
         address: true,
         branchId: true,
+        name: true
       },
     });
   

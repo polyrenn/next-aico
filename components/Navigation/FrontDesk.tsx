@@ -24,7 +24,9 @@ import {
 import { FC } from 'react';
 
 interface NavProps {
-  branch: { address: string, branchId: number }
+  branch: { address: string, branchId: number };
+  handleToggleSidebar (toggled: boolean): any;
+  handleCollapsedChange (name: boolean): any;
 }
   
   export default function WithSubnavigation(props:NavProps) {
@@ -52,7 +54,9 @@ interface NavProps {
             ml={{ base: -2 }}
             display={{ base: 'flex', md: 'none' }}>
             <IconButton
-              onClick={onToggle}
+              onClick={() => {props.handleToggleSidebar(true)
+                props.handleCollapsedChange(false)
+              }}
               icon={
                 isOpen ? <CloseIcon w={3} h={3} /> : <HamburgerIcon w={5} h={5} />
               }
@@ -72,8 +76,8 @@ interface NavProps {
               <DesktopNav />
             </Flex>
           </Flex>
-          <Text px={4}>{props.branch.address}</Text>  
-          <Text px={4}>{date1.toDateString()}</Text>
+          <Text display={{base: "none", md: "block"}} px={4}>{props.branch.address}</Text>  
+          <Text display={{base: "none", md: "block"}} px={4}>{date1.toDateString()}</Text>
           <Stack
             flex={{ base: 1, md: 0 }}
             justify={'flex-end'}

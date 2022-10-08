@@ -98,9 +98,9 @@ const SaleForm:FC<SaleFormProps> = (props) => {
 
     const availableKgs = props.availableKgs
 
-    const { branchId: branch } = useContext(BranchContext)  
+    const { branchId: branch } = useContext(BranchContext) as any
     const [returned, setReturned] = useState([]);
-    const { data, error } = useSWR('/api/Customer/GetCustomers', fetcher, {
+    const { data, error } = useSWR(`/api/Customer/GetCustomers?branch=${branch}`, fetcher, {
       onSuccess: (data) => {
           setReturned(data)
       }
@@ -110,7 +110,7 @@ const SaleForm:FC<SaleFormProps> = (props) => {
       console.log(data)
     }
 
-     const { data: crbData, error: crbError } = useSWR('/api/dummycrb', fetcher, {
+     const { data: crbData, error: crbError } = useSWR(`/api/dummycrb?id=${branch}`, fetcher, {
        onSuccess: (data) => {
 
        }
@@ -349,10 +349,29 @@ const createSummary = (values:any, actions:any ) => { // Type Values Actions:For
   }
   setSummary(result)
   console.log(summary)
-  actions.setSubmitting(false)
+  actions(false)
 }
 
-const handleSaleCompletion = async (values:any, {...actions}:FormikProps<any>) => {
+useEffect(() => {
+  const keyDownHandler = (event:any) => {
+    console.log('User pressed: ', event.key);
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+
+      // 👇️ your logic here
+      createSummary(formRef.current?.values, formRef.current?.setSubmitting )
+    }
+  };
+
+  document.addEventListener('keydown', keyDownHandler);
+
+  return () => {
+    document.removeEventListener('keydown', keyDownHandler);
+  };
+}, []);
+
+const handleSaleCompletion = async (values:any, actions:any) => {
   const totalKg = computeTotal(summary)
   const saleAmount = computeTotal(summary) * props.pricePerKg
   const category = props.category
@@ -445,6 +464,14 @@ const handleSaleCompletion = async (values:any, {...actions}:FormikProps<any>) =
   setSummary([])
 }
 
+const computeTotalAmount = (arr:any) => {
+  let res = 0;
+  for(let i = 0; i < arr.length; i++){
+     res += arr[i]?.amount;
+  };
+  return res;
+};
+
 const pricePerKg = props.pricePerKg
 
  
@@ -460,7 +487,8 @@ const pricePerKg = props.pricePerKg
         onSubmit={(values, actions) => {
           alert(JSON.stringify(values, null, 2));
       
-          createSummary(values, actions)
+          //createSummary(values, actions)
+          handleSaleCompletion(values, actions)
         }}
       >
         {(props: FormikProps<any>) => (
@@ -612,6 +640,17 @@ const pricePerKg = props.pricePerKg
                       
                     </Tr>
                   ))}
+                  <Tr>
+                    <Td>Total</Td>
+                    <Td></Td>
+                    <Td></Td>
+                    <Td colSpan={2}>
+                      <Box p={4} bg="gray.50">
+                         {`${computeTotalAmount(props.values.friends)}`}
+                        
+                      </Box>
+                    </Td>
+                  </Tr>
                     </Tbody>
                   </Table>
                  
@@ -701,6 +740,7 @@ const pricePerKg = props.pricePerKg
 
                       
                     </Tr>
+
                   ))}
                     </Tbody>
                   </Table>
@@ -710,7 +750,7 @@ const pricePerKg = props.pricePerKg
             </FieldArray>
             <Flex mt={4} justifyContent="space-between" className="action-buttons">
               <HStack>
-              <Button type="submit">
+              <Button onClick={() => createSummary(props.values, props.setSubmitting)}>
               Check
             </Button>
             <Button color="gray.100" bg="gray.900" >
@@ -719,10 +759,17 @@ const pricePerKg = props.pricePerKg
               </HStack>
 
               <HStack>
-                <Button isDisabled={summary.length == 0 ? true : false} isLoading={props.isSubmitting}
-                 onClick={() => handleSaleCompletion(props.values, {...props})} colorScheme="purple">
+                <ReactToPrint
+              trigger={() =>
+                <Button type="submit" isDisabled={summary.length == 0 ? true : false} isLoading={props.isSubmitting}
+                colorScheme="purple">
                   Complete
                 </Button>
+                }
+              content={() => componentRef}
+             
+              onAfterPrint={() => {alert("Hey")}}
+          />
                   
               </HStack>
                
@@ -740,6 +787,7 @@ const pricePerKg = props.pricePerKg
     <SummaryCard pricePerKg={props.pricePerKg}
      customer={customer}
      summary={summary}
+     category={props.category}
      cancelSummary={setSummary}
      ref={(el:any) => (componentRef = el)}></SummaryCard>
       

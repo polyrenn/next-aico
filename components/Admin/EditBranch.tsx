@@ -1,12 +1,14 @@
 import { FC, useState } from "react"
 //Utility Imports
 import { useDisclosure, VStack } from "@chakra-ui/react"
-import {  Formik, Field, Form, FormikHelpers } from "formik"
+import {  Formik, Field, Form, FormikHelpers, FormikProps } from "formik"
 import * as Yup from 'yup';
 import axios from "axios";
 import { useToast } from "@chakra-ui/react";
 import { useRef } from "react";
 import ReactToPrint from "react-to-print";
+import Select from "react-select";
+import useSWR from "swr";
 
 //Layout Imports
 
@@ -31,7 +33,6 @@ import {
 } from '@chakra-ui/react'
 
 
-
 interface ModalProps {
     isOpen: boolean
     onClose: any
@@ -49,32 +50,50 @@ const SignupSchema = Yup.object().shape({
   });
 
 
-const CreateCompany:FC<ModalProps> = (props) => {
+const fetcher = (url:string) => fetch(url).then((res) => res.json())
+
+const EditBranch:FC<ModalProps> = (props) => {
+
+    const { data, error } = useSWR('/api/Common/GetBranches', fetcher, {
+        onSuccess: (data) => {
+        }
+    })
+    
+      const companyOptions = data?.map(function (row:any) {
+        return { value: row.branchId, label: row.name };
+      });
+      
+      const customStyles = {
+        input: () => ({
+         padding: 8
+        })
+      }  
 
     const [name, setName] = useState<string>('')
     const [phone, setPhone] = useState<string>('')
 
     const toast = useToast()
 
-    const createCompany = async (values: {name: string, phone: string}, actions:any) => {
+    const editBranch = async (values: {name: string, address: string, branch: string}, actions:any) => {
 
       const name = values.name
-      const phone = values.phone
+      const branch = values.branch
+      const address = values.address
       const data = {
         name: name,
-        companyId: Math.floor(100000 + Math.random() * 900000)
+        address: address
       }
 
 
-      const res = await fetch('/api/Common/CreateCompany', {
+      const res = await fetch(`/api/Common/EditBranch?id=${branch}`, {
         method: 'post',
         body: JSON.stringify(data),
       }).then( (res) => {
   
         if(res.ok) {
             toast({
-                title: 'Company Added.',
-                description: `New Company Added Successfully.`,
+                title: 'Branch Edited.',
+                description: `Branch Edited Successfully.`,
                 status: 'success',
                 duration: 10000,
                 isClosable: true,
@@ -119,14 +138,15 @@ const CreateCompany:FC<ModalProps> = (props) => {
 
       const initialValues = {
         name: "",
-        phone: ""
+        branch: "",
+        address: ""
       }
     
     return (
-        <Modal size={{base: 'md', md: 'lg'}} isOpen={props.isOpen} onClose={props.onClose}>
+        <Modal size="lg" isOpen={props.isOpen} onClose={props.onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>New Company</ModalHeader>
+          <ModalHeader>Edit Branch</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
           <Formik
@@ -134,19 +154,46 @@ const CreateCompany:FC<ModalProps> = (props) => {
             onSubmit={(values, actions) => {
                 values.name = capitalizeName(values.name);
                 alert(JSON.stringify(values, null, 2))
-               createCompany(values, actions)
+                editBranch(values, actions)
                 // on callback 
                 
         
       }}
     >
-      {(props) => (
+      {(props: FormikProps<any>) => (
         <Form>
-          <Field name='name' validate={validateName}>
+
+          <Field name='branch'>
             {({ field, form }:any) => (
               <FormControl mb={2} isInvalid={form.errors.name && form.touched.name}>
-                <FormLabel color={'gray.500'} htmlFor="customer">Company Name</FormLabel>
-                <Input {...field} placeholder='AicoGas' h="56px" textTransform="capitalize" />
+                <FormLabel color={'gray.500'} htmlFor="customer">Select Branch</FormLabel>
+                <Select
+                  
+                  instanceId="branch-select"
+                  placeholder="Select Branch"
+                  options={companyOptions}
+                  onChange={(option:any) => props.setFieldValue('branch', option.value)}
+                 
+                />
+              </FormControl>
+            )}
+          </Field>
+
+          <Field name='name'>
+            {({ field, form }:any) => (
+              <FormControl mb={2} isInvalid={form.errors.name && form.touched.name}>
+                <FormLabel color={'gray.500'} htmlFor="customer">Branch Name</FormLabel>
+                <Input {...field} placeholder='Branch Name' textTransform="capitalize" />
+                <FormErrorMessage>{form.errors.name}</FormErrorMessage>
+              </FormControl>
+            )}
+          </Field>
+
+          <Field name='address'>
+            {({ field, form }:any) => (
+              <FormControl mb={2} isInvalid={form.errors.name && form.touched.name}>
+                <FormLabel color={'gray.500'} htmlFor="address">Address</FormLabel>
+                <Input {...field} placeholder='Branch Address' textTransform="capitalize" />
                 <FormErrorMessage>{form.errors.name}</FormErrorMessage>
               </FormControl>
             )}
@@ -159,7 +206,7 @@ const CreateCompany:FC<ModalProps> = (props) => {
             type='submit'
             width="full"
           >
-            Create
+           Edit
           </Button>
         </Form>
       )}
@@ -178,4 +225,4 @@ const CreateCompany:FC<ModalProps> = (props) => {
     )
 }
 
-export default CreateCompany
+export default EditBranch

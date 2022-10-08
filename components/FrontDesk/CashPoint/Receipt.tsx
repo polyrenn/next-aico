@@ -45,6 +45,7 @@ import CashPointTable from "./CashPointTable";
       let customer
 
       const [destructuredSum] = summary
+      console.log(destructuredSum)
       const sidebar = (
         
         branchList.map((item) =>
@@ -71,15 +72,15 @@ import CashPointTable from "./CashPointTable";
             <Heading size="md">AicoGas</Heading>
             {sidebar}
           </Stack>
-              <Text fontSize={'sm'}
-              fontWeight={500}
-              bg={useColorModeValue('cyan.50', 'cyan.900')}
-              p={2}
-              px={4}
-              my={2}
-              width="fit-content"
-              color={'cyan.900'}
-              rounded={'md'}> Receipt No #</Text>
+            <Text fontSize={'lg'}
+            fontWeight={700}
+            borderWidth={'1px'}
+            p={2}
+            px={4}
+            my={2}
+            width="fit-content"
+            color={'gray.900'}
+            rounded={'md'}>Receipt No #{ destructuredSum?.crbNumber}</Text>
           <VStack w="100%">
           </VStack>
           <Box className="sales-info">

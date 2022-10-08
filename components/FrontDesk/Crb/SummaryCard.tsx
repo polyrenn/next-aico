@@ -29,6 +29,7 @@ interface SummaryProps {
   customer: string
   pricePerKg: number
   cancelSummary: any
+  category: String | undefined
 }
 
 import { useColorModeValue } from "@chakra-ui/react";
@@ -81,7 +82,7 @@ const CrbNumber2 = () => {
 
   const [number, setNumber] = useState<number>(0)
 
-  const fetcher = (...args) => fetch(...args).then((res) => res.json())
+  const fetcher = (url:string) => fetch(url).then((res) => res.json())
   const { data, error } = useSWR('/api/dummycrb', fetcher, {
     onSuccess: (data) => {
       setNumber(data.id)
@@ -118,15 +119,22 @@ const CrbNumber2 = () => {
         top: 0,
         alignSelf: 'flex-start'
       }} className="summary-card" ref={ref} p={4} bg="white" w="fit-content" rounded="md">
-        <Stack spacing={1}>
+        <Stack justifyContent="space-between" direction="row" spacing={1}>
+          <Box>
           <Heading size="md">Summary</Heading>
           <Text color={"grey.500"}>Sales Summary</Text>
+          </Box>
+
+          <Box>
+          <Heading size="md">{props.category}</Heading>
+          </Box>
+
         </Stack>
             <CrbNumber></CrbNumber>
         <VStack w="100%">
         </VStack>
         <Box>
-            <Heading size="sm">Customer: {props.customer}</Heading>
+            <Heading size="xs">Customer: {props.customer}</Heading>
           </Box>
         <Divider my={4} orientation="horizontal" />
         <CrbTable pricePerKg={props.pricePerKg} summary={summary}></CrbTable>
