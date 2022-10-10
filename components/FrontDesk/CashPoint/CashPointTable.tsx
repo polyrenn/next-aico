@@ -24,6 +24,9 @@ interface TableProps {
 
 }  
 
+//Styles
+import styles from "./CrbTable.module.css"
+
 const CashPointTable:FC<TableProps> = (props) => {
     const computeTotal = (arr:any) => {
     let res = 0;
@@ -42,7 +45,7 @@ const CashPointTable:FC<TableProps> = (props) => {
 };
     return (
         <TableContainer rounded={8} border='2px solid' borderColor='gray.500'>
-  <Table variant='simple'>
+  <Table className={styles.receipt} variant='simple'>
     <TableCaption>Proceed to Cashpoint</TableCaption>
     <Thead>
     <Tr>

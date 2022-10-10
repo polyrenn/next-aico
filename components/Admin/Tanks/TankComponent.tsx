@@ -44,14 +44,16 @@ const TankComponent: FC<any> = (props) => {
          
     }});
 
+    console.log(data)
+
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [ isSwitching, setIsSwitching ] = useState<boolean>(false)
     const [tank, setTank] = useState<string>("");
   
-    const switchTank =  async (tankName: string) => {
+    const switchTank =  async (tankName: string, oldTank:string, newName: string) => {
       setTank(tankName);
       setIsSwitching(true)
-      const res = await fetch(`/api/Tanks/SwitchTank?branch=${props.branch}&current=${tankName}`, {
+      const res = await fetch(`/api/Tanks/SwitchTank?branch=${props.branch}&current=${tankName}&old=${oldTank}&newname=${newName}`, {
         method: 'post',
       }).then( (res) => {
   
@@ -115,7 +117,13 @@ const TankComponent: FC<any> = (props) => {
                      rounded={'sm'}
                     >{data ? data[0]?.balance_stock : null}</Text>
                   </Box>
-                  <Button isLoading={isSwitching} rounded="full" colorScheme="blue" onClick={() => switchTank(data ? data[0]?.other_tank : null)}>Switch</Button>
+                  <Button isLoading={isSwitching} rounded="full" colorScheme="blue" onClick={() => 
+                    switchTank(data ? data[0]?.other_tank : null,
+                    data ? data[0]?.desig : null,
+                    data ? data[0]?.other_desig : null
+                    )}>
+                    Switch to {data ? data[0]?.other_desig : null}
+                  </Button>
                 </HStack>
         <Button onClick={onOpen} leftIcon={<AddIcon />} w="80px" h="80px">
           Add

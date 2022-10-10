@@ -18,7 +18,7 @@ export default async (req: any, res: any) => {
     const formattedDate = date?.split('T')[0] 
     console.log(formattedDate)
  
-let openingSales:Sales[] = await prisma.$queryRaw`SELECT DISTINCT b.name,
+let openingSales:Sales[] = await prisma.$queryRaw`SELECT b.name,
 (select ts.sale_number from sales ts where b.branch_id = ts.branch_id
      and ts.timestamp::date = ${formattedDate}::date
      order by id asc limit 1   
@@ -44,12 +44,13 @@ let openingSales:Sales[] = await prisma.$queryRaw`SELECT DISTINCT b.name,
      order by id asc limit 1   
 )
 From branches b
+order by b.id asc
 
 
 
 `; // Refactor to Swr  
 
-let closingSales:Sales[] = await prisma.$queryRaw`SELECT DISTINCT b.name,
+let closingSales:Sales[] = await prisma.$queryRaw`SELECT b.name,
 (select ts.sale_number from sales ts where b.branch_id = ts.branch_id
      and ts.timestamp::date = ${formattedDate}::date
      order by id desc limit 1   
@@ -75,6 +76,7 @@ let closingSales:Sales[] = await prisma.$queryRaw`SELECT DISTINCT b.name,
      order by id desc limit 1   
 )
 From branches b
+order by b.id asc
 
 `; // Refactor to Swr  
 

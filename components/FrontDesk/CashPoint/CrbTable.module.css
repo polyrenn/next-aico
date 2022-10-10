@@ -1,0 +1,10 @@
+.receipt tr th {
+    border-color: #333333;
+    border-bottom: 1px solid;
+}
+
+.receipt tr td {
+    border-color: #333333;
+    border-bottom: 1px solid;
+    font-weight: 600;
+}

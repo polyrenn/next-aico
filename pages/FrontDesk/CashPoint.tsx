@@ -3,7 +3,7 @@ import Head from "../../components/head";
 import Nav from "../../components/nav";
 import WithSubnavigation from "../../components/Navigation/FrontDesk";
 //Layout Imports
-import { Box, HStack, Center, Heading } from "@chakra-ui/react";
+import { Box, HStack, Center, Heading, useDisclosure } from "@chakra-ui/react";
 // Element Imports
 import { Text, Button, Spinner } from "@chakra-ui/react";
 import { Radio, RadioGroup } from "@chakra-ui/react";
@@ -37,6 +37,7 @@ import useSWR from "swr";
 import { withSessionSsr } from "../../lib/withSession";
 
 import summary from '../../data/data'
+import Report from "../../components/FrontDesk/CashPoint/Report";
 
 const fetcher = (url:string) => fetch(url).then((res) => res.json())
 interface BranchDetails {
@@ -139,7 +140,6 @@ export default (props: any) => {
   }});
   
     if(!data) return <Center><Spinner></Spinner></Center> // Or If returned equals empty array
-    
   
   
     return (
@@ -165,6 +165,8 @@ export default (props: any) => {
     
   
   };
+//Report Helpers
+const {isOpen, onClose, onOpen} = useDisclosure()  
 
   return (
     <div>
@@ -178,7 +180,7 @@ export default (props: any) => {
 
         <Box className="Utils">
           <Center>
-            <Button colorScheme="gray">Report</Button>
+            <Button onClick={onOpen} colorScheme="gray">Report</Button>
           </Center>
         </Box>
         <Box className="queue">
@@ -192,6 +194,8 @@ export default (props: any) => {
         </BranchContext.Provider>
           
         </Box>
+
+        <Report summary isOpen={isOpen} onClose={onClose}></Report>
       </Box>
       <style jsx global>{`
        .css-1zts0j {

@@ -545,6 +545,9 @@ const formattedClosingSales = closingSales.map(item => ({
         branchId: true,
         name: true
       },
+      orderBy: {
+        id: 'asc'
+      }
     });
   
 

@@ -9,6 +9,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 b.name,
 b.current_tank,
 (select cast(count(*) as integer) as sales_count from sales s where b.branch_id = s.branch_id
+     and s.category != 'Switch'
      and timestamp > ${formattedDate}::timestamp
 ),
 (select ts.designation as desig from tanks ts where b.current_tank = ts.tank_id),

@@ -32,7 +32,6 @@ import {
 } from '@chakra-ui/react'
 
 import { BranchContext } from "../../../pages/FrontDesk/Crb";
-import DetailTable from "./DetailTable";
 
 
 interface ModalProps {
@@ -41,27 +40,21 @@ interface ModalProps {
     summary:any
 }
 
-const LogReceipt:FC<ModalProps> = (props) => {
+const Report:FC<ModalProps> = (props) => {
+
+    const today = new Date().toDateString();
   
     return (
-        <Modal size="lg" isOpen={props.isOpen} onClose={props.onClose}>
+        <Modal size="xl" isOpen={props.isOpen} onClose={props.onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Receipt</ModalHeader>
+          <ModalHeader>Report</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-          <Box rounded={8} mb={2} bg="green.100" color="green.800" p={4}>
-            <Stack direction="column">
-                
-                <Text> Customer ID: {props.summary[0]?.customer_id}</Text>
-                <Text> Name: {props.summary[0]?.name}</Text>
-                <Text> Phone: {props.summary[0]?.phone}</Text>
-
-            </Stack>
-            
+          <Box borderWidth="1px" rounded={8} mb={2} p={4}>
+            {today}
             </Box> 
 
-            <DetailTable summary={props.summary}></DetailTable>
           </ModalBody>
 
           <ModalFooter>
@@ -74,4 +67,4 @@ const LogReceipt:FC<ModalProps> = (props) => {
     )
 }
 
-export default LogReceipt
+export default Report

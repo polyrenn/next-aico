@@ -177,6 +177,7 @@ export default (props: PageProps<[]>) => {
   console.log(props.user)
   const today = new Date()
   const [ currentDate, setCurrentDate ] = useState(today)
+  const [currentSale, setCurrentSale] = useState([]) as any
 
   const { data, error } = useSWR(`/api/Sales/SalesLog?date=${new Date(currentDate).toISOString()}&branch=${query.branch}`, fetcher, {
     onSuccess: (data) => {
@@ -185,6 +186,11 @@ export default (props: PageProps<[]>) => {
 
   const handleChange = (event:any) => {
     setCurrentDate(event.target.value)
+  }
+
+  const handleReceiptPopup = (item:any) => {
+    onOpen()
+    setCurrentSale([item])
   }
  
   return (
@@ -251,45 +257,58 @@ export default (props: PageProps<[]>) => {
           </Tr>
         </Thead>
         <Tbody>
-            {data?.sales.map((item:any) => 
-
-                <Tr backgroundColor={`${colorCode(item.category)}`}>
-                    <Td>{item.sale_number}</Td>
-                    <Td>
-                        {!item.customer && !item.phone ? 
-                        
-                        <Stack fontWeight="600">
-                                <ChakraLink onClick={onOpen}>
-                                    <Box>
-                                        <Text>{item.customer_id}</Text>
-                                    </Box>
-                                </ChakraLink>
-                                <LogReceipt summary={[item]} isOpen={isOpen} onClose={onClose}></LogReceipt>
-                            </Stack> : 
-                            <Stack fontWeight="600">
-                                <ChakraLink onClick={onOpen}>
-                                    <Box>
-                                        <Text>{item.name}</Text>
-                                        <Text>{item.phone}</Text>
-                                    </Box>
-                                </ChakraLink>
-                                <LogReceipt summary={[item]} isOpen={isOpen} onClose={onClose}></LogReceipt>
-                            </Stack>
-                         }
-                    </Td>
-                    <Td>
-                        {item.description.map((desc:any) =>
-                            <Text mb={2}>{desc.quantity} X {desc.kg}Kg {item.category}</Text>
-                        )}
-                    </Td>
-                    <Td>{item.total_kg}</Td>
-                    <Td>{item.amount} NGN</Td>
-                    <Td>{item.payment_method.toUpperCase()}</Td>
-                    <Td>{item.current_tank}</Td>
-                    <Td>{item.balance}</Td>
-                    <Td>{item.timestampTime}</Td>
-                </Tr>
-                
+            {data?.sales.map((item:any) =>
+               item.category != 'Switch' ? 
+               
+               <Tr backgroundColor={`${colorCode(item.category)}`}>
+               <Td>{item.sale_number}</Td>
+               <Td>
+                   {!item.customer && !item.phone ? 
+                   
+                   <Stack fontWeight="600">
+                           <ChakraLink onClick={() => handleReceiptPopup(item)}>
+                               <Box>
+                                   <Text>{item.customer_id}</Text>
+                               </Box>
+                           </ChakraLink>
+                       </Stack> : 
+                       <Stack fontWeight="600">
+                           <ChakraLink onClick={() => handleReceiptPopup(item)}>
+                               <Box>
+                                   <Text>{item.name}</Text>
+                                   <Text>{item.phone}</Text>
+                               </Box>
+                           </ChakraLink>
+                       </Stack>
+                    }
+               </Td>
+               <Td>
+                   {item.description.map((desc:any) =>
+                       <Text mb={2}>{desc.quantity} X {desc.kg}Kg {item.category}</Text>
+                   )}
+               </Td>
+               <Td>{item.total_kg}</Td>
+               <Td>{item.amount} NGN</Td>
+               <Td>{item.payment_method.toUpperCase()}</Td>
+               <Td>{item.current_tank}</Td>
+               <Td>{item.balance}</Td>
+               <Td>{item.timestampTime}</Td>
+           </Tr> 
+           : 
+           <Tr>
+            <Td colSpan={2} backgroundColor="red.300">
+                Switch Alert
+            </Td>
+            <Td textAlign="center" fontWeight="600" color="white" backgroundColor="purple.500" colSpan={7}>
+                <Stack direction="column">
+                    <Text>{item.description[0].total_kg}</Text>
+                    <Text>{item.description[0].amount_sold}</Text>
+                    <Text>Loss on previous tank: {item.description[0].loss} Kg</Text>
+                    <Text>Switched to {item.description[0].switchedTo}</Text>
+                </Stack>
+               
+            </Td>
+           </Tr> 
             )}
 
             <Tr>
@@ -299,11 +318,11 @@ export default (props: PageProps<[]>) => {
             <Tr>
                 <Td colSpan={3}>Sub Total</Td>
                 {data?.aggregations.map((item:any) =>
-                    <Td borderLeftWidth="1px" colSpan={1}>Total Amount: {item.total_amount_today}</Td>
+                    <Td borderRightWidth="1px" borderLeftWidth="1px" colSpan={1}>Total Amount: {item.total_amount_today}</Td>
                 )}
 
                 {data?.aggregations.map((item:any) =>
-                    <Td>Total Kg: {item.total_kg_today}</Td>
+                    <Td borderRightWidth="1px">Total Kg: {item.total_kg_today}</Td>
                 )}
 
             </Tr>
@@ -311,7 +330,7 @@ export default (props: PageProps<[]>) => {
             <Tr>
                 <Td colSpan={3}>Total POS</Td>
                 {data?.aggregations.map((item:any) =>
-                    <Td borderLeftWidth="1px">{item.total_pos_sold}</Td>
+                    <Td borderRightWidth="1px"  borderLeftWidth="1px">{item.total_pos_sold}</Td>
                 )}
 
             </Tr>
@@ -319,7 +338,7 @@ export default (props: PageProps<[]>) => {
             <Tr>
                 <Td colSpan={3}>Total Cash</Td>
                 {data?.aggregations.map((item:any) =>
-                    <Td borderLeftWidth="1px">{item.total_cash_sold}</Td>
+                    <Td borderRightWidth="1px" borderLeftWidth="1px">{item.total_cash_sold}</Td>
                 )}
 
             </Tr>
@@ -327,7 +346,7 @@ export default (props: PageProps<[]>) => {
             <Tr>
                 <Td colSpan={3}>Closing Stock</Td>
                 {data?.aggregations.map((item:any) =>
-                    <Td borderLeftWidth="1px">{item.closing_stock}</Td>
+                    <Td borderRightWidth="1px" borderLeftWidth="1px">{item.closing_stock}</Td>
                 )}
 
             </Tr>
@@ -353,7 +372,7 @@ export default (props: PageProps<[]>) => {
     </TableContainer>
       </Box>          
 
-      
+    <LogReceipt summary={currentSale} isOpen={isOpen} onClose={onClose}></LogReceipt>  
     </Box> {/*  Main Content */}
     </Flex>
   );
