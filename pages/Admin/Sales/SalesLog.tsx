@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Link as ChakraLink } from "@chakra-ui/react"; 
+import { Alert, Link as ChakraLink } from "@chakra-ui/react"; 
 import Head from "../../../components/head";
 import Nav from "../../../components/nav";
 import WithSubnavigation from "../../../components/Navigation/FrontDesk";
@@ -65,7 +65,9 @@ import { useRouter } from "next/router";
 
 import AdminNav from "../../../components/Navigation/Admin";
 import LogReceipt from "../../../components/Admin/Sales/Receipt";
-
+import SwitchLog from "../../../components/Common/SwitchLog";
+import DayStats from "../../../components/Common/DayStats";
+import styles from "./Sales.module.css"
 export const BranchContext = createContext<
   { address: string; branchId: number }[]
 >([]);
@@ -182,7 +184,7 @@ export default (props: PageProps<[]>) => {
   const { data, error } = useSWR(`/api/Sales/SalesLog?date=${new Date(currentDate).toISOString()}&branch=${query.branch}`, fetcher, {
     onSuccess: (data) => {
      
-    }});  
+    }});
 
   const handleChange = (event:any) => {
     setCurrentDate(event.target.value)
@@ -192,6 +194,7 @@ export default (props: PageProps<[]>) => {
     onOpen()
     setCurrentSale([item])
   }
+
  
   return (
     <Flex height="100vh" width="100vw">
@@ -203,6 +206,12 @@ export default (props: PageProps<[]>) => {
       <Box overflowY="auto" w="100%" className="main-content">
         <WithSubnavigation handleCollapsedChange={handleCollapsedChange} handleToggleSidebar={handleToggleSidebar} branch={props.branch}></WithSubnavigation>
         <Box p={6} className="actions">
+        <Flex className="switch-log">
+            <SwitchLog branch={query.branch} date={new Date(currentDate).toISOString()}></SwitchLog>
+        </Flex>
+
+        <DayStats branch={query.branch} date={new Date(currentDate).toISOString()}></DayStats>
+
 
         <Heading color="gray.500" size="lg">Sales Log for {new Date(currentDate).toDateString()}</Heading>
         <Box mt={2}>
@@ -241,7 +250,7 @@ export default (props: PageProps<[]>) => {
 
       <Box px={6} className="sales">
       <TableContainer rounded={8} border="2px solid" borderColor="gray.500">
-      <Table>
+      <Table className={styles.table}>
         <TableCaption>Sales Log</TableCaption>
         <Thead>
           <Tr>
@@ -257,10 +266,17 @@ export default (props: PageProps<[]>) => {
           </Tr>
         </Thead>
         <Tbody>
+            {!data ? 
+                <Tr>
+                    <Td colSpan={100}>
+                        <Spinner></Spinner>
+                    </Td>
+                </Tr> : null
+        }
             {data?.sales.map((item:any) =>
                item.category != 'Switch' ? 
                
-               <Tr backgroundColor={`${colorCode(item.category)}`}>
+               <Tr key={item.id} backgroundColor={`${colorCode(item.category)}`}>
                <Td>{item.sale_number}</Td>
                <Td>
                    {!item.customer && !item.phone ? 
@@ -283,15 +299,15 @@ export default (props: PageProps<[]>) => {
                     }
                </Td>
                <Td>
-                   {item.description.map((desc:any) =>
-                       <Text mb={2}>{desc.quantity} X {desc.kg}Kg {item.category}</Text>
+                   {item.description.map((desc:any, counter:number) =>
+                       <Text key={counter} mb={2}>{desc.quantity} X {desc.kg}Kg {item.category}</Text>
                    )}
                </Td>
                <Td>{item.total_kg}</Td>
-               <Td>{item.amount} NGN</Td>
+               <Td>{item.amount.toLocaleString()} NGN</Td>
                <Td>{item.payment_method.toUpperCase()}</Td>
                <Td>{item.current_tank}</Td>
-               <Td>{item.balance}</Td>
+               <Td>{item.balance} KG</Td>
                <Td>{item.timestampTime}</Td>
            </Tr> 
            : 
@@ -312,41 +328,47 @@ export default (props: PageProps<[]>) => {
             )}
 
             <Tr>
+                <Td colSpan={3}>Total of Tank A</Td>
+                <Td borderRightWidth="1px">Kg</Td>
+                <Td borderRightWidth="1px">Amount</Td>
+            </Tr>
+
+            <Tr>
                 <Td textAlign="center" fontWeight={700} colSpan={100}>Day's Summary</Td>
             </Tr>
 
             <Tr>
                 <Td colSpan={3}>Sub Total</Td>
-                {data?.aggregations.map((item:any) =>
-                    <Td borderRightWidth="1px" borderLeftWidth="1px" colSpan={1}>Total Amount: {item.total_amount_today}</Td>
+                {data?.aggregations.map((item:any, counter:number) =>
+                    <Td key={counter} borderRightWidth="1px" borderLeftWidth="1px" colSpan={1}>Total Amount: {item.total_amount_today}</Td>
                 )}
 
-                {data?.aggregations.map((item:any) =>
-                    <Td borderRightWidth="1px">Total Kg: {item.total_kg_today}</Td>
+                {data?.aggregations.map((item:any, counter:number) =>
+                    <Td key={counter} borderRightWidth="1px">Total Kg: {item.total_kg_today}</Td>
                 )}
 
             </Tr>
 
             <Tr>
                 <Td colSpan={3}>Total POS</Td>
-                {data?.aggregations.map((item:any) =>
-                    <Td borderRightWidth="1px"  borderLeftWidth="1px">{item.total_pos_sold}</Td>
+                {data?.aggregations.map((item:any, counter:number) =>
+                    <Td key={counter} borderRightWidth="1px"  borderLeftWidth="1px">{item.total_pos_sold}</Td>
                 )}
 
             </Tr>
 
             <Tr>
                 <Td colSpan={3}>Total Cash</Td>
-                {data?.aggregations.map((item:any) =>
-                    <Td borderRightWidth="1px" borderLeftWidth="1px">{item.total_cash_sold}</Td>
+                {data?.aggregations.map((item:any, counter:number) =>
+                    <Td key={counter} borderRightWidth="1px" borderLeftWidth="1px">{item.total_cash_sold}</Td>
                 )}
 
             </Tr>
 
             <Tr>
                 <Td colSpan={3}>Closing Stock</Td>
-                {data?.aggregations.map((item:any) =>
-                    <Td borderRightWidth="1px" borderLeftWidth="1px">{item.closing_stock}</Td>
+                {data?.aggregations.map((item:any, counter:number) =>
+                    <Td key={counter} borderRightWidth="1px" borderLeftWidth="1px">{item.closing_stock}</Td>
                 )}
 
             </Tr>

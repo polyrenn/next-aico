@@ -34,6 +34,8 @@ import { prisma } from "../../lib/prisma";
 import { GetServerSideProps } from 'next';
 import { withSessionSsr } from '../../lib/withSession';
 import useSWR from 'swr';
+import { useDisclosure } from '@chakra-ui/react';
+import Report from '../../components/FrontDesk/Crb/Report';
 const fetcher = (url:string) => fetch(url).then((res) => res.json())
 export const BranchContext = createContext<{ address: string, branchId: number } | undefined>(undefined);
 
@@ -137,6 +139,9 @@ console.log(prices[0][1])
   })
 
   const group = getRootProps()
+  //Report Helpers
+  const {isOpen, onClose, onOpen} = useDisclosure()  
+
     return (
         <div>
         <WithSubnavigation branch={props.branch}></WithSubnavigation>
@@ -149,7 +154,7 @@ console.log(prices[0][1])
 
             <Box className='Utils'>
                 <Center>
-                    <Button colorScheme='gray'>Report</Button>
+                    <Button onClick={onOpen} colorScheme='gray'>Report</Button>
                 </Center>
             </Box>
           {
@@ -201,6 +206,7 @@ console.log(prices[0][1])
             </BranchContext.Provider>    
             </Box>
             
+            <Report summary isOpen={isOpen} onClose={onClose}></Report>
         </Box>
 
         <Box my={4} className='sales-form'>

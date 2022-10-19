@@ -90,7 +90,7 @@ const CashPointForm: FC<any> = (props) => {
    console.log(isRegistered)
    const [payment, setPayment] = useState('Renn');
    const [narrative, setNarrative] = useState('')
-   const [amount, setAmount] = useState<number | null>()
+   const [amount, setAmount] = useState<number>(0)
    const customerProp = props.customer
    const currentChange = props.customer?.change
 
@@ -143,10 +143,12 @@ const CashPointForm: FC<any> = (props) => {
 
   const AutoSubmitToken = () => {
     // Grab values and submitForm from context
-    const { values, submitForm } = useFormikContext();
+    const { values, submitForm } = useFormikContext() as any
     useEffect(() => {
      setPayment(values.payment);
      setNarrative(values.narrative)
+     setAmount(values.amount)
+
      console.log(payment)
     }, [values, submitForm]);
     return null;
@@ -186,7 +188,7 @@ const CashPointForm: FC<any> = (props) => {
   
     
     const res = await
-    fetch(`/api/FrontDesk/InsertSale?change=${change}&ischange=${values.change}&usechange=${values.usechange}&tank=${branchDetails[0].current_tank}`, {
+    fetch(`/api/FrontDesk/InsertSale?isreg${isRegistered}&change=${change}&ischange=${values.change}&usechange=${values.usechange}&tank=${branchDetails[0].current_tank}`, {
       method: 'post',
       body: JSON.stringify(data),
     }).then( (res) => {
@@ -329,7 +331,7 @@ const [destructuredSum] = props.summary
       py={6}
       borderWidth="1px"
       borderColor="gray.200"
-      h="100vh"
+      h="fit-content"
     >
       <Box bg="white" w="500px" p={4} rounded="md">
         <Formik

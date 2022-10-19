@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router';
 import {
     Box,
     Flex,
@@ -30,10 +31,23 @@ interface NavProps {
 }
   
   export default function WithSubnavigation(props:NavProps) {
+
+    const router = useRouter()
     const { isOpen, onToggle } = useDisclosure();
-    const handleclick = () => {
-      alert('Hey')
-    }
+    const handleclick = async () => {
+      const res = await fetch(`/api/Common/Logout`, {
+        method: "post",
+      }).then((res) => {
+        if (res.ok) {
+          return res.json()
+        } 
+      })
+      .then((data) => {
+          router.push("/Login")
+      });
+    };
+
+    
 
     const date1 = new Date();
   

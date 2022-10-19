@@ -5,7 +5,7 @@ import WithSubnavigation from "../../components/Navigation/FrontDesk";
 //Layout Imports
 import { Box, HStack, Center, Heading, useDisclosure } from "@chakra-ui/react";
 // Element Imports
-import { Text, Button, Spinner } from "@chakra-ui/react";
+import { Text, Button, Spinner, Flex } from "@chakra-ui/react";
 import { Radio, RadioGroup } from "@chakra-ui/react";
 // Components
 import StatBlock from "../../components/FrontDesk/StatBlock";
@@ -38,6 +38,7 @@ import { withSessionSsr } from "../../lib/withSession";
 
 import summary from '../../data/data'
 import Report from "../../components/FrontDesk/CashPoint/Report";
+import SwitchLog from "../../components/Common/SwitchLog";
 
 const fetcher = (url:string) => fetch(url).then((res) => res.json())
 interface BranchDetails {
@@ -55,8 +56,10 @@ interface BranchAddressId {
 }[]
 
 interface BranchContext {
+  branch: any
   branchList: any
   data: any
+  user: any
 
 }
 
@@ -70,6 +73,7 @@ export default (props: any) => {
   const branch = props.branch
   const branchId = props.branch.branchId
   const branchList = props.branches
+  const user = props.user
   let resultant:any;
   // const [branch, setBranch] = useState<string | undefined>();
   interface ReturnedQueue {
@@ -174,6 +178,9 @@ const {isOpen, onClose, onOpen} = useDisclosure()
       <Head title="Cash Desk" />
       <Box className="main-content" mx={8}>
         {/* Optional Prop Number that determines Number of Stat to Render in the Block */}
+        <Center mt={2} className="switch-log">
+            <SwitchLog branch={props.branch.branchId} date={new Date().toISOString()}></SwitchLog>
+        </Center>
         <Box my={4} className="stats">
           <StatBlock branch={branchId} ></StatBlock>
         </Box>
@@ -189,7 +196,7 @@ const {isOpen, onClose, onOpen} = useDisclosure()
         </Box>
 
         <Box my={4}>
-        <BranchContext.Provider value={{branchList, data}}>
+        <BranchContext.Provider value={{branch, branchList, data, user}}>
             <CashPointForm isRegistered={isRegistered} customer={customer} currentSale={currentSale} summary={returned}></CashPointForm>
         </BranchContext.Provider>
           
@@ -240,7 +247,8 @@ export const getServerSideProps = withSessionSsr(
     },
     select: {
       address: true,
-      branchId: true
+      branchId: true,
+      name: true
     },
   });
 
@@ -252,6 +260,9 @@ export const getServerSideProps = withSessionSsr(
       address: true,
       branchId: true
     },
+    orderBy: {
+      id: "asc"
+    }
   });
   
 

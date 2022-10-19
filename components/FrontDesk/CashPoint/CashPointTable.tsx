@@ -46,7 +46,6 @@ const CashPointTable:FC<TableProps> = (props) => {
     return (
         <TableContainer rounded={8} border='2px solid' borderColor='gray.500'>
   <Table className={styles.receipt} variant='simple'>
-    <TableCaption>Proceed to Cashpoint</TableCaption>
     <Thead>
     <Tr>
         <Th>Kg</Th>
@@ -59,10 +58,10 @@ const CashPointTable:FC<TableProps> = (props) => {
     {props.summary.map((item:any, counter:number) => 
             item.description.map( (inner:any, counter:number) => 
             <Tr key={counter}>
-            <Td>{inner.kg}</Td>
+            <Td>{inner.kg} KG</Td>
              <Td>{inner.quantity}</Td> 
-             <Td>{inner.total}</Td> 
-             <Td isNumeric>{inner.amount}</Td>
+             <Td>{inner.total} KG</Td> 
+             <Td isNumeric>{inner.amount} NGN</Td>
           </Tr>
             )
             
@@ -72,25 +71,13 @@ const CashPointTable:FC<TableProps> = (props) => {
              <Tr key={counter}>
              <Th>Total</Th>
              <Td>{`${computeTotalQty(item.description)}`}</Td>
-             <Td>{item.totalKg}</Td>
-             <Td isNumeric>{item.amount}</Td>
+             <Td>{item.totalKg} KG</Td>
+             <Td isNumeric>{item.amount} NGN</Td>
          </Tr>
         )}
        
-          
-          
-    
-     
-      
+ 
     </Tbody>
-    <Tfoot>
-        <Tr>
-        <Th>Kg</Th>
-        <Th>Qty</Th>
-        <Th>Total Kg</Th>
-        <Th isNumeric>Amount</Th>
-      </Tr>
-    </Tfoot>
   </Table>
 </TableContainer>
 

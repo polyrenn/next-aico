@@ -11,7 +11,8 @@ export default async (req:any, res:any) => {
           branchId: true,
           phone: true,
           uniqueId: true,
-          customerType: true
+          customerType: true,
+          purchaseCount: true
         },
       });
       res.status(200).json(result);

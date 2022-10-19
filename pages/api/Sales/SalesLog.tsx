@@ -35,6 +35,10 @@ export default async (req: any, res: any) => {
         and ts.branch_id = ${parseInt(branch)}::int
         order by id desc limit 1   
     ),
+    (select ts.balance as balance_stock from sales ts where ts.branch_id = ${parseInt(branch)}::int
+     and ts.timestamp::date = ${formattedDate}::date
+     order by id desc limit 1   
+    ),
     cast(sum(s.total_kg) as float) as total_kg_today,
     cast(sum(s.amount) as float) as total_amount_today,
     cast(SUM(amount) FILTER (WHERE payment_method = 'pos') as float) AS total_pos_sold,
@@ -44,6 +48,10 @@ export default async (req: any, res: any) => {
     Where s.timestamp::date = ${formattedDate}::date
     and s.branch_id = ${parseInt(branch)}::int
     `;
+
+    const tankAggregations:any = await prisma.$queryRaw`
+    
+    `
 
     const totalCash:any = await prisma.$queryRaw`SELECT b.id,
     b.name, 
@@ -70,7 +78,6 @@ export default async (req: any, res: any) => {
     ON b.company_id = companies.company_id
     ORDER BY b.id asc 
     `;
-
 
 
     const formattedSales = salesLog.map((item:any) => ({

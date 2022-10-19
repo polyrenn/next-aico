@@ -8,6 +8,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   const branchAggregations = await prisma.$queryRaw`SELECT b.id,
 b.name,
 b.current_tank,
+(select ts.designation as tank_name from tanks ts where b.current_tank = ts.tank_id),
 (select cast(count(*) as integer) as sales_count from sales s where b.branch_id = s.branch_id
      and s.category != 'Switch'
      and timestamp > ${formattedDate}::timestamp

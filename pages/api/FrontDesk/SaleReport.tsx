@@ -50,24 +50,16 @@ export default async (req: any, res: any) => {
     for (const item of result) {
       let dataUser = await prisma.$queryRawUnsafe(`
       SELECT 
-      SUM(amount) FILTER (WHERE category = '${item.category}') AS total_sold
+      CAST(SUM(amount) FILTER (WHERE category = '${item.category}') AS FLOAT) AS total_sold
       From sales s
       Where s.branch_id = 131313
       `);
-      data.push(item);
+      data.push(dataUser);
+      console.log(dataUser)
     }
-    console.timeEnd("for of");
     return data
  }
- const etet = async () => {
-    const result = await prisma.prices.findMany({
-        where: {
-          branchId: 131313,
-        },
-      });
-    return result
- }
- const returned = getWithForOf()
+ const returned = await getWithForOf()
 
   res.status(200).json(returned);
 };

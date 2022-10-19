@@ -38,7 +38,7 @@ model Branch {
   declined DeclinedSales[]
   queue Queue[]
   switchLog SwitchLog[]
-  @@map(name: "branches")
+  @@map(name: "branches") // Branch Phone
 }
 
 model Post {
@@ -80,6 +80,7 @@ model Customer {
   branch Branch @relation(fields: [branchId], references: [branchId])
   branchId Int @map(name: "branch_id")
   change Int @default(0)
+  purchaseCount Int @map(name: "purchase_count") @default(0)
   @@map(name: "customers")
 }
 

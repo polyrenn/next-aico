@@ -13,13 +13,14 @@ interface PropTy {
     label: String
     statNumber: number
     helper: String
+    tank?: string
 }
 const CustomStat:FC<PropTy> = (props) =>  {
     // Optional Color Scheme Prop 
     return (
         <Stat mr={4} p={2} borderWidth='1px' borderRadius='lg'>
           <StatLabel>{props.label}</StatLabel>
-          <StatNumber>{props.statNumber}</StatNumber>
+          <StatNumber>{props.statNumber} / {props.tank}</StatNumber>
           <StatHelpText>
             <StatArrow type='increase' />
             {props.helper}

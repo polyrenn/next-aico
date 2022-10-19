@@ -81,6 +81,9 @@ import { BranchContext } from "../../../pages/FrontDesk/Crb";
 import CreateCustomer from "../Customer/CreateCustomer";
 import SummaryCard from "./SummaryCard";
 
+//Styles
+import styles from "./SaleTable.module.css"
+
 interface SaleFormProps {
   pricePerKg: number 
   post: any
@@ -562,7 +565,7 @@ const pricePerKg = props.pricePerKg
             <FieldArray name="crb">
               {({ insert, remove, push }) => (
                 <TableContainer borderWidth="1px" width="container.md">
-                  <Table variant="simple">
+                  <Table className={styles.table} variant="simple">
                     <Thead>
                       <Tr>
                         <Th></Th>
@@ -574,7 +577,7 @@ const pricePerKg = props.pricePerKg
                     </Thead>
                     <Tbody>
                     {availableKgs?.map((item, counter) => (
-                    <Tr key={counter}>
+                    <Tr  key={counter}>
                       <Td>
                       <Field name={`friends.${counter}.kg`}>
         {({ field, form }:any) => (
@@ -592,6 +595,7 @@ const pricePerKg = props.pricePerKg
                             mb={2}
                           >
                             <Input
+                              variant="filled"
                               type="number"
                               onKeyUp={(e) => {
                                 props.setFieldValue(`friends.${counter}.isChecked`, true);
@@ -605,7 +609,7 @@ const pricePerKg = props.pricePerKg
                               }}
                               w="min-content"
                               {...field}
-                              placeholder="Customer Name"
+                              placeholder="Quantity"
                               h="56px"
                               textTransform="capitalize"
                               min={1}
@@ -618,22 +622,25 @@ const pricePerKg = props.pricePerKg
                       </Field>
                       </Td>
                       <Td>
-                      <Box className="price-per-kg" p={4} bg="gray.50">
-                        {pricePerKg * item}
+                      <Box className={styles.ppkgo} p={4} bg="gray.50">
+                        {pricePerKg * item }
                       </Box>
                       </Td>
 
                       <Td>
-                      <Box className="total-kg" p={4} bg="gray.50">
-                        {item * props.values?.friends[counter]?.name }
+                      <Box className={styles.totalkgo} p={4} bg="gray.50">
+                        { props.values?.friends[counter]?.name ? item * props.values?.friends[counter]?.name : '' }
                       </Box>
                       </Td>
 
                       <Td>
-                      <Box p={4} bg="gray.50">
-                        {item * pricePerKg * props.values.friends[counter]?.name }
+                      <Box className={styles.amounto} p={4} bg="gray.50">
+                        { props.values.friends[counter]?.name ?  item * pricePerKg * props.values.friends[counter]?.name : '' }
                       </Box>
                       </Td>
+                     
+                     
+
                      
                      
 
@@ -663,7 +670,7 @@ const pricePerKg = props.pricePerKg
             <FieldArray name="other">
             {({ insert, remove, push }) => (
                 <TableContainer borderWidth="1px" width="container.md">
-                  <Table variant="simple">
+                  <Table className={styles.other} variant="simple">
                     <Thead>
                       <Tr>
                         <Th></Th>
@@ -693,6 +700,7 @@ const pricePerKg = props.pricePerKg
                             mb={2}
                           >
                             <Input
+                              variant="filled"
                               type="number"
                               onKeyUp={(e) => {
                                 props.setFieldValue(`other.${counter}.isChecked`, true);
@@ -706,7 +714,7 @@ const pricePerKg = props.pricePerKg
                               }}
                               w="min-content"
                               {...field}
-                              placeholder="Customer Name"
+                              placeholder="Quantity"
                               h="56px"
                               textTransform="capitalize"
                               min={1}
@@ -719,19 +727,19 @@ const pricePerKg = props.pricePerKg
                       </Field>
                       </Td>
                       <Td>
-                      <Box className="price-per-kg" p={4} bg="gray.50">
+                      <Box className={styles.ppkgo} p={4} bg="gray.50">
                         {pricePerKg * item }
                       </Box>
                       </Td>
 
                       <Td>
-                      <Box className="total-kg" p={4} bg="gray.50">
+                      <Box className={styles.totalkgo} p={4} bg="gray.50">
                         {item * props.values?.other[counter]?.name }
                       </Box>
                       </Td>
 
                       <Td>
-                      <Box p={4} bg="gray.50">
+                      <Box className={styles.amounto} p={4} bg="gray.50">
                         {item * pricePerKg * props.values.other[counter]?.name }
                       </Box>
                       </Td>

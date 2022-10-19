@@ -1,0 +1,43 @@
+.table tbody tr:nth-child(2n + 1) {
+    background-color: #333333;
+    color: #fafafa;
+}
+
+.table tbody tr:nth-child(2n + 1) input {
+    color: #333333;
+}
+
+.table tbody tr:nth-child(2n + 2) {
+    background-color: #0D0D0D;
+    color: #fafafa;
+}
+
+.table tbody tr:nth-child(2n + 2) input {
+    color: #333333
+}
+
+.table tbody tr:last-child {
+    background-color: #ffffff;
+    color: #0D0D0D
+}
+
+.table thead tr {
+    background-color: #ffffff
+}
+
+.other tbody tr:nth-child(1) {
+   background-color: #333333;
+   color: #fafafa
+}
+
+.table .ppkgo:nth-child(2n + 1), .totalkgo:nth-child(2n + 1), .amounto:nth-child(2n + 1) {
+    color: #0D0D0D;
+}
+
+.other thead tr {
+    background-color: #ffffff;
+} 
+
+.ppkgo, .totalkgo, .amounto {
+    color: #0D0D0D
+}

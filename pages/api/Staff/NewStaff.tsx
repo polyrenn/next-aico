@@ -2,14 +2,17 @@ import { prisma } from "../../../lib/prisma";
 
 export default async (req:any, res:any) => {
     let data = req.body;
-    const { branch } = req.query
+    const { branch, company } = req.query
     data = JSON.parse(data);
-      const result = await prisma.prices.create({
+      const result = await prisma.staff.create({
         data: {
           ...data,
           branch: {
             connect: { branchId: parseInt(branch) },
           },
+          company: {
+            connect: {companyId: parseInt(company)}
+          }
         },
         
       });

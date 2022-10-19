@@ -122,7 +122,6 @@ const CrbNumber2 = () => {
         <Stack justifyContent="space-between" direction="row" spacing={1}>
           <Box>
           <Heading size="md">Summary</Heading>
-          <Text color={"grey.500"}>Sales Summary</Text>
           </Box>
 
           <Box>
@@ -135,12 +134,14 @@ const CrbNumber2 = () => {
         </VStack>
         <Box>
             <Heading size="xs">Customer: {props.customer}</Heading>
+            <Stack>
+            {new Date().toLocaleDateString()}
+          </Stack>
           </Box>
         <Divider my={4} orientation="horizontal" />
         <CrbTable pricePerKg={props.pricePerKg} summary={summary}></CrbTable>
         <VStack my={4}>
-          <Text color={"grey.500"}>Total</Text>
-          <Heading size="md">{}</Heading>
+          <Heading size="sm">Proceed to CashPoint</Heading>
         </VStack>
       </Box>
     );

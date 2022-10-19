@@ -1,8 +1,8 @@
 import { prisma } from "../../../lib/prisma";
 
-export default async (req, res) => {
+export default async (req:any, res:any) => {
     let data = req.body;
-    let { id, change, ischange, usechange, tank } = req.query
+    let { id, isreg, change, ischange, usechange, tank } = req.query
     data = JSON.parse(data);
     const customerId = data.customerId
     const branch = data.branch;
@@ -18,6 +18,7 @@ export default async (req, res) => {
         
       });
 
+      //Update Change
       if(ischange == 'true') {
         const updateUser = await prisma.customer.update({
           where: {
@@ -30,6 +31,7 @@ export default async (req, res) => {
         })
       }
 
+      //Use Change
       if(usechange == 'true') {
         const updateChange = await prisma.customer.update({
           where: {
@@ -40,6 +42,23 @@ export default async (req, res) => {
           },
         })
       }
+
+
+      //Increment Purcahse Count
+      if(isreg == 'true') {
+        const purchaseCount = await prisma.customer.update({
+          where: {
+            uniqueId: customerId,
+          },
+          data: {
+            purchaseCount: {
+              increment: 1
+            }
+          },
+        
+      });
+      }
+     
 
       const updateTank = await prisma.tank.updateMany({
           where: { 

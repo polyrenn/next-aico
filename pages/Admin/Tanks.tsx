@@ -219,12 +219,16 @@ export const getServerSideProps = withSessionSsr(
       }
     }
 
-  const branch = await prisma.branch.findFirst({
-    select: {
-      address: true,
-      branchId: true,
-    },
-  });
+    const branch = await prisma.branch.findFirst({
+      where: {
+        branchId: user?.branch
+      },
+      select: {
+        address: true,
+        branchId: true,
+      },
+    });
+    
 
   const branches = await prisma.branch.findMany({
     select: {

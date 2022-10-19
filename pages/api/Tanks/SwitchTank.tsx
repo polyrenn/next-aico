@@ -11,6 +11,10 @@ export default async (req:any, res:any) => {
     b.current_tank,
     (select ts.amount as loss from tanks ts where b.current_tank = ts.tank_id),
     (select ts.amount as opening_new from tanks ts where ts.tank_id = ${current}),
+    (select cs.opening as opening_old from sales cs where b.branch_id = cs.branch_id
+     and timestamp > ${formattedDate}::timestamp
+     order by id asc limit 1   
+     ),
     (select cast(count(*) as integer) as sales_count from sales s where b.branch_id = s.branch_id
          and timestamp > ${formattedDate}::timestamp
          and s.current_tank = ${old}
@@ -53,7 +57,7 @@ export default async (req:any, res:any) => {
     ) 
     const switchLog = await prisma.switchLog.create({
         data: {
-          branchId: 131313,
+          branchId: parseInt(branch),
           meta: formattedAggregations,
           timestamp: new Date()
         }

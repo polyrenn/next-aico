@@ -51,7 +51,6 @@ const CrbTable:FC<TableProps> = (props) => {
     return (
         <TableContainer rounded={8} border='2px solid' borderColor='gray.900'>
   <Table className={styles.receipt} variant='simple'>
-    <TableCaption color="#0d0d0d">Proceed to Cashpoint</TableCaption>
     <Thead>
       <Tr>
         <Th >Kg</Th>
@@ -67,12 +66,12 @@ const CrbTable:FC<TableProps> = (props) => {
              onClick={() => console.log(counter)  Remove Summary Item & Update Cart }
               bg="red.400" color="white" leftIcon={<RemoveIcon/>} size="sm" rounded="full"></Button></Td>
              */}
-             <Td >{item.kg}</Td>
+             <Td >{item.kg} KG</Td>
              <Td >{item.quantity}</Td> 
-             <Td >{item.total}</Td> 
+             <Td >{item.total} KG</Td> 
 
           
-             <Td  isNumeric>{item.amount}</Td>
+             <Td  isNumeric>{item.amount} NGN</Td>
            </Tr>
         )}
 
@@ -82,7 +81,7 @@ const CrbTable:FC<TableProps> = (props) => {
             <Td >{`${computeTotalQty(props.summary)}`}</Td>
 
             <Td >{`${computeTotal(props.summary)}`}</Td>
-            <Td  isNumeric>{`${computeTotal(props.summary) * props.pricePerKg}`}</Td>
+            <Td  isNumeric>{`${computeTotal(props.summary) * props.pricePerKg}`} NGN</Td>
         </Tr>
           
           

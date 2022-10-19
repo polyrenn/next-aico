@@ -1,6 +1,6 @@
 import { prisma } from "../../../lib/prisma";
 
-export default async (req, res) => {
+export default async (req:any, res:any) => {
     let data = req.body;
     const { id } = req.query
     //Under Seperate Customer Objects

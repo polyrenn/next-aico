@@ -32,6 +32,7 @@ import { useState, useContext, createContext, FC } from "react";
 //Utilities
 import { useRadioGroup, useColorModeValue } from "@chakra-ui/react";
 import { prisma } from "../../lib/prisma";
+import { Prisma, Staff } from "@prisma/client";
 import { GetServerSideProps } from "next";
 import useSWR from "swr";
 import { useDisclosure } from "@chakra-ui/react";
@@ -46,9 +47,10 @@ import {
 
 import AdminNav from "../../components/Navigation/Admin";
 import CategoryRadios from "../../components/FrontDesk/ChangeCategory";
-import CompanyComponent from "../../components/Admin/Customers/CompanyComponent";
-import StockTable from "../../components/Admin/Stock/StockTable";
 import { withSessionSsr } from "../../lib/withSession";
+import StaffTable from "../../components/Admin/Staff/StaffTable";
+import NewStaff from "../../components/Admin/Staff/NewStaff";
+import EditStaff from "../../components/Admin/Staff/EditStaff";
 
 export const BranchContext = createContext<
   { address: string; branchId: number }[]
@@ -72,7 +74,7 @@ interface PageProps<T> {
 
   companies: T[];
 
-  customers: []
+  staffs: Staff[]
 }
 
 export default (props: PageProps<[]>) => {
@@ -93,9 +95,15 @@ export default (props: PageProps<[]>) => {
       setToggled(value);
     };
 
+    //Modal Helpers
+    const {isOpen, onOpen, onClose} = useDisclosure()
+    const {isOpen:editIsOpen, onOpen:editOnOpen, onClose:editOnClose} = useDisclosure()
+
+  
+  const staffCount = props.staffs.length  
   console.log(props.companies);
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [ stockBranch, setStockBranch ] = useState<number>()
+
+  const [ branch, setBranch ] = useState<number>()
   const [tank, setTank] = useState<string | null>(null);
   const logInfo = (info: string) => {
     console.log(info);
@@ -103,10 +111,13 @@ export default (props: PageProps<[]>) => {
     return info;
   };
 
+  const [user, setUser] = useState<string>("")
   
-
+  const handleUserChange = (user:string) => {
+    setUser(user)
+  }
   const handleBranchChange = (branchId:number) => {
-    setStockBranch(branchId)
+    setBranch(branchId)
   }
 
 
@@ -120,6 +131,7 @@ export default (props: PageProps<[]>) => {
       <Box overflowY="auto" w="100%" className="main-content">
         <WithSubnavigation handleCollapsedChange={handleCollapsedChange} handleToggleSidebar={handleToggleSidebar} branch={props.branch}></WithSubnavigation>
         <Box p={6} className="staffs">
+        <Heading mb={4} color="gray.500" size="lg">Manage Staffs</Heading> 
         <Flex my={2} justify="space-between">
         <HStack>
               <Heading color="gray.800" size="sm">Staff</Heading>
@@ -130,14 +142,17 @@ export default (props: PageProps<[]>) => {
                 bg="green.200"
                 color="green.500"
               >
-               3
+               {staffCount}
               </Center>
             </HStack>
-                <Button onClick={() => console.log(stockBranch)} colorScheme="blue">Add Staff</Button>
+                <Button onClick={onOpen} colorScheme="blue">Add Staff</Button>
             </Flex>
-            <StockTable branch={stockBranch}></StockTable>
+            <StaffTable userChange={handleUserChange} onOpenEdit={editOnOpen} staff={props.staffs} branch={branch}></StaffTable>
         </Box>
+        <NewStaff branch={branch} isOpen={isOpen} onClose={onClose}></NewStaff>
+        <EditStaff user={user} branch={branch} isOpen={editIsOpen} onClose={editOnClose}></EditStaff>
       </Box>
+
     </Flex>
   );
 };
@@ -165,12 +180,15 @@ export const getServerSideProps = withSessionSsr(
       }
     }
 
-  const branch = await prisma.branch.findFirst({
-    select: {
-      address: true,
-      branchId: true,
-    },
-  });
+    const branch = await prisma.branch.findFirst({
+      where: {
+        branchId: user?.branch
+      },
+      select: {
+        address: true,
+        branchId: true,
+      },
+    });
 
   const branches = await prisma.branch.findMany({
     select: {
@@ -197,17 +215,11 @@ export const getServerSideProps = withSessionSsr(
     },
   });
 
-  const customers = await prisma.customer.findMany({
-    where: {
-        branchId: 131313
-    },
-    select: {
-        name: true,
-        phone: true
-    }
+  const staffs = await prisma.staff.findMany({
+    
   });
 
   return {
-    props: { branch, company, branches, companies, customers },
+    props: { branch, company, branches, companies, staffs },
   };
 });

@@ -21,8 +21,10 @@ const StatBlock:FC<any> = (props) => {
       });
     return (
         <StatGroup>
-        <CustomStat label='Opening Stock' statNumber={data ? data[0].opening_stock: null} helper='KG'></CustomStat>
-        <CustomStat label='Balance Stock' statNumber={data ? data[0].balance_stock: null} helper='KG'></CustomStat>
+        <CustomStat tank={data ?
+         data[0].tank_name : ""} label='Opening Stock' statNumber={data ? data[0].opening_stock: null} helper='KG'></CustomStat>
+        <CustomStat tank={data ?
+         data[0].tank_name : ""}  label='Balance Stock' statNumber={data ? data[0].balance_stock: null} helper='KG'></CustomStat>
         <CustomStat label='KG Sold' statNumber={data ? data[0].total_kg: 0} helper='KG'></CustomStat>
         <CustomStat label='Sales Count' statNumber={data ? data[0].sales_count: null} helper='Count'></CustomStat>
         </StatGroup>

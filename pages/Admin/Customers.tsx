@@ -48,6 +48,7 @@ import AdminNav from "../../components/Navigation/Admin";
 import CategoryRadios from "../../components/FrontDesk/ChangeCategory";
 import CompanyComponent from "../../components/Admin/Customers/CompanyComponent";
 import StockTable from "../../components/Admin/Stock/StockTable";
+import CustomerTable from "../../components/Admin/Customers/CustomerTable";
 
 export const BranchContext = createContext<
   { address: string; branchId: number }[]
@@ -95,7 +96,7 @@ export default (props: PageProps<[]>) => {
 
   console.log(props.companies);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [ stockBranch, setStockBranch ] = useState<number>()
+  const [ branch, setBranch ] = useState<number>()
   const [tank, setTank] = useState<string | null>(null);
   const logInfo = (info: string) => {
     console.log(info);
@@ -116,13 +117,13 @@ export default (props: PageProps<[]>) => {
 ))
 
   const handleBranchChange = (branchId:number) => {
-    setStockBranch(branchId)
+    setBranch(branchId)
   }
 
 
   return (
     <Flex height="100vh" width="100vw">
-      <Head title="Admin - Stock"></Head>
+      <Head title="Admin - Customers"></Head>
       <Box height="100%" className="navigation">
         <AdminNav  handleToggleClose={handleToggleClose} toggled={toggled} company={props.company}></AdminNav>
       </Box>
@@ -130,6 +131,7 @@ export default (props: PageProps<[]>) => {
       <Box overflowY="auto" w="100%" className="main-content">
         <WithSubnavigation handleCollapsedChange={handleCollapsedChange} handleToggleSidebar={handleToggleSidebar} branch={props.branch}></WithSubnavigation>
         <Box p={6} className="branches">
+        <Heading mb={4} color="gray.500" size="lg">Customer Loyalty</Heading>
           {props.companies.map((item: any) => (
             <Box key={item.id}>
               <Heading key={item.id} size="sm">
@@ -142,13 +144,14 @@ export default (props: PageProps<[]>) => {
 
         <Box p={6} className="customers">
             <Flex my={2} justify="space-between">
-                <Text fontSize="medium" color="gray.500">AicoGas - {stockBranch}</Text>
+                <Text fontSize="medium" color="gray.500">AicoGas - {branch}</Text>
                 <Box>
+                <Text mb={1} color="gray.500">Search Customer</Text>     
                 <AutoComplete
                 creatable
                 openOnFocus
                 onChange={(e, value:any) => {
-                
+
                 }}
                 
                >
@@ -168,7 +171,7 @@ export default (props: PageProps<[]>) => {
                 </Box>
                
             </Flex>
-            <StockTable branch={stockBranch}></StockTable>
+            <CustomerTable branch={branch}></CustomerTable>
         </Box>
       </Box>
     </Flex>
@@ -198,12 +201,15 @@ export const getServerSideProps = withSessionSsr(
       }
     }
 
-  const branch = await prisma.branch.findFirst({
-    select: {
-      address: true,
-      branchId: true,
-    },
-  });
+   const branch = await prisma.branch.findFirst({
+      where: {
+        branchId: user?.branch
+      },
+      select: {
+        address: true,
+        branchId: true,
+      },
+    });
 
   const branches = await prisma.branch.findMany({
     select: {
@@ -238,7 +244,7 @@ export const getServerSideProps = withSessionSsr(
         name: true,
         phone: true
     }
-  });
+  });//Swr
 
   return {
     props: { branch, company, branches, companies, customers },

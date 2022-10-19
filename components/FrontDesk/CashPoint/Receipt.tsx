@@ -40,17 +40,22 @@ import CashPointTable from "./CashPointTable";
     (props, ref) => {
 
      const { branchList }  = useContext(BranchContext)  as any
+     const { user }  = useContext(BranchContext)  as any
+     const { branch }  = useContext(BranchContext)  as any
 
       const summary = props.summary;
       let customer
 
       const [destructuredSum] = summary
       console.log(destructuredSum)
+      const timestamp = destructuredSum?.timestamp.split('T')[0] as Date 
+      const date = new Date(destructuredSum?.timestamp)
+      console.log(date)
       const sidebar = (
         
-        branchList.map((item) =>
-        <Box key={item.branchId}>
-          <Text color={"grey.500"}>{item.address}</Text>
+        branchList.map((item:any) =>
+        <Box fontWeight={600} key={item.branchId}>
+          <Text>{item.address}</Text>
            </Box>
         )  
   
@@ -68,10 +73,11 @@ import CashPointTable from "./CashPointTable";
       
          return (
         <Box ref={ref} p={4} bg="white" w="500px" rounded="md">
-          <Stack spacing={1}>
+          <VStack spacing={1}>
             <Heading size="md">AicoGas</Heading>
             {sidebar}
-          </Stack>
+           
+          </VStack>
             <Text fontSize={'lg'}
             fontWeight={700}
             borderWidth={'1px'}
@@ -82,18 +88,33 @@ import CashPointTable from "./CashPointTable";
             color={'gray.900'}
             rounded={'md'}>Receipt No #{ destructuredSum?.crbNumber}</Text>
           <VStack w="100%">
+            
           </VStack>
           <Box className="sales-info">
               <Heading my={2} size="sm">Customer: {props.customer ? props.customer?.name : destructuredSum?.customerId}</Heading>
               <Heading my={2} size="sm">Payment Method: {props.payment}</Heading>
               <Heading my={2} size="sm">Narrative: {props.narrative}</Heading>
             </Box>
-          <Divider my={4} orientation="horizontal" />
+          <Box textAlign="right">
+          <Heading mb={1} size="md">{destructuredSum?.category}</Heading>
+          </Box>
+         
           <CashPointTable pricePerKg={props.pricePerKg} summary={summary}></CashPointTable>
-          <VStack my={4}>
-            <Text color={"grey.500"}>Total</Text>
-            <Heading size="md">{}</Heading>
+          <Stack fontWeight={700} mb={2} spacing={0.5}>
+            <Text>Paid: {props.amount} NGN</Text>
+            <Text>Change: {props.amount - destructuredSum?.amount} NGN</Text>
+            <Text>Change Debited: </Text>
+            <Text>Time: {date.toLocaleTimeString()}</Text>
+            <Text>Date: { date.toLocaleDateString("en-UK") }</Text>
+            <Text>Attendant: {branch.name} { user.role }</Text>
+          </Stack>
+
+          <VStack fontSize="12px" spacing={1}>
+            <Text fontWeight={700}>Thanks for your patronage</Text>
+            <Text fontWeight={700}>Visit us Monday to Saturdat 7:30am to 6pm</Text>
+            <Text fontWeight={700}>For complaints and enquries contact us on 08167875625</Text>
           </VStack>
+
         </Box>
       );
     }

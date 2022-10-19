@@ -21,26 +21,32 @@ export default async (req: any, res: any) => {
 let openingSales:Sales[] = await prisma.$queryRaw`SELECT b.name,
 (select ts.sale_number from sales ts where b.branch_id = ts.branch_id
      and ts.timestamp::date = ${formattedDate}::date
+     and ts.category != 'Switch'
      order by id asc limit 1   
 ),
 (select ts.total_kg from sales ts where b.branch_id = ts.branch_id
      and ts.timestamp::date = ${formattedDate}::date
+     and ts.category != 'Switch'
      order by id asc limit 1   
 ),
 (select ts.customer_id from sales ts where b.branch_id = ts.branch_id
      and ts.timestamp::date = ${formattedDate}::date
+     and ts.category != 'Switch'
      order by id asc limit 1   
 ),
 (select ts.amount from sales ts where b.branch_id = ts.branch_id
      and ts.timestamp::date = ${formattedDate}::date
+     and ts.category != 'Switch'
      order by id asc limit 1   
 ),
 (select ts.timestamp from sales ts where b.branch_id = ts.branch_id
      and ts.timestamp::date = ${formattedDate}::date
+     and ts.category != 'Switch'
      order by id asc limit 1   
 ),
 (select ts.change from sales ts where b.branch_id = ts.branch_id
      and ts.timestamp::date = ${formattedDate}::date
+     and ts.category != 'Switch'
      order by id asc limit 1   
 )
 From branches b
@@ -53,26 +59,32 @@ order by b.id asc
 let closingSales:Sales[] = await prisma.$queryRaw`SELECT b.name,
 (select ts.sale_number from sales ts where b.branch_id = ts.branch_id
      and ts.timestamp::date = ${formattedDate}::date
+     and ts.category != 'Switch'
      order by id desc limit 1   
 ),
 (select ts.total_kg from sales ts where b.branch_id = ts.branch_id
      and ts.timestamp::date = ${formattedDate}::date
+     and ts.category != 'Switch'
      order by id desc limit 1   
 ),
 (select ts.customer_id from sales ts where b.branch_id = ts.branch_id
      and ts.timestamp::date = ${formattedDate}::date
+     and ts.category != 'Switch'
      order by id desc limit 1   
 ),
 (select ts.amount from sales ts where b.branch_id = ts.branch_id
      and ts.timestamp::date = ${formattedDate}::date
+     and ts.category != 'Switch'
      order by id desc limit 1   
 ),
 (select ts.timestamp from sales ts where b.branch_id = ts.branch_id
      and ts.timestamp::date = ${formattedDate}::date
+     and ts.category != 'Switch'
      order by id desc limit 1   
 ),
 (select ts.change from sales ts where b.branch_id = ts.branch_id
      and ts.timestamp::date = ${formattedDate}::date
+     and ts.category != 'Switch'
      order by id desc limit 1   
 )
 From branches b
@@ -83,6 +95,7 @@ order by b.id asc
 const salesAggregations:any = await prisma.$queryRaw`SELECT b.id,
 b.name, 
 (select cast(count(*) as integer) as sales_count from sales s where b.branch_id = s.branch_id
+    and s.category != 'Switch'
     and s.timestamp::date = ${formattedDate}::date
 ),
 companies.name as company_name
@@ -158,6 +171,7 @@ ORDER BY b.id asc
 const balanceStock:any = await prisma.$queryRaw`SELECT b.id,
 b.name,
 (select ts.closing as closing_stock from sales ts where b.branch_id = ts.branch_id
+    and ts.category != 'Switch'
     and ts.timestamp::date = ${formattedDate}::date
     order by id desc limit 1   
 ),

@@ -62,6 +62,7 @@ import { useDisclosure } from "@chakra-ui/react";
 
 
 import AdminNav from "../../components/Navigation/Admin";
+import styles from "./Sales.module.css"
 
 export const BranchContext = createContext<
   { address: string; branchId: number }[]
@@ -210,7 +211,7 @@ export default (props: PageProps<[]>) => {
 
       <Box px={6} className="sales">
       <TableContainer rounded={8} border="2px solid" borderColor="gray.500">
-      <Table>
+      <Table className={styles.table}>
         <TableCaption>Sales Records</TableCaption>
         <Thead>
           <Tr>
@@ -237,7 +238,7 @@ export default (props: PageProps<[]>) => {
                     <Text>Invoice: #{item.sale_number}</Text>
                     <Text>Time: {item.timestampTime}</Text>
                     <Text>Customer: {item.customer_id}</Text>
-                    <Text>Total Kg: {item.total_kg}</Text>
+                    <Text>Total Kg: {item.total_kg} KG</Text>
                     <Text>Change: {item.change}</Text>
                 </Stack>
                 
@@ -253,7 +254,7 @@ export default (props: PageProps<[]>) => {
                     <Text>Invoice: #{item.sale_number}</Text>
                     <Text>Time: {item.timestampTime}</Text>
                     <Text>Customer: {item.customer_id}</Text>
-                    <Text>Total Kg: {item.total_kg}</Text>
+                    <Text>Total Kg: {item.total_kg} KG</Text>
                     <Text>Change: {item.change}</Text>
                 </Stack>
                 
@@ -278,7 +279,7 @@ export default (props: PageProps<[]>) => {
             {data?.totalKg.map((item:any) =>
                 <Td>
                 <Stack direction="column">
-                    <Text>{item.total_kg}</Text>
+                    <Text>{item.total_kg} KG</Text>
                 </Stack>
                 
                 </Td>
@@ -290,7 +291,7 @@ export default (props: PageProps<[]>) => {
             {data?.totalCash.map((item:any) =>
                 <Td>
                 <Stack direction="column">
-                    <Text>{item.total_cash_amount}</Text>
+                    <Text>{item.total_cash_amount} NGN</Text>
                 </Stack>
                 
                 </Td>
@@ -302,7 +303,7 @@ export default (props: PageProps<[]>) => {
             {data?.totalPos.map((item:any) =>
                 <Td>
                 <Stack direction="column">
-                    <Text>{item.total_pos_amount}</Text>
+                    <Text>{item.total_pos_amount} NGN</Text>
                 </Stack>
                 
                 </Td>
@@ -318,7 +319,7 @@ export default (props: PageProps<[]>) => {
             {data?.totalAmount.map((item:any) =>
                 <Td>
                 <Stack direction="column">
-                    <Text>{item.amount_sold}</Text>
+                    <Text>{item.amount_sold} NGN</Text>
                 </Stack>
                 
                 </Td>
@@ -346,7 +347,7 @@ export default (props: PageProps<[]>) => {
             {data?.openingStock.map((item:any) =>
                 <Td>
                 <Stack direction="column">
-                    <Text>{item.opening_stock}</Text>
+                    <Text>{item.opening_stock} KG</Text>
                 </Stack>
                 
                 </Td>
@@ -358,7 +359,7 @@ export default (props: PageProps<[]>) => {
             {data?.closingStock.map((item:any) =>
                 <Td>
                 <Stack direction="column">
-                    <Text>{item.closing_stock}</Text>
+                    <Text>{item.closing_stock} KG</Text>
                 </Stack>
                 
                 </Td>
@@ -370,7 +371,7 @@ export default (props: PageProps<[]>) => {
             {data?.closingStock.map((item:any) =>
                 <Td>
                 <Stack direction="column">
-                    <Text>{item.closing_stock}</Text>
+                    <Text>{item.closing_stock} KG</Text>
                 </Stack>
                 
                 </Td>
