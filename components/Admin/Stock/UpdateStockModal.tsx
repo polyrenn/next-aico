@@ -174,7 +174,7 @@ const UpdateStockModal:FC<ModalProps> = (props) => {
           <Formik
             initialValues={initialValues}
             onSubmit={(values, actions) => {
-                alert(JSON.stringify(values, null, 2))
+              //  alert(JSON.stringify(values, null, 2))
                 newStock(values, actions)
                 // on callback 
                 

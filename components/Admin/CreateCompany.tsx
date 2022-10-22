@@ -133,7 +133,7 @@ const CreateCompany:FC<ModalProps> = (props) => {
             initialValues={initialValues}
             onSubmit={(values, actions) => {
                 values.name = capitalizeName(values.name);
-                alert(JSON.stringify(values, null, 2))
+               // alert(JSON.stringify(values, null, 2))
                createCompany(values, actions)
                 // on callback 
                 

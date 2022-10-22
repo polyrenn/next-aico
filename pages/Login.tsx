@@ -232,7 +232,7 @@ export default (props: PageProps<[]>) => {
               initialValues={initialValues}
               onSubmit={(values, actions) => {
                 //values.name = capitalizeName(values.name);
-                alert(JSON.stringify(values, null, 2));
+               // alert(JSON.stringify(values, null, 2));
                 loginUser(values, actions);
                 // on callback
                 setTimeout(() => {

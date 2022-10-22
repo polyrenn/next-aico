@@ -776,7 +776,6 @@ const pricePerKg = props.pricePerKg
                 }
               content={() => componentRef}
              
-              onAfterPrint={() => {alert("Hey")}}
           />
                   
               </HStack>

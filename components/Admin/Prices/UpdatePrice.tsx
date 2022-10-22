@@ -189,7 +189,7 @@ const UpdatePrice:FC<ModalProps> = (props) => {
             initialValues={initialValues}
             onSubmit={(values, actions) => {
                 values.category = capitalizeName(values.category);
-                alert(JSON.stringify(values, null, 2))
+               // alert(JSON.stringify(values, null, 2))
                 updatePrice(values, actions)
                 // on callback 
                 

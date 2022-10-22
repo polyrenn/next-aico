@@ -184,7 +184,7 @@ const CashPointForm: FC<any> = (props) => {
 
     const change = parseInt(values.amount)  - destructuredSum?.amount
 
-    alert(JSON.stringify(data, null, 2))
+   // alert(JSON.stringify(data, null, 2))
   
     
     const res = await
@@ -338,7 +338,7 @@ const [destructuredSum] = props.summary
           innerRef={formikRef}
           initialValues={initialValues}
           onSubmit={(values, actions) => {
-            alert(JSON.stringify(values, null, 2));
+            //alert(JSON.stringify(values, null, 2));
             handleSubmit(values, actions)
           }}
         >
@@ -460,10 +460,6 @@ const [destructuredSum] = props.summary
 
           
           <ReactToPrint
-              onBeforePrint={() => 
-                props.isValid ? alert("Is Valid"): alert("Invalid")
-              }
-              onPrintError={() => {props.isValid ? alert("Is Valid"): alert("Invalid")}}   
               trigger={() => <Button my={4} colorScheme="purple" type="submit" width="full">Print Receipt</Button>}
               content={() => cashPointRef}
           />

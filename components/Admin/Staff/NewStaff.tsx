@@ -194,7 +194,7 @@ const NewStaff:FC<ModalProps> = (props) => {
             initialValues={initialValues}
             onSubmit={(values, actions) => {
                 //values.username = capitalizeName(values.username);
-                alert(JSON.stringify(values, null, 2))
+                //alert(JSON.stringify(values, null, 2))
                 newStaff(values, actions)
                 // on callback 
                 

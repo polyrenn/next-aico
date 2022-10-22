@@ -163,7 +163,7 @@ const CreateCustomer:FC<ModalProps> = (props) => {
             initialValues={initialValues}
             onSubmit={(values, actions) => {
                 values.name = capitalizeName(values.name);
-                alert(JSON.stringify(values, null, 2))
+               // alert(JSON.stringify(values, null, 2))
                 createCustomer(values, actions)
                 // on callback 
                 
@@ -244,7 +244,6 @@ const CreateCustomer:FC<ModalProps> = (props) => {
           <ReactToPrint
               trigger={() =>  <Button colorScheme="purple" type="submit">Print Code</Button>}
               content={() => barcodeRef}
-              onAfterPrint={() => {alert("Hey")}}
           />
             <Button mx={4} colorScheme='blue' mr={3} onClick={props.onClose}>
               Close

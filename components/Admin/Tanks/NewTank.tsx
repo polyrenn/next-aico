@@ -136,7 +136,7 @@ const CreateTank:FC<ModalProps> = (props) => {
             initialValues={initialValues}
             onSubmit={(values, actions) => {
                 values.name = capitalizeName(values.name);
-                alert(JSON.stringify(values, null, 2))
+                //alert(JSON.stringify(values, null, 2))
                 createTank(values, actions)
                 // on callback 
                 

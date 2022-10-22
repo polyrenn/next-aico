@@ -153,7 +153,7 @@ const EditBranch:FC<ModalProps> = (props) => {
             initialValues={initialValues}
             onSubmit={(values, actions) => {
                 values.name = capitalizeName(values.name);
-                alert(JSON.stringify(values, null, 2))
+                //alert(JSON.stringify(values, null, 2))
                 editBranch(values, actions)
                 // on callback 
                 
