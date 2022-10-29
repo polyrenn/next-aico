@@ -81,7 +81,7 @@ const CrbTable:FC<TableProps> = (props) => {
             <Td >{`${computeTotalQty(props.summary)}`}</Td>
 
             <Td >{`${computeTotal(props.summary)}`}</Td>
-            <Td  isNumeric>{`${computeTotal(props.summary) * props.pricePerKg}`} NGN</Td>
+            <Td  isNumeric>{props.pricePerKg ? `${computeTotal(props.summary) * props.pricePerKg}`: props.summary[0]?.amount} NGN</Td>
         </Tr>
           
           

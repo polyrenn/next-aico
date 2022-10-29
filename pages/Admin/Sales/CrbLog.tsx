@@ -1,7 +1,8 @@
 import Link from "next/link";
-import Head from "../../components/head";
-import Nav from "../../components/nav";
-import WithSubnavigation from "../../components/Navigation/FrontDesk";
+import { Alert, Link as ChakraLink } from "@chakra-ui/react"; 
+import Head from "../../../components/head";
+import Nav from "../../../components/nav";
+import WithSubnavigation from "../../../components/Navigation/FrontDesk";
 //Layout Imports
 import {
   Box,
@@ -19,9 +20,9 @@ import {
 import { Text, Button, Spinner, Input } from "@chakra-ui/react";
 import { Radio, RadioGroup } from "@chakra-ui/react";
 // Components
-import StatBlock from "../../components/FrontDesk/StatBlock";
-import PriceLabel from "../../components/FrontDesk/PriceLabel";
-import CategoryRadios from "../../components/FrontDesk/ChangeCategory";
+import StatBlock from "../../../components/FrontDesk/StatBlock";
+import PriceLabel from "../../../components/FrontDesk/PriceLabel";
+import CategoryRadios from "../../../components/FrontDesk/ChangeCategory";
 import { useToast } from "@chakra-ui/react";
 // Tag Component
 import {
@@ -44,26 +45,29 @@ import {
 
 // Icons
 import { PhoneIcon, AddIcon, WarningIcon } from "@chakra-ui/icons";
-import { EditIcon } from "../../components/Icons/Icons";
-import SaleForm from "../../components/FrontDesk/Crb/SaleForm";
+import { EditIcon } from "../../../components/Icons/Icons";
+import SaleForm from "../../../components/FrontDesk/Crb/SaleForm";
 
 //React Imports
 import { useState, useContext, createContext } from "react";
 
 //Utilities
 import { useRadioGroup, useColorModeValue } from "@chakra-ui/react";
-import { prisma } from "../../lib/prisma";
+import { prisma } from "../../../lib/prisma";
 import { GetServerSideProps } from "next";
-import CashPointForm from "../../components/FrontDesk/CashPoint/CashPointForm";
+import CashPointForm from "../../../components/FrontDesk/CashPoint/CashPointForm";
 import useSWR from "swr";
 import Select from "react-select";
-import { withSessionSsr } from "../../lib/withSession";
+import { withSessionSsr } from "../../../lib/withSession";
 import { useDisclosure } from "@chakra-ui/react";
+import { useRouter } from "next/router";
 
 
-import AdminNav from "../../components/Navigation/Admin";
+import AdminNav from "../../../components/Navigation/Admin";
+import LogReceipt from "../../../components/Admin/Sales/Receipt";
+import SwitchLog from "../../../components/Common/SwitchLog";
+import DayStats from "../../../components/Common/DayStats";
 import styles from "./Sales.module.css"
-
 export const BranchContext = createContext<
   { address: string; branchId: number }[]
 >([]);
@@ -81,6 +85,12 @@ interface PageProps<T> {
     name: string;
   }[];
 
+  branchesDrp: {
+    address: string;
+    branchId: number;
+    name: string;
+  }[];
+
   company: {
     name: string;
     companyId: number;
@@ -91,6 +101,12 @@ interface PageProps<T> {
     companyId: number
     branches: {}[]
   }[];
+
+  user: {
+    id: number,
+    admin: boolean,
+    role: string
+  };
 
   formattedSales: {
     name: string;
@@ -116,11 +132,6 @@ interface PageProps<T> {
  
   }[];
 
-  user: {
-    id: number,
-    admin: boolean,
-    role: string
-  };
 }
 const fetcher = (url:string) => fetch(url).then((res) => res.json())
 interface Sales {
@@ -135,57 +146,132 @@ interface Sales {
 }[]
 export default (props: PageProps<[]>) => {
 
+    const toast = useToast()
+
+    const { data:branchData, error:branchError } = useSWR(`/api/Common/GetBranches?id=${props.branch}`, fetcher, {
+        onSuccess: (data) => {
+        }
+    })
+
     //Navigation Helpers
-    const [collapsed, setCollapsed] = useState<boolean>(true);
-    const [toggled, setToggled] = useState<boolean>(false);
-  
-    const handleCollapsedChange = (checked:boolean) => {
-      setCollapsed(checked);
-    };
-  
-    const handleToggleSidebar = (value:boolean) => {
-      setToggled(value);
-    };
-  
-    const handleToggleClose = (value:boolean) => {
-      setToggled(value);
-    };
+  const [collapsed, setCollapsed] = useState<boolean>(true);
+  const [toggled, setToggled] = useState<boolean>(false);
+
+  const handleCollapsedChange = (checked:boolean) => {
+    setCollapsed(checked);
+  };
+
+  const handleToggleSidebar = (value:boolean) => {
+    setToggled(value);
+  };
+
+  const handleToggleClose = (value:boolean) => {
+    setToggled(value);
+  };
 
   const user = props.user
+
+    const colorCode = (item:string) => {
+        switch (item) {
+            case 'Domestic':
+                return 'inherit'
+        
+            case 'Dealer':
+                return 'green.300'
+    
+            case 'Eatery':
+                return 'blue.300'
+            
+            case 'Civil Servant':
+                return 'yellow.300'
+            
+            case 'Other':
+                return 'red.500'    
+                        
+            default:
+                break;
+        }
+    }  
+
+  const { isOpen, onClose, onOpen } = useDisclosure()  
+  const { query } = useRouter()  
+
+  // Select Helpers
+  const customStyles = {
+    control: (provided:any, state:any) => ({
+     ...provided,   
+     minHeight: "56px",
+     width: "max-content"
+    }),
+
+  }  
+
+  const companyOptions = props.branchesDrp?.map(function (row:any) {
+    return { value: row.branchId, label: row.name };
+  });
+  
+
+  console.log(props.user)
   const today = new Date()
   const [ currentDate, setCurrentDate ] = useState(today)
+  const [currentSale, setCurrentSale] = useState([]) as any
+  const [branch, setBranch] = useState<number | null>(null);
 
-  let isAdmin
-
-  if(user.role == 'Admin') {
-    isAdmin = true
-  } else {
-    isAdmin = false
-  }
-
-  const { data, error } = useSWR(`/api/Sales/SalesSummary?date=${new Date(currentDate).toISOString()}&isadmin=${isAdmin}`, fetcher, {
+  const { data, error } = useSWR(`/api/Sales/CrbLog?date=${new Date(currentDate).toISOString()}&branch=${branch}`, fetcher, {
     onSuccess: (data) => {
      
-    }});  
+    }});
 
   const handleChange = (event:any) => {
     setCurrentDate(event.target.value)
   }
- 
 
+  const handleReceiptPopup = (item:any) => {
+    onOpen()
+    setCurrentSale([item])
+  }
+
+  const deleteSale = async (id:number) => {
+    const res = await fetch(`/api/Sales/DeleteSale?id=${id}`, {
+        method: 'post',
+      }).then( (res) => {
+        if(res.ok) {
+            toast({
+                title: 'Deleted.',
+                description: `Deleted Successfully. `,
+                status: 'success',
+                duration: 5000,
+                isClosable: true,
+              })
+        } else {
+            toast({
+                title: 'Error',
+                description: "An Error Has Occured.",
+                status: 'error',
+                duration: 10000,
+                isClosable: true,
+              })
+        }
+        
+    }
+      )
+  }
+
+ 
   return (
     <Flex height="100vh" width="100vw">
-      <Head title="Admin - Sales"></Head>
+      <Head title="Admin - Crb Log"></Head>
       <Box height="100%" className="navigation">
-        <AdminNav handleToggleClose={handleToggleClose} toggled={toggled} collapsed={collapsed} company={props.company}></AdminNav>
+        <AdminNav handleToggleClose={handleToggleClose} toggled={toggled} company={props.company}></AdminNav>
       </Box>
 
       <Box overflowY="auto" w="100%" className="main-content">
         <WithSubnavigation user={user} handleCollapsedChange={handleCollapsedChange} handleToggleSidebar={handleToggleSidebar} branch={props.branch}></WithSubnavigation>
         <Box p={6} className="actions">
 
-        <Heading color="gray.500" size="lg">Sales Summary for {new Date(currentDate).toDateString()}</Heading>
-        <Box mt={2}>
+        <Heading color="gray.500" size="lg">Crb Log for {new Date(currentDate).toDateString()}</Heading>
+        <Flex mt={2}>
+        <Box mr={4}>
         <Text mb={1} color="gray.500">Choose Date</Text>    
         <Input
                 id="date"
@@ -198,219 +284,74 @@ export default (props: PageProps<[]>) => {
                 
               />
         </Box>
-        {/*
-          <Box>
-            {props.companies.map((item) =>
-              <Box>
-                 <Select
-                  instanceId={item.id}
-                  placeholder="Select Branch"
-                  options={options}
-                />
-                <Heading size="sm">{item.name}</Heading>
-                {item.branches.map((branch) =>
-                  <Text>{branch.address}</Text>
-                )}
-               </Box> 
-            )}
-          </Box>
 
-                */}
+        <Box>
+        <Text mb={1} color="gray.500">Choose Branch</Text>    
+        <Select
+                  styles={customStyles}
+                  instanceId="branch-select"
+                  placeholder="Select Branch"
+                  options={companyOptions}
+                  onChange={(option:any) => setBranch(option.value)}
+                 
+        />
+        </Box>    
+        
+        </Flex>
 
         </Box>
 
-      <Box px={6} className="sales">
+      <Box px={6} className="declined-sales">
       <TableContainer rounded={8} border="2px solid" borderColor="gray.500">
-      <Table className={styles.table}>
-        <TableCaption>Sales Records</TableCaption>
+      <Table variant="striped">
+        <TableCaption>Crbs</TableCaption>
         <Thead>
           <Tr>
-            <Th></Th>
-            {props.branches.map((item) => 
-                <Th>
-                    <Stack direction="column">
-                    <Text>{item.name}</Text>
-                    <Button w="min-content">
-                    <Link href={`/Admin/Sales/SalesLog?branch=${item.branchId}`}>Go to Sales Log</Link>
-                    </Button>
-                    </Stack>
-                   
-                </Th>
-            )}
-            <Th>Summation</Th>
+            <Th>CRB#</Th>
+            <Th>Customer</Th>
+            <Th>Kg</Th>
+            <Th>Amount</Th>
           </Tr>
         </Thead>
         <Tbody>
-           <Tr>
-            <Td>Opening Sales</Td>
-            {data?.openingSales.map((item:Sales) =>
-                <Td>
-                <Stack direction="column">
-                    <Text>Invoice: #{item.sale_number}</Text>
-                    <Text>Time: {item.timestampTime}</Text>
-                    <Text>Customer: {item.customer_id}</Text>
-                    <Text>Total Kg: {item.total_kg} KG</Text>
-                    <Text>Change: {item.change}</Text>
-                </Stack>
-                
-                </Td>
+            {data?.map((item:any) => 
+              <Tr key={item.id}>
+                 <Td>{item.crb_number}</Td>
+                 <Td>{!item.customer && !item.phone ? 
+                   
+                   <Stack fontWeight="600">
+                           <ChakraLink onClick={() => handleReceiptPopup(item)}>
+                               <Box>
+                                   <Text>{item.customer_id}</Text>
+                               </Box>
+                           </ChakraLink>
+                       </Stack> : 
+                       <Stack fontWeight="600">
+                           <ChakraLink onClick={() => handleReceiptPopup(item)}>
+                               <Box>
+                                   <Text>{item.name}</Text>
+                                   <Text>{item.phone}</Text>
+                               </Box>
+                           </ChakraLink>
+                       </Stack>
+                    }</Td>
+                 <Td>{item.total_kg}</Td>
+                 <Td>{item.amount.toLocaleString()}</Td>
+              </Tr>
+               
             )}
-            </Tr> 
-
-           <Tr>
-            <Td>Closing Sales</Td>
-            {data?.closingSales.map((item:Sales) =>
-                <Td>
-                <Stack direction="column">
-                    <Text>Invoice: #{item.sale_number}</Text>
-                    <Text>Time: {item.timestampTime}</Text>
-                    <Text>Customer: {item.customer_id}</Text>
-                    <Text>Total Kg: {item.total_kg} KG</Text>
-                    <Text>Change: {item.change}</Text>
-                </Stack>
-                
-                </Td>
-            )}
-            </Tr> 
-
-            <Tr>
-            <Td>Total Invoice</Td>
-            {data?.totalInvoice.map((item:any) =>
-                <Td>
-                <Stack direction="column">
-                    <Text>{item.sales_count}</Text>
-                </Stack>
-                
-                </Td>
-            )}
-            <Td>{data?.summation.count_invoice}</Td>
-            </Tr>
-
-            <Tr>
-            <Td>Total Kg</Td>
-            {data?.totalKg.map((item:any) =>
-                <Td>
-                <Stack direction="column">
-                    <Text>{item.total_kg} KG</Text>
-                </Stack>
-                
-                </Td>
-            )}
-            <Td>{data?.summation.total_kg_sold} KG</Td>
-            </Tr>
-
-             <Tr>
-            <Td>Total Cash</Td>
-            {data?.totalCash.map((item:any) =>
-                <Td>
-                <Stack direction="column">
-                    <Text>{item.total_cash_amount} NGN</Text>
-                </Stack>
-                
-                </Td>
-            )}
-            <Td>{data?.summation.total_cash_sold} NGN</Td>
-            </Tr>
-
-             <Tr>
-            <Td>Total POS</Td>
-            {data?.totalPos.map((item:any) =>
-                <Td>
-                <Stack direction="column">
-                    <Text>{item.total_pos_amount} NGN</Text>
-                </Stack>
-                
-                </Td>
-            )}
-            <Td>{data?.summation.total_pos_sold} NGN</Td>
-            </Tr>
-
-             <Tr>
-            <Td>Total Credit</Td>
-            </Tr>
-
-            <Tr backgroundColor="teal.400">
-            <Td>Total Amount</Td>
-            {data?.totalAmount.map((item:any) =>
-                <Td>
-                <Stack direction="column">
-                    <Text>{item.amount_sold} NGN</Text>
-                </Stack>
-                
-                </Td>
-            )}
-            <Td>{data?.summation.total_amount_sold} NGN</Td>
-            </Tr> 
-
-            <Tr>
-               <Td textAlign="center" colSpan={100}>Tank Analysis</Td> 
-            </Tr>
-
-            <Tr>
-            <Td>Current Tank</Td>
-            {data?.currentTank.map((item:any) =>
-                <Td>
-                <Stack direction="column">
-                    <Text>{item.desig}</Text>
-                </Stack>
-                
-                </Td>
-            )}
-            </Tr>
-
-            <Tr>
-            <Td>Opening Stock</Td>
-            {data?.openingStock.map((item:any) =>
-                <Td>
-                <Stack direction="column">
-                    <Text>{item.opening_stock} KG</Text>
-                </Stack>
-                
-                </Td>
-            )}
-            </Tr>
-            
-            <Tr>
-            <Td>Balance Stock</Td>
-            {data?.closingStock.map((item:any) =>
-                <Td>
-                <Stack direction="column">
-                    <Text>{item.closing_stock} KG</Text>
-                </Stack>
-                
-                </Td>
-            )}
-            </Tr>
-
-             <Tr>   
-            <Td>Closing Stock</Td>
-            {data?.closingStock.map((item:any) =>
-                <Td>
-                <Stack direction="column">
-                    <Text>{item.closing_stock} KG</Text>
-                </Stack>
-                
-                </Td>
-            )}
-            </Tr>        
-
-            
-         
-            
           </Tbody>
         <Tfoot>
         <Tr>
-            <Th></Th>
-            {props.branches.map((item) => 
-                <Th>{item.name}</Th>
-            )}
+            <Th>CRB#</Th>
+            <Th>Customer</Th>
+            <Th>Kg</Th>
+            <Th>Amount</Th>
           </Tr>
         </Tfoot>
       </Table>
     </TableContainer>
       </Box>          
-
-
     </Box> {/*  Main Content */}
     </Flex>
   );
@@ -447,6 +388,35 @@ export const getServerSideProps = withSessionSsr(
           permanent: false,
         },
       }
+    }
+
+    let branchesDrp
+
+    if(user?.role == 'Admin') {
+        branchesDrp = await prisma.branch.findMany({
+            select: {
+              address: true,
+              branchId: true,
+              name: true
+            },
+            orderBy: {
+              id: "asc"
+            }
+        });
+    } else {
+        branchesDrp = await prisma.branch.findMany({
+            where: {
+              companyID: user?.company
+            },
+            select: {
+              address: true,
+              branchId: true,
+              name: true
+            },
+            orderBy: {
+              id: "asc"
+            }
+        });
     }
 
     const branch = await prisma.branch.findFirst({
@@ -563,9 +533,6 @@ const formattedClosingSales = closingSales.map(item => ({
         branchId: true,
         name: true
       },
-      orderBy: {
-        id: 'asc'
-      }
     });
   
 
@@ -579,7 +546,7 @@ const formattedClosingSales = closingSales.map(item => ({
     return {
       props: {
         user: req.session.user,
-        branch, company, companies, branches, openingSales, formattedSales, formattedClosingSales
+        branch, company, companies, branches, branchesDrp, openingSales, formattedSales, formattedClosingSales
       },
     };
   },

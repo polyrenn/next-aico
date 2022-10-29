@@ -14,9 +14,10 @@ const SwitchLog:FC<SwitchProps> = (props) => {
          
     }});
     //Map Switch Log      
-    console.log(switchLog)
+    console.log(switchLog == [] ? 'Hey' : 'No')
     return (
-        <Flex p={4} w="max-content" bg="yellow.100">
+        <Box display={switchLog == [] ? 'none' : 'block'}>
+             <Flex p={4} w="max-content" bg="yellow.100">
          {switchLog?.map((item:any) => 
             <Flex flexFlow="row wrap" fontWeight={500} key={item.id}>
             <Text> Switched To: {item.meta[0]?.switchedTo}</Text>
@@ -29,6 +30,8 @@ const SwitchLog:FC<SwitchProps> = (props) => {
            </Flex>
          )}
         </Flex>
+        </Box>
+       
     )
 }
 

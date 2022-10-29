@@ -8,6 +8,10 @@ export default async (req:NextApiRequest, res:NextApiResponse) => {
             address: true,
             branchId: true,
           },
+
+          orderBy: {
+            id: 'asc'
+          }
         
       });
       res.status(200).json(result);

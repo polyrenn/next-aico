@@ -20,7 +20,10 @@ import { useToast } from "@chakra-ui/react";
 
 import { Box, Flex, Spacer } from "@chakra-ui/react";
 const fetcher = (url: any) => fetch(url).then((res) => res.json());
-const PriceList: FC<any> = (props) => {
+interface PriceList {
+  branch: number | undefined
+}
+const PriceList: FC<PriceList> = (props) => {
   const toast = useToast()  
   const { data, error } = useSWR(
     props.branch ? `/api/Prices/GetPriceList?branch=${props.branch}` : null,

@@ -30,6 +30,7 @@ import {
     FormHelperText,
     Input,
 } from '@chakra-ui/react'
+import DayStats from "../../Common/DayStats";
 
 
 
@@ -81,6 +82,7 @@ const NewStockModal:FC<ModalProps> = (props) => {
         return { value: row.tankId, label: row.designation };
       });
       
+      const currentDate = new Date().toISOString()
 
     let barcodeRef = useRef<null | HTMLDivElement>(null);
     const [name, setName] = useState<string>('')
@@ -171,6 +173,7 @@ const NewStockModal:FC<ModalProps> = (props) => {
           <ModalHeader>Add Stock</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
+          <DayStats branch={props.branch} date={currentDate.split('T')[0]}></DayStats> 
           <Formik
             initialValues={initialValues}
             onSubmit={(values, actions) => {

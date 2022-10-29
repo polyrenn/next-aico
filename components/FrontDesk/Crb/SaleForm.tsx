@@ -353,6 +353,7 @@ const createSummary = (values:any, actions:any ) => { // Type Values Actions:For
   setSummary(result)
   console.log(summary)
   actions(false)
+  //alert(JSON.stringify(formRef.current?.values, null, 2));
 }
 
 useEffect(() => {
@@ -364,6 +365,7 @@ useEffect(() => {
 
       // 👇️ your logic here
       createSummary(formRef.current?.values, formRef.current?.setSubmitting )
+     
     }
   };
 
@@ -482,13 +484,13 @@ const pricePerKg = props.pricePerKg
   return (
  
     <Flex justify="space-between" px={6} py={6} borderWidth='1px'  borderColor='gray.200' h="fit-content">
-      <Box bg="white" w="container.md" p={4} rounded="md">     
+      <Box bg="white" w="4xl" p={4} rounded="md">     
     <Formik
         innerRef={formRef}
         initialValues={initialValues}
         //validationSchema={saleValidation}
         onSubmit={(values, actions) => {
-          alert(JSON.stringify(values, null, 2));
+         // alert(JSON.stringify(values, null, 2));
       
           //createSummary(values, actions)
           handleSaleCompletion(values, actions)
@@ -564,7 +566,7 @@ const pricePerKg = props.pricePerKg
 
             <FieldArray name="crb">
               {({ insert, remove, push }) => (
-                <TableContainer borderWidth="1px" width="container.md">
+                <TableContainer borderWidth="1px" width="container.xl">
                   <Table className={styles.table} variant="simple">
                     <Thead>
                       <Tr>
@@ -670,7 +672,7 @@ const pricePerKg = props.pricePerKg
             <FieldArray name="other">
             {({ insert, remove, push }) => (
                 <TableContainer borderWidth="1px" width="container.md">
-                  <Table className={styles.other} variant="simple">
+                  <Table className={styles.table} variant="simple">
                     <Thead>
                       <Tr>
                         <Th></Th>
@@ -683,6 +685,7 @@ const pricePerKg = props.pricePerKg
                     <Tbody>
                     {[1]?.map((item, counter) => (
                     <Tr key={counter}>
+                      {/*
                       <Td>
                       <Field name={`other.${counter}.kg`}>
         {({ field, form }:any) => (
@@ -692,6 +695,43 @@ const pricePerKg = props.pricePerKg
             )}
         </Field>
                       </Td>
+        */}     
+
+                      <Td>
+                      <Field name={`other.${counter}.customkg`}>
+                        {({ field, form, onChange }: any) => (
+                          <FormControl
+                            w="min-content"
+                            mb={2}
+                          >
+                            <Input
+                              variant="filled"
+                              type="number"
+                              width={16}
+                              onKeyUp={(e) => {
+                                props.setFieldValue(`other.${counter}.isChecked`, true);
+                                props.setFieldValue(`other.${counter}.kg`, item);
+                                props.setFieldValue(`other.${counter}.quantity`, field.value);
+                                props.setFieldValue(`other.${counter}.total`, item * field.value);
+                                props.setFieldValue(`other.${counter}.amount`, field.value * item * pricePerKg );
+                                !field.value
+                                  ? props.setFieldValue(`other.${counter}.isChecked`, false)
+                                  : console.log("Populated");
+                              }}
+                              {...field}
+                              placeholder="Kg"
+                              h="56px"
+                              textTransform="capitalize"
+                              min={1}
+                            />
+                            <FormErrorMessage>
+                              {form.errors.name}
+                            </FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+                      </Td>
+
                       <Td>
                       <Field name={`other.${counter}.name`}>
                         {({ field, form, onChange }: any) => (
@@ -712,7 +752,7 @@ const pricePerKg = props.pricePerKg
                                   ? props.setFieldValue(`other.${counter}.isChecked`, false)
                                   : console.log("Populated");
                               }}
-                              w="min-content"
+                              w={16}
                               {...field}
                               placeholder="Quantity"
                               h="56px"
@@ -726,21 +766,60 @@ const pricePerKg = props.pricePerKg
                         )}
                       </Field>
                       </Td>
+
+                      <Td>
+                      <Field name={`other.${counter}.pricepkg`}>
+                        {({ field, form, onChange }: any) => (
+                          <FormControl
+                            w="min-content"
+                            mb={2}
+                          >
+                            <Input
+                              variant="filled"
+                              type="number"
+                              width={16}
+                              onKeyUp={(e) => {
+                                props.setFieldValue(`other.${counter}.isChecked`, true);
+                                props.setFieldValue(`other.${counter}.kg`, item);
+                              
+                               
+                                props.setFieldValue(`other.${counter}.amount`, field.value * props.values?.other[counter]?.customkg * props.values.other[counter]?.name);
+                                !field.value
+                                  ? props.setFieldValue(`other.${counter}.isChecked`, false)
+                                  : console.log("Populated");
+                              }}
+                              {...field}
+                              placeholder="Price Per Kg"
+                              h="56px"
+                              textTransform="capitalize"
+                              min={1}
+                            />
+                            <FormErrorMessage>
+                              {form.errors.name}
+                            </FormErrorMessage>
+                          </FormControl>
+                        )}
+                      </Field>
+                      </Td>
+
+
+                    {/*
                       <Td>
                       <Box className={styles.ppkgo} p={4} bg="gray.50">
                         {pricePerKg * item }
                       </Box>
                       </Td>
+                      */} 
 
                       <Td>
                       <Box className={styles.totalkgo} p={4} bg="gray.50">
-                        {item * props.values?.other[counter]?.name }
+                        {props.values?.other[counter]?.customkg * props.values?.other[counter]?.name }
                       </Box>
                       </Td>
 
                       <Td>
                       <Box className={styles.amounto} p={4} bg="gray.50">
-                        {item * pricePerKg * props.values.other[counter]?.name }
+                        {props.values?.other[counter]?.customkg * props.values?.other[counter]?.pricepkg * props.values.other[counter]?.name }
                       </Box>
                       </Td>
                      

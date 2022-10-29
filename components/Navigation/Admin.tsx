@@ -47,7 +47,9 @@ const AdminNav: FC<any> = (props) => {
         }}
       >
         <Menu>
-          <MenuItem>{props.company?.name}</MenuItem>
+          <MenuItem>
+          <Link href="/Admin/">{props.company?.name}</Link>
+          </MenuItem>
         </Menu>
 
         <IconButton display={{base: 'block', md: 'none'}}
@@ -62,10 +64,21 @@ const AdminNav: FC<any> = (props) => {
       </SidebarHeader>
       <SidebarContent>
         <Menu>
-          <MenuItem icon={<TimeIcon></TimeIcon>}>
-          <Link href="/Admin/Sales">Sales</Link>
+          <SubMenu title="Sales" icon={<TimeIcon/>}>
+          <MenuItem style={{padding: "8px"}}>
+          <Link href="/Admin/Sales"> Daily Sales Summary</Link>
           </MenuItem>
 
+          <MenuItem style={{padding: "8px"}}>
+          <Link href="/Admin/Sales/Declined"> Declined Sales</Link>
+          </MenuItem>
+
+          <MenuItem style={{padding: "8px"}}>
+          <Link href="/Admin/Sales/CrbLog">Crb Log</Link>
+          </MenuItem>
+
+
+          </SubMenu>
           <SubMenu title="Stock" icon={<StockIcon />}>
           <MenuItem style={{padding: "8px"}}>
             <Link href="/Admin/#">View Stock Records</Link>
@@ -79,7 +92,7 @@ const AdminNav: FC<any> = (props) => {
           </MenuItem>
 
           <MenuItem icon={<TankIcon />}>
-            <Link href="/Admin/Tanks">Tanks</Link>
+            <Link href="/Admin/Tanks">Switch Tank</Link>
           </MenuItem>
           <SubMenu title="Prices" icon={<PriceIcon />}>
           <MenuItem style={{padding: "8px"}}>
@@ -94,7 +107,7 @@ const AdminNav: FC<any> = (props) => {
           <Link href="/Admin/Customers">Customers</Link>
           </MenuItem>
           <MenuItem icon={<StaffIcon />}>
-            <Link href="/Admin/Staff">Staff</Link>
+            <Link href="/Admin/Staff">Manage Accounts</Link>
           </MenuItem>
         </Menu>
       </SidebarContent>

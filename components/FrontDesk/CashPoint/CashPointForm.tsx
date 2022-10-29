@@ -133,7 +133,7 @@ const CashPointForm: FC<any> = (props) => {
             </HStack>
             <HStack justifyContent="space-between">
               <Text>Change</Text>
-              <Text>{customerProp?.change}</Text>
+              <Text>{customerProp?.change} NGN</Text>
             </HStack>
           </Box> 
       );
@@ -247,7 +247,9 @@ const CashPointForm: FC<any> = (props) => {
   
   }
 
-const delcineSale = async (actions:FormikProps<any>) => {
+const delcineSale = async (actions:FormikProps<any>,
+  values: {payment: string, amount: string, narrative: string, change: boolean, usechange: boolean}
+  ) => {
 
   const [destructuredSum] = props.summary;
 
@@ -259,7 +261,8 @@ const delcineSale = async (actions:FormikProps<any>) => {
     totalKg: destructuredSum.totalKg,
     description: destructuredSum.description,
     customerId: destructuredSum.customerId,
-    branch: destructuredSum.branchId
+    branch: destructuredSum.branchId,
+    declineReason: values.narrative
   }
 
     
@@ -353,6 +356,46 @@ const [destructuredSum] = props.summary
 
              {/* Customer Details */}
              <CustomerDetails></CustomerDetails>
+
+
+          {/* Sale Description */}
+          <Divider mt={4}></Divider>
+          <Flex flexFlow="row wrap" my={1}>
+            {destructuredSum?.description.map((item:any) => 
+              <Flex mr={2} flexFlow="column" justifyContent="space-between">
+                <Text fontWeight={600} color="cyan.600">Total Kg: {item.total} KG</Text>
+                <Text fontWeight={600} color="cyan.600">Quantity: {item.quantity}</Text>
+                  <Text fontWeight={600} color="cyan.600">Amount: {item.amount} NGN</Text>
+              </Flex>  
+            )}
+          </Flex>
+          <Center py={4} bg="cyan.50" color="cyan.700" className="purchase-amount">
+                <Text fontWeight={600}>Purchase Amount: {destructuredSum?.amount}</Text>
+            </Center>
+          <Divider></Divider>
+
+           {/* Sale Change */}   
+          <Box mb={2} mt={4} p={2} borderWidth="1px">
+            <HStack justifyContent="space-between">
+              <Text>Sale Change</Text>
+              <Text>{props.values.amount ? props.values.amount - destructuredSum?.amount: 0}</Text>
+            </HStack>
+          </Box>
+
+           {/* Change, Use Set State for Amount Due */}
+          <Box mt={4} p={2} bgColor="purple.200">
+            <HStack justifyContent="space-between">
+              {isRegistered ? <Box>
+                <Text>New Amount Due</Text>
+              <Text>{props.values.amount ? destructuredSum?.amount - customerProp?.change: 0}</Text>
+              </Box> : 
+                <Box>
+                <Text>New Amount Due</Text>
+              <Text>{props.values.amount ? destructuredSum?.amount : 0}</Text>
+              </Box>
+              }
+            </HStack>
+          </Box>  
           
 
               <Field validate={validateEmpty} name="payment">
@@ -398,7 +441,9 @@ const [destructuredSum] = props.summary
                       _placeholder={{ opacity: 0.2, color: 'gray.500' }}
                     >
                       <option>Successful</option>
-                      <option>Declined</option>
+                      <option>Declined - Cyliner Error</option>
+                      <option>Declined - Atm Declined</option>
+                      <option>Declined - Uncorresponding Cylinder</option>
                     </Select>
                     <FormErrorMessage>{form.errors.narrative}</FormErrorMessage>
                   </FormControl>
@@ -436,34 +481,11 @@ const [destructuredSum] = props.summary
           </HStack>
 
           
-          {/* Change, Use Set State for Amount Due */}
-          <Box mt={4} p={2} bgColor="purple.200">
-            <HStack justifyContent="space-between">
-              {isRegistered ? <Box>
-                <Text>New Amount Due</Text>
-              <Text>{props.values.amount ? destructuredSum?.amount - customerProp?.change: 0}</Text>
-              </Box> : 
-                <Box>
-                <Text>New Amount Due</Text>
-              <Text>{props.values.amount ? destructuredSum?.amount : 0}</Text>
-              </Box>
-              }
-            </HStack>
-          </Box> 
-
-          <Box mt={4} p={2} borderWidth="1px">
-            <HStack justifyContent="space-between">
-              <Text>Sale Change</Text>
-              <Text>{props.values.amount ? props.values.amount - destructuredSum?.amount: 0}</Text>
-            </HStack>
-          </Box> 
-
-          
           <ReactToPrint
               trigger={() => <Button my={4} colorScheme="purple" type="submit" width="full">Print Receipt</Button>}
               content={() => cashPointRef}
           />
-          <Button w="full" color="white" onClick={() => delcineSale({...props})} bg="red.500">Decline Sale</Button>
+          <Button w="full" color="white" onClick={() => delcineSale({...props}, props.values)} bg="red.500">Decline Sale</Button>
           <AutoSubmitToken></AutoSubmitToken>
             </Form>
           )}

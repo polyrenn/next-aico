@@ -76,6 +76,7 @@ interface PageProps<T> {
   branch: {
     address: string;
     branchId: number;
+    name: string
   };
 
   branches: {
@@ -153,6 +154,8 @@ export default (props: PageProps<[]>) => {
     setToggled(value);
   };
 
+  const user = props.user
+
 
     const colorCode = (item:string) => {
         switch (item) {
@@ -167,6 +170,9 @@ export default (props: PageProps<[]>) => {
             
             case 'Civil Servant':
                 return 'yellow.300'
+            
+            case 'Other':
+                return 'red.500'    
                         
             default:
                 break;
@@ -204,7 +210,7 @@ export default (props: PageProps<[]>) => {
       </Box>
 
       <Box overflowY="auto" w="100%" className="main-content">
-        <WithSubnavigation handleCollapsedChange={handleCollapsedChange} handleToggleSidebar={handleToggleSidebar} branch={props.branch}></WithSubnavigation>
+        <WithSubnavigation user={user} handleCollapsedChange={handleCollapsedChange} handleToggleSidebar={handleToggleSidebar} branch={props.branch}></WithSubnavigation>
         <Box p={6} className="actions">
         <Flex className="switch-log">
             <SwitchLog branch={query.branch} date={new Date(currentDate).toISOString()}></SwitchLog>
@@ -415,14 +421,14 @@ export const getServerSideProps = withSessionSsr(
             change: number
     }[]
     const user = req.session.user;
-    if (user?.role !== 'Admin') {
-      return {
-        redirect: {
-          destination: '/Login',
-          permanent: false,
-        },
+    if (user?.role !== 'Admin' && user?.role !== 'Supervisor') {
+        return {
+          redirect: {
+            destination: '/Login',
+            permanent: false,
+          },
+        }
       }
-    }
 
     if (!user) {
       return {
@@ -440,6 +446,7 @@ export const getServerSideProps = withSessionSsr(
       select: {
         address: true,
         branchId: true,
+        name: true
       },
     });
   

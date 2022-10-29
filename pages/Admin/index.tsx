@@ -66,6 +66,7 @@ interface PageProps<T> {
   branch: {
     address: string;
     branchId: number;
+    name: string
   };
 
   branches: {
@@ -100,7 +101,8 @@ interface PageProps<T> {
 
   user: {
     id: number,
-    admin: boolean
+    admin: boolean,
+    role: string
   };
 }
 export default (props: PageProps<[]>) => {
@@ -120,6 +122,9 @@ export default (props: PageProps<[]>) => {
     const handleToggleClose = (value:boolean) => {
       setToggled(value);
     };
+
+
+    const user = props.user
 
   // Modal Helpers For Quick Actions
   const { isOpen:isopenEditBranch, onClose:closeEditBranch, onOpen:onOpenEditBranch } = useDisclosure()
@@ -147,7 +152,7 @@ export default (props: PageProps<[]>) => {
       </Box>
 
       <Box overflowY="auto" w="100%" className="main-content">
-        <WithSubnavigation handleCollapsedChange={handleCollapsedChange} handleToggleSidebar={handleToggleSidebar} branch={props.branch}></WithSubnavigation>
+        <WithSubnavigation user={user} handleCollapsedChange={handleCollapsedChange} handleToggleSidebar={handleToggleSidebar} branch={props.branch}></WithSubnavigation>
 
         <Heading mt={6} px={6} mb={2} color="gray.500" size="lg">Statistics</Heading> 
         <Flex px={6} flexFlow="row wrap" className="sales-summary">
@@ -207,73 +212,102 @@ export default (props: PageProps<[]>) => {
          
 
         </Flex>
+        {props.user.role == 'Admin' ? 
+               <Box p={6} className="actions">
 
-        <Box p={6} className="actions">
+               <Heading mt={6} mb={2} color="gray.500" size="lg">Quick Actions</Heading> 
+         <Flex flexFlow={{ base: 'row wrap',}} mb={4} justify="space-between">
+           <HStack mb={{base: 2, md: 0}}>
+             <Heading size="sm">Company</Heading>
+             <Center
+               rounded="sm"
+               w="24px"
+               h="24px"
+               bg="green.200"
+               color="green.500"
+             >
+               {companyCount}
+             </Center>
+            
+           </HStack>
+       
+           <HStack>
+             <Button onClick={onOpenNewCompany} leftIcon={<AddIcon/>}>New</Button>
+             <Button onClick={onOpenDeleteCompany} colorScheme="red">Delete Company</Button>
+           </HStack>
+         </Flex>
+       {/*
+         <Box>
+           {props.companies.map((item) =>
+             <Box>
+                <Select
+                 instanceId={item.id}
+                 placeholder="Select Branch"
+                 options={options}
+               />
+               <Heading size="sm">{item.name}</Heading>
+               {item.branches.map((branch) =>
+                 <Text>{branch.address}</Text>
+               )}
+              </Box> 
+           )}
+         </Box>
+       
+               */}
+       
+       
+       <Flex flexFlow={{ base: 'row wrap',}} justify="space-between">
+           <HStack mb={{base: 2, md: 0}}>
+             <Heading size="sm">Branch</Heading>
+             <Center
+               rounded="sm"
+               w="24px"
+               h="24px"
+               bg="green.200"
+               color="green.500"
+             >
+               {branchCount}
+             </Center>
+           </HStack>
+       
+           <HStack>
+             
+             <Button onClick={onOpenNewBranch} leftIcon={<AddIcon/>}>New</Button>
+             <Button onClick={onOpenEditBranch} leftIcon={<EditIcon/>}>Edit</Button>
+             <Button onClick={onOpenDeleteBranch} colorScheme="red">Delete</Button>
+           </HStack>
+         </Flex>     
+       
+               </Box>
+       
+        : null
+        
+      }
 
-        <Heading mt={6} mb={2} color="gray.500" size="lg">Quick Actions</Heading> 
-  <Flex flexFlow={{ base: 'row wrap',}} mb={4} justify="space-between">
-    <HStack mb={{base: 2, md: 0}}>
-      <Heading size="sm">Company</Heading>
-      <Center
-        rounded="sm"
-        w="24px"
-        h="24px"
-        bg="green.200"
-        color="green.500"
-      >
-        {companyCount}
-      </Center>
-     
-    </HStack>
+      {props.user.role == 'Admin' ? 
 
-    <HStack>
-      <Button onClick={onOpenNewCompany} leftIcon={<AddIcon/>}>New</Button>
-      <Button onClick={onOpenDeleteCompany} colorScheme="red">Delete Company</Button>
-    </HStack>
-  </Flex>
-{/*
-  <Box>
-    {props.companies.map((item) =>
-      <Box>
-         <Select
-          instanceId={item.id}
-          placeholder="Select Branch"
-          options={options}
-        />
-        <Heading size="sm">{item.name}</Heading>
-        {item.branches.map((branch) =>
-          <Text>{branch.address}</Text>
-        )}
-       </Box> 
-    )}
-  </Box>
-
-        */}
-
-
-<Flex flexFlow={{ base: 'row wrap',}} justify="space-between">
-    <HStack mb={{base: 2, md: 0}}>
-      <Heading size="sm">Branch</Heading>
-      <Center
-        rounded="sm"
-        w="24px"
-        h="24px"
-        bg="green.200"
-        color="green.500"
-      >
-        {branchCount}
-      </Center>
-    </HStack>
-
-    <HStack>
-      
-      <Button onClick={onOpenNewBranch} leftIcon={<AddIcon/>}>New</Button>
-      <Button onClick={onOpenEditBranch} leftIcon={<EditIcon/>}>Edit</Button>
-      <Button onClick={onOpenDeleteBranch} colorScheme="red">Delete</Button>
-    </HStack>
-  </Flex>     
-
-</Box>  
+        <Box p={6} className="company-details">
+          <Heading mt={6} mb={2} color="gray.500" size="lg">Company Info</Heading>
+          <Box>
+            {props.companies.map((item) => 
+              <Box>
+              <Heading mb={2} size="sm" color="gray.500">{item.name}</Heading>
+              <Flex flexFlow="row wrap" className="branch-details">
+                {item.branches.map((branch:any) =>
+                  <Flex borderColor="blue.100" backgroundColor="blue.50" p={2} key={branch.branchId} mr={2} mb={4} flexFlow="column" w={{base: "100%", md: "30%"}} className="item" borderWidth="1px" rounded="sm">
+                    <Box>
+                      <Text fontWeight={500} fontSize={18}>{branch.name}</Text>
+                    </Box>
+                    <Text>{branch.address}</Text>
+                  </Flex>
+                )}
+              </Flex>
+              </Box>  
+            )}
+          </Box> 
+        </Box>  
+        : null 
+        }
 
      <EditBranch isOpen={isopenEditBranch} onClose={closeEditBranch}></EditBranch>
      <CreateBranch isOpen={isopenNewBranch} onClose={closeNewBranch}></CreateBranch>
@@ -290,7 +324,7 @@ export default (props: PageProps<[]>) => {
 export const getServerSideProps = withSessionSsr(
   async function getServerSideProps({ req }) {
     const user = req.session.user;
-    if (user?.role !== 'Admin') {
+    if (user?.role !== 'Admin' && user?.role !== 'Supervisor') {
       return {
         redirect: {
           destination: '/Login',
@@ -298,6 +332,7 @@ export const getServerSideProps = withSessionSsr(
         },
       }
     }
+
 
     if (!user) {
       return {
@@ -315,6 +350,7 @@ export const getServerSideProps = withSessionSsr(
       select: {
         address: true,
         branchId: true,
+        name: true
       },
     });
   
@@ -339,30 +375,65 @@ export const getServerSideProps = withSessionSsr(
 const today = new Date().toISOString()
 const formattedDate = today.split('T')[0]
 
-const branchAggregations = await prisma.$queryRaw`SELECT b.id,
-b.name,
-(select ts.designation as desig from tanks ts where b.current_tank = ts.tank_id),
-(select cast(count(*) as integer) as sales_count from sales s where b.branch_id = s.branch_id
-     and timestamp > ${formattedDate}::timestamp
-),
-(select cast(count(*) as integer) as queue_count from queue q where b.branch_id = q.branch_id
-     and timestamp > ${formattedDate}::timestamp
-),
-(select cast(count(*) as integer) as declined_count from declined_sales d where b.branch_id = d.branch_id
-     and timestamp > ${formattedDate}::timestamp
-),
-(select cast(sum(s.total_kg) as float) as total_kg from sales s where b.branch_id = s.branch_id
-     and timestamp > ${formattedDate}::timestamp
-),
-(select cast(sum(s.amount) as float) as amount_sold from sales s where b.branch_id = s.branch_id
-     and timestamp > ${formattedDate}::timestamp
-),
-companies.name as company_name
-FROM branches b
-Left JOIN companies
-ON b.company_id = companies.company_id
-ORDER BY b.id asc 
-`; // Refactor to Swr
+let branchAggregations
+
+if(user?.role == 'Admin') {
+  branchAggregations = await prisma.$queryRaw`SELECT b.id,
+  b.name,
+  (select ts.designation as desig from tanks ts where b.current_tank = ts.tank_id),
+  (select cast(count(*) as integer) as sales_count from sales s where b.branch_id = s.branch_id
+       and timestamp > ${formattedDate}::timestamp
+  ),
+  (select cast(count(*) as integer) as queue_count from queue q where b.branch_id = q.branch_id
+       and timestamp > ${formattedDate}::timestamp
+  ),
+  (select cast(count(*) as integer) as declined_count from declined_sales d where b.branch_id = d.branch_id
+       and timestamp > ${formattedDate}::timestamp
+  ),
+  (select cast(sum(s.total_kg) as float) as total_kg from sales s where b.branch_id = s.branch_id
+       and timestamp > ${formattedDate}::timestamp
+  ),
+  (select cast(sum(s.amount) as float) as amount_sold from sales s where b.branch_id = s.branch_id
+       and timestamp > ${formattedDate}::timestamp
+  ),
+  companies.name as company_name
+  FROM branches b
+  Left JOIN companies
+  ON b.company_id = companies.company_id
+  ORDER BY b.id asc 
+  `; // Refactor to Swr
+} else {
+
+  branchAggregations = await prisma.$queryRaw`SELECT b.id,
+  b.name,
+  b.branch_id,
+  (select ts.designation as desig from tanks ts where b.current_tank = ts.tank_id),
+  (select cast(count(*) as integer) as sales_count from sales s where b.branch_id = s.branch_id
+      and timestamp > ${formattedDate}::timestamp
+  ),
+  (select cast(count(*) as integer) as queue_count from queue q where b.branch_id = q.branch_id
+      and timestamp > ${formattedDate}::timestamp
+  ),
+  (select cast(count(*) as integer) as declined_count from declined_sales d where b.branch_id = d.branch_id
+      and timestamp > ${formattedDate}::timestamp
+  ),
+  (select cast(sum(s.total_kg) as float) as total_kg from sales s where b.branch_id = s.branch_id
+      and timestamp > ${formattedDate}::timestamp
+  ),
+  (select cast(sum(s.amount) as float) as amount_sold from sales s where b.branch_id = s.branch_id
+      and timestamp > ${formattedDate}::timestamp
+  ),
+  companies.name as company_name
+  FROM branches b
+  Left JOIN companies
+  ON b.company_id = companies.company_id
+  WHERE b.branch_id = ${user?.branch}::int 
+  ORDER BY b.id asc
+  `; // Refactor to Swr
+
+}
+
+
   
     const branches = await prisma.branch.findMany({
       select: {

@@ -74,7 +74,7 @@ import CashPointTable from "./CashPointTable";
          return (
         <Box ref={ref} p={4} bg="white" w="500px" rounded="md">
           <VStack spacing={1}>
-            <Heading size="md">AicoGas</Heading>
+            <Heading size="md">Aico Gas Limited</Heading>
             {sidebar}
            
           </VStack>

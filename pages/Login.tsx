@@ -146,6 +146,10 @@ export default (props: PageProps<[]>) => {
                 router.push('/Admin')
                 break;
 
+            case 'Supervisor':
+                router.push('/Admin')
+                break;    
+
             case 'Crb Attendant':
                 router.push('/FrontDesk/Crb')
                 break;    
@@ -208,8 +212,13 @@ export default (props: PageProps<[]>) => {
       <Box height="100%" className="navigation"></Box>
 
       <Box overflowY="auto" w="100%" h="100%" className="main-content">
-        
+        <Center>
+          <Heading fontWeight={400} color="gray.500">Almarence International Company Limited</Heading>
+        </Center>
         <Center h="100%">
+          <Box>
+            
+          </Box>
           <Flex
             alignItems="space-between"
             flexFlow="column"

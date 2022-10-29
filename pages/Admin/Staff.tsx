@@ -60,6 +60,7 @@ interface PageProps<T> {
   branch: {
     address: string;
     branchId: number;
+    name: string;
   };
 
   branches: {
@@ -71,6 +72,11 @@ interface PageProps<T> {
     name: string;
     companyId: number;
   };
+
+  user: {
+    role: string,
+    branchId: number
+  }
 
   companies: T[];
 
@@ -94,6 +100,8 @@ export default (props: PageProps<[]>) => {
     const handleToggleClose = (value:boolean) => {
       setToggled(value);
     };
+
+    const staff = props.user
 
     //Modal Helpers
     const {isOpen, onOpen, onClose} = useDisclosure()
@@ -129,9 +137,9 @@ export default (props: PageProps<[]>) => {
       </Box>
 
       <Box overflowY="auto" w="100%" className="main-content">
-        <WithSubnavigation handleCollapsedChange={handleCollapsedChange} handleToggleSidebar={handleToggleSidebar} branch={props.branch}></WithSubnavigation>
+        <WithSubnavigation user={user} handleCollapsedChange={handleCollapsedChange} handleToggleSidebar={handleToggleSidebar} branch={props.branch}></WithSubnavigation>
         <Box p={6} className="staffs">
-        <Heading mb={4} color="gray.500" size="lg">Manage Staffs</Heading> 
+        <Heading mb={4} color="gray.500" size="lg">Manage Accounts</Heading> 
         <Flex my={2} justify="space-between">
         <HStack>
               <Heading color="gray.800" size="sm">Staff</Heading>
@@ -162,7 +170,7 @@ export const getServerSideProps = withSessionSsr(
   async function getServerSideProps({ req }) {
 
     const user = req.session.user;
-    if (user?.role !== 'Admin') {
+    if (user?.role !== 'Admin' && user?.role !== 'Supervisor') {
       return {
         redirect: {
           destination: '/Login',
@@ -187,6 +195,7 @@ export const getServerSideProps = withSessionSsr(
       select: {
         address: true,
         branchId: true,
+        name: true,
       },
     });
 
@@ -220,6 +229,6 @@ export const getServerSideProps = withSessionSsr(
   });
 
   return {
-    props: { branch, company, branches, companies, staffs },
+    props: { branch, company, branches, companies, staffs, user },
   };
 });

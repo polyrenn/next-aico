@@ -46,6 +46,7 @@ interface PageProps<T> {
   branch: {
     address: string;
     branchId: number;
+    name: string
   };
 
   branches: {
@@ -56,6 +57,12 @@ interface PageProps<T> {
   company: {
     name: string;
     companyId: number;
+  };
+
+  user: {
+    id: number,
+    admin: boolean,
+    role: string
   };
 
   companies: T[];
@@ -143,6 +150,7 @@ const CompanyComponent: FC<any> = (props) => {
               <Box key={branch.id}></Box>
             ))}
           </HStack>
+          <PriceList branch={branch}></PriceList>
         </Box>
       </Box>
     );
@@ -165,6 +173,8 @@ export default (props: PageProps<[]>) => {
   const handleToggleClose = (value:boolean) => {
     setToggled(value);
   };
+
+  const user = props.user
 
   console.log(props.companies);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -191,7 +201,7 @@ export default (props: PageProps<[]>) => {
       </Box>
 
       <Box overflowY="auto" w="100%" className="main-content">
-        <WithSubnavigation handleToggleSidebar={handleToggleSidebar}
+        <WithSubnavigation user={user} handleToggleSidebar={handleToggleSidebar}
         handleCollapsedChange={handleCollapsedChange}
          branch={props.branch}></WithSubnavigation>
         <Box p={6} className="branches">
@@ -210,9 +220,9 @@ export default (props: PageProps<[]>) => {
 
         <Box p={6} className="price-list">
             <Flex my={2} justify="space-between">
-            <Heading color="gray.500" size="lg">Price List for {stockBranch}</Heading>
+           { /* <Heading color="gray.500" size="lg">Price List for {stockBranch}</Heading> */ }
             </Flex>
-            <PriceList branch={branchId}></PriceList>
+           {/* <PriceList branch={branchId}></PriceList> */ }
         </Box>
       </Box>
     </Flex>
@@ -224,14 +234,14 @@ export const getServerSideProps = withSessionSsr(
   async function getServerSideProps({ req }) {
 
 const user = req.session.user;
-    if (user?.role !== 'Admin') {
-      return {
-        redirect: {
-          destination: '/Login',
-          permanent: false,
-        },
-      }
-    }
+if (user?.role !== 'Admin' && user?.role !== 'Supervisor') {
+  return {
+    redirect: {
+      destination: '/Login',
+      permanent: false,
+    },
+  }
+}
 
     if (!user) {
       return {
@@ -242,9 +252,13 @@ const user = req.session.user;
       }
     }
   const branch = await prisma.branch.findFirst({
+    where: {
+      branchId: user?.branch
+    },
     select: {
       address: true,
       branchId: true,
+      name: true
     },
   });
 
@@ -263,17 +277,36 @@ const user = req.session.user;
     },
   });
 
-  const companies = await prisma.company.findMany({
-    include: {
-      branches: {
-        include: {
-          tanks: true,
-        },
+  let companies
+
+  if(user?.role == 'Admin') {
+    companies = await prisma.company.findMany({
+      include: {
+          branches: {
+              include: {
+                  tanks: true
+              }
+          }
+      }
+  
+    });
+  } else {
+    companies = await prisma.company.findMany({
+      where: {
+        companyId: user.company
       },
-    },
-  });
+      include: {
+          branches: {
+              include: {
+                  tanks: true
+              }
+          }
+      }
+  
+    });
+  }
 
   return {
-    props: { branch, company, branches, companies },
+    props: { branch, company, branches, companies, user },
   };
 });

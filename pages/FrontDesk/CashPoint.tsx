@@ -174,7 +174,7 @@ const {isOpen, onClose, onOpen} = useDisclosure()
 
   return (
     <div>
-      <WithSubnavigation branch={props.branch}></WithSubnavigation>
+      <WithSubnavigation user={user} branch={props.branch}></WithSubnavigation>
       <Head title="Cash Desk" />
       <Box className="main-content" mx={8}>
         {/* Optional Prop Number that determines Number of Stat to Render in the Block */}
@@ -202,7 +202,7 @@ const {isOpen, onClose, onOpen} = useDisclosure()
           
         </Box>
 
-        <Report summary isOpen={isOpen} onClose={onClose}></Report>
+        <Report branchId={branchId} isOpen={isOpen} onClose={onClose}></Report>
       </Box>
       <style jsx global>{`
        .css-1zts0j {

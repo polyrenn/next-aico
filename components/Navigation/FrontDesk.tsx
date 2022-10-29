@@ -25,9 +25,10 @@ import {
 import { FC } from 'react';
 
 interface NavProps {
-  branch: { address: string, branchId: number };
-  handleToggleSidebar (toggled: boolean): any;
-  handleCollapsedChange (name: boolean): any;
+  branch: { address: string, branchId: number, name: string };
+  handleToggleSidebar? (toggled: boolean): any;
+  handleCollapsedChange? (name: boolean): any;
+  user: any
 }
   
   export default function WithSubnavigation(props:NavProps) {
@@ -83,14 +84,14 @@ interface NavProps {
               textAlign={useBreakpointValue({ base: 'center', md: 'left' })}
               fontFamily={'heading'}
               color={useColorModeValue('gray.800', 'white')}>
-              Aicogas
+              Almarence International Company Limited
             </Text>
   
             <Flex display={{ base: 'none', md: 'flex' }} ml={10}>
               <DesktopNav />
             </Flex>
           </Flex>
-          <Text display={{base: "none", md: "block"}} px={4}>{props.branch.address}</Text>  
+          <Text display={{base: "none", md: "block"}} px={4}>Welcome {props.branch.name} {props.user.role}</Text>  
           <Text display={{base: "none", md: "block"}} px={4}>{date1.toDateString()}</Text>
           <Stack
             flex={{ base: 1, md: 0 }}
@@ -305,17 +306,5 @@ interface NavProps {
       ],
     },
     */
-    {
-      label: 'Register Customer',
-      href: '#',
-    },
-    {
-      label: 'Report',
-      href: '#',
-    },
-
-    {
-      label: 'Renn',
-      href: '#',
-    },
+    
   ];

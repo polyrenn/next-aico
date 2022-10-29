@@ -227,6 +227,7 @@ const UpdatePrice:FC<ModalProps> = (props) => {
             )}
           </Field>
 
+          { /*    
           <Text mt={4} color="gray.500" fontSize="sm">Set available kgs.</Text>
           <Wrap spacing={[1, 2]} direction={['column', 'row']}>   
           <FieldArray name="kgs">
@@ -246,7 +247,7 @@ const UpdatePrice:FC<ModalProps> = (props) => {
           ))}
           </FieldArray>    
           </Wrap> 
-
+                  */ }
           
           <Button
             my={4}

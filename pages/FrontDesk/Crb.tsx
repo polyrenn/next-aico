@@ -49,6 +49,7 @@ export default (props:any) => {
 }});
 
   const branchId = props.branch.branchId
+  const user = props.user
 
   const categoryPrices: { category: string, pricePerKg: number, availableKgs: number[] }[] = props.prices
   const visibility = false
@@ -104,7 +105,7 @@ console.log(props.branch)
 
 console.log(prices[0][1])
 
-  const [priceKgs, setPriceKgs] = useState<number[] | undefined>([1,2,3])
+  const [priceKgs, setPriceKgs] = useState<number[] | undefined>([])
 
   const [pricePerKg, setPricePerKg] = useState<number>(0)
   
@@ -144,7 +145,7 @@ console.log(prices[0][1])
 
     return (
         <div>
-        <WithSubnavigation branch={props.branch}></WithSubnavigation>
+        <WithSubnavigation user={user} branch={props.branch}></WithSubnavigation>
         <Head title="Crb Desk" />
         <Box className='main-content' mx={8}>
             {/* Optional Prop Number that determines Number of Stat to Render in the Block */}
@@ -206,7 +207,7 @@ console.log(prices[0][1])
             </BranchContext.Provider>    
             </Box>
             
-            <Report summary isOpen={isOpen} onClose={onClose}></Report>
+            <Report branchId={branchId} isOpen={isOpen} onClose={onClose}></Report>
         </Box>
 
         <Box my={4} className='sales-form'>
@@ -265,7 +266,8 @@ export const getServerSideProps = withSessionSsr(
     },
     select: {
       address: true,
-      branchId: true
+      branchId: true,
+      name: true
     },
   });
 

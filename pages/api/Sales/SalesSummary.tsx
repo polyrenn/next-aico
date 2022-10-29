@@ -193,8 +193,18 @@ ON b.company_id = companies.company_id
 ORDER BY b.id asc 
 `;
 
-
-
+const summation:any = await prisma.$queryRaw`SELECT
+(select cast(count(*) as float) as count_invoice from sales s where
+  timestamp::date = ${formattedDate}::date
+),
+CAST(SUM(total_kg) AS FLOAT) AS total_kg_sold,
+CAST(SUM(amount) FILTER (WHERE payment_method = 'cash') AS FLOAT) AS total_cash_sold,
+CAST(SUM(amount) FILTER (WHERE payment_method = 'pos') AS FLOAT) AS total_pos_sold,
+CAST(SUM(amount) AS FLOAT) AS total_amount_sold
+From sales s
+where timestamp::date= ${formattedDate}::date
+`
+const [formattedSummation] = summation
 
 const formattedOpeningSales = openingSales.map(item => ({
     timestampTime: new Date(item.timestamp).toLocaleTimeString("en-US", {timeZone:'Africa/Lagos',hour12:true,hour:'numeric',minute:'numeric'}),
@@ -245,7 +255,9 @@ const data = {
 
     currentTank: [
         ...branchDetails
-    ]
+    ],
+
+    summation: formattedSummation
   };
   res.status(200).json(data);
 };

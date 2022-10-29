@@ -1,6 +1,6 @@
 import { FC, useState } from "react"
 //Utility Imports
-import { useDisclosure, VStack } from "@chakra-ui/react"
+import { Heading, useDisclosure, VStack } from "@chakra-ui/react"
 import {  Formik, Field, Form, FormikHelpers } from "formik"
 import * as Yup from 'yup';
 import axios from "axios";
@@ -31,18 +31,43 @@ import {
     Input,
 } from '@chakra-ui/react'
 
-import { BranchContext } from "../../../pages/FrontDesk/Crb";
+import { BranchContext } from "../../../pages/FrontDesk/CashPoint";
+import { colorCode } from "../../Admin/Prices/Category";
+import useSWR from "swr";
 
 
 interface ModalProps {
     isOpen: boolean
     onClose: any
-    summary:any
+    branchId: any
 }
+export const textCode = (item:string) => {
+    switch (item) {
+        case 'Domestic':
+            return 'teal.800'
+    
+        case 'Dealer':
+            return 'green.800'
 
+        case 'Eatery':
+            return 'blue.800'
+        
+        case 'Civil Servant':
+            return 'yellow.800'
+                    
+        default:
+            break;
+    }
+}
+const fetcher = (url:string) => fetch(url).then((res) => res.json())
 const Report:FC<ModalProps> = (props) => {
 
+    const branchId = props.branchId
     const today = new Date().toDateString();
+    const { data, error } = useSWR(`/api/FrontDesk/SaleReport?branch=${branchId}`, fetcher, {
+        onSuccess: (data) => {
+         
+    }});
   
     return (
         <Modal size="xl" isOpen={props.isOpen} onClose={props.onClose}>
@@ -53,7 +78,35 @@ const Report:FC<ModalProps> = (props) => {
           <ModalBody>
           <Box borderWidth="1px" rounded={8} mb={2} p={4}>
             {today}
-            </Box> 
+            </Box>
+            <Flex justifyContent="space-between">
+             {data?.map((item:any) => 
+                <HStack ml={2} flex={1} color={`${textCode(item.category)}`} backgroundColor={`${colorCode(item.category)}`}>
+                <Box>
+                    <Heading size="sm">
+                        {item.category}
+                    </Heading>
+                    <Box>
+                        <Text>Sales Count</Text>
+                        <Text>1</Text>
+                    </Box>
+                    <Box>
+                        <Text>Total Kg</Text>
+                        <Text>1</Text>
+                    </Box>
+    
+                    <Box>
+                        <Text>Amount Sold</Text>
+                        <Text>1</Text>
+                    </Box>
+                    
+                </Box>
+              </HStack>
+             )}   
+            </Flex>
+          
+          
+            
 
           </ModalBody>
 

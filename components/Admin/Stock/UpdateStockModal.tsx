@@ -30,6 +30,7 @@ import {
     FormHelperText,
     Input,
 } from '@chakra-ui/react'
+import DayStats from "../../Common/DayStats";
 
 
 
@@ -68,6 +69,7 @@ const UpdateStockModal:FC<ModalProps> = (props) => {
         }
     })
     
+    const currentDate = new Date().toISOString()
 
     const customStyles = {
         control: (provided:any, state:any) => ({
@@ -171,6 +173,7 @@ const UpdateStockModal:FC<ModalProps> = (props) => {
           <ModalHeader>Update Stock</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
+          <DayStats branch={props.branch} date={currentDate.split('T')[0]}></DayStats>  
           <Formik
             initialValues={initialValues}
             onSubmit={(values, actions) => {

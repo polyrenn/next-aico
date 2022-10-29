@@ -1,4 +1,5 @@
-//import { prisma } from "../../../lib/prisma";
+import { prisma } from "../../../lib/prisma";
+/*
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient({
   log: [
@@ -26,12 +27,19 @@ prisma.$on("query", (e) => {
   console.log("Params: " + e.params);
   console.log("Duration: " + e.duration + "ms");
 });
-
+*/
 export default async (req: any, res: any) => {
+
+  const { branch } = req.query  
+  const today = new Date().toISOString()
+  const formattedDate = today.split('T')[0]    
   const result = await prisma.prices.findMany({
     where: {
-      branchId: 131313,
+      branchId: parseInt(branch),
     },
+    orderBy: {
+        id: 'asc'
+    }
   });
 
   let resultQuery = [] as any;
@@ -47,15 +55,26 @@ export default async (req: any, res: any) => {
 
   const getWithForOf = async() => {
     const data = []
+    // Un HardCodeBranch
     for (const item of result) {
-      let dataUser = await prisma.$queryRawUnsafe(`
+      let aggregated = await prisma.$queryRawUnsafe(`
       SELECT 
-      CAST(SUM(amount) FILTER (WHERE category = '${item.category}') AS FLOAT) AS total_sold
+      (select cast(count(*) as float) from sales s where category = '${item.category}'
+        and timestamp::date =  date '${formattedDate}'
+        and s.branch_id = ${branch}
+      ),
+      CAST(SUM(total_kg) FILTER (WHERE category = '${item.category}') AS FLOAT) AS total_kg_sold,
+      CAST(SUM(amount) FILTER (WHERE category = '${item.category}') AS FLOAT) AS total_amount_sold
       From sales s
-      Where s.branch_id = 131313
+      Where s.branch_id = ${branch}
+      and timestamp::date =  date '${formattedDate}'
       `);
-      data.push(dataUser);
-      console.log(dataUser)
+      let [destructured] = aggregated as any
+      let formatted = {
+        category: item.category,
+        ...destructured
+      }
+      data.push(formatted)
     }
     return data
  }

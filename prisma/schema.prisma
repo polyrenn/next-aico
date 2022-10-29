@@ -168,7 +168,7 @@ model Staff {
   branchId Int @map(name: "branch_id")
   username String @unique
   password String
-  role String
+  role String // Name Re Staff Creation Api
   @@map(name: "staffs")
 }
 
@@ -183,6 +183,7 @@ model DeclinedSales {
   timestamp DateTime @db.Timestamptz()
   customerId String @map(name: "customer_id")
   description Json
+  declineReason String @map(name: "decline_reason")
   @@map(name: "declined_sales")
 }
 

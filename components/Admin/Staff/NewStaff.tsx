@@ -88,8 +88,7 @@ const NewStaff:FC<ModalProps> = (props) => {
         {value: "CashPoint Attendant", label: "CashPoint Attendant"},
         {value: "Crb Attendant", label: "Crb Attendant"},
         {value: "Admin", label: "Admin"},
-
-
+        {value: "Supervisor", label: "Supervisor"},
         
     ]  
       

@@ -1,3 +1,7 @@
+.table tbody tr input:focus-visible, .table tbody tr input[data-focus-visible] {
+    background: #EDF2F7;
+}
+
 .table tbody tr:nth-child(2n + 1) {
     background-color: #333333;
     color: #fafafa;

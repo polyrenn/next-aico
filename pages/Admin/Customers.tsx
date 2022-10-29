@@ -58,6 +58,7 @@ interface PageProps<T> {
   branch: {
     address: string;
     branchId: number;
+    name: string;
   };
 
   branches: {
@@ -68,6 +69,12 @@ interface PageProps<T> {
   company: {
     name: string;
     companyId: number;
+  };
+
+  user: {
+    id: number,
+    admin: boolean,
+    role: string
   };
 
   companies: T[];
@@ -94,6 +101,8 @@ export default (props: PageProps<[]>) => {
       setToggled(value);
     };
 
+    const user = props.user
+
   console.log(props.companies);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [ branch, setBranch ] = useState<number>()
@@ -104,7 +113,7 @@ export default (props: PageProps<[]>) => {
     return info;
   };
 
-  const customerComplete = props.customers.map((person, oid) => (
+  const customerComplete = props.customers.map((person:any, oid) => (
     <AutoCompleteItem
       key={`option-${oid}`}
       value={person}
@@ -129,7 +138,7 @@ export default (props: PageProps<[]>) => {
       </Box>
 
       <Box overflowY="auto" w="100%" className="main-content">
-        <WithSubnavigation handleCollapsedChange={handleCollapsedChange} handleToggleSidebar={handleToggleSidebar} branch={props.branch}></WithSubnavigation>
+        <WithSubnavigation user={user} handleCollapsedChange={handleCollapsedChange} handleToggleSidebar={handleToggleSidebar} branch={props.branch}></WithSubnavigation>
         <Box p={6} className="branches">
         <Heading mb={4} color="gray.500" size="lg">Customer Loyalty</Heading>
           {props.companies.map((item: any) => (
@@ -183,7 +192,7 @@ export const getServerSideProps = withSessionSsr(
   async function getServerSideProps({ req }) {
 
     const user = req.session.user;
-    if (user?.role !== 'Admin') {
+    if (user?.role !== 'Admin' && user?.role !== 'Supervisor') {
       return {
         redirect: {
           destination: '/Login',
@@ -208,6 +217,7 @@ export const getServerSideProps = withSessionSsr(
       select: {
         address: true,
         branchId: true,
+        name: true
       },
     });
 
@@ -247,6 +257,6 @@ export const getServerSideProps = withSessionSsr(
   });//Swr
 
   return {
-    props: { branch, company, branches, companies, customers },
+    props: { branch, company, branches, companies, customers, user },
   };
 });
