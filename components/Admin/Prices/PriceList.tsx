@@ -85,13 +85,13 @@ const PriceList: FC<PriceList> = (props) => {
                         px={4}
                         color={'cyan.900'}
                         rounded={'md'}
-                        >{item.category} {item.pricePerKg}</Text>
+                        >{item.category} {Math.ceil(item.pricePerKg / 10) * 10}</Text>
                     </Flex>
                 </Td>
                 <Td>{item.availableKgs.map((kg:number) =>(
                     <Flex key={kg} mb={2} justify="space-between">
                         <Text>{kg} Kg </Text>
-                        <Text>{(kg * item.pricePerKg).toLocaleString("en-US") } NGN</Text>
+                        <Text>{(Math.ceil((item.pricePerKg * kg) / 10) * 10).toLocaleString("en-US") } NGN</Text>
                     </Flex>
                     
                 ) )}</Td>

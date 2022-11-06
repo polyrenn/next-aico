@@ -36,6 +36,8 @@ import { withSessionSsr } from '../../lib/withSession';
 import useSWR from 'swr';
 import { useDisclosure } from '@chakra-ui/react';
 import Report from '../../components/FrontDesk/Crb/Report';
+import DayStats from '../../components/Common/DayStats';
+import SwitchLog from '../../components/Common/SwitchLog';
 const fetcher = (url:string) => fetch(url).then((res) => res.json())
 export const BranchContext = createContext<{ address: string, branchId: number } | undefined>(undefined);
 
@@ -110,6 +112,7 @@ console.log(prices[0][1])
   const [pricePerKg, setPricePerKg] = useState<number>(0)
   
   const toast = useToast()
+  const currentDate = new Date().toISOString()
   
   const handleChange = (value:any) => {
     toast({
@@ -149,9 +152,12 @@ console.log(prices[0][1])
         <Head title="Crb Desk" />
         <Box className='main-content' mx={8}>
             {/* Optional Prop Number that determines Number of Stat to Render in the Block */}
-            <Box my={4} className='stats'>
-                <StatBlock branch={branchId}></StatBlock>
-            </Box>
+            <Center mt={2} className="switch-log">
+            <SwitchLog branch={props.branch.branchId} date={new Date().toISOString()}></SwitchLog>
+            </Center>
+            <Center className='stats'>
+                <DayStats date={currentDate} branch={branchId}></DayStats>
+            </Center>
 
             <Box className='Utils'>
                 <Center>
@@ -280,6 +286,10 @@ export const getServerSideProps = withSessionSsr(
       category: true,
       pricePerKg: true,
       availableKgs: true
+    },
+
+    orderBy: {
+      id: 'asc'
     }
   });
   

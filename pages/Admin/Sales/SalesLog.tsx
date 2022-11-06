@@ -310,7 +310,7 @@ export default (props: PageProps<[]>) => {
                    )}
                </Td>
                <Td>{item.total_kg}</Td>
-               <Td>{item.amount.toLocaleString()} NGN</Td>
+               <Td>{item.amount?.toLocaleString()} NGN</Td>
                <Td>{item.payment_method.toUpperCase()}</Td>
                <Td>{item.current_tank}</Td>
                <Td>{item.balance} KG</Td>
@@ -320,24 +320,29 @@ export default (props: PageProps<[]>) => {
            <Tr>
             <Td colSpan={2} backgroundColor="red.300">
                 Switch Alert
+                <Text>Total of {item.description[0].old_name}</Text>
             </Td>
+            <Td></Td>
+            <Td><Text>{item.description[0].total_kg} Kg</Text></Td>
+            <Td><Text>{item.description[0].amount_sold?.toLocaleString()} NGN</Text></Td>
             <Td textAlign="center" fontWeight="600" color="white" backgroundColor="purple.500" colSpan={7}>
                 <Stack direction="column">
-                    <Text>{item.description[0].total_kg}</Text>
-                    <Text>{item.description[0].amount_sold}</Text>
                     <Text>Loss on previous tank: {item.description[0].loss} Kg</Text>
-                    <Text>Switched to {item.description[0].switchedTo}</Text>
+                    <Text>Switched to: {item.description[0].switchedTo}</Text>
+                    <Text>New Tank Opening Stock: {item.description[0].opening_new} Kg</Text>
                 </Stack>
                
             </Td>
            </Tr> 
             )}
-
-            <Tr>
-                <Td colSpan={3}>Total of Tank A</Td>
-                <Td borderRightWidth="1px">Kg</Td>
-                <Td borderRightWidth="1px">Amount</Td>
-            </Tr>
+            {data?.tankAggregations.map((item:any, counter:number) => 
+                <Tr key={counter}>
+                <Td colSpan={3}>Total of {item.desig}</Td>
+                <Td borderRightWidth="1px">{item.total_kg} Kg</Td>
+                <Td borderRightWidth="1px">{item.total_amount_sold?.toLocaleString()} NGN</Td>
+                </Tr>
+            )}
+            
 
             <Tr>
                 <Td textAlign="center" fontWeight={700} colSpan={100}>Day's Summary</Td>
@@ -345,12 +350,13 @@ export default (props: PageProps<[]>) => {
 
             <Tr>
                 <Td colSpan={3}>Sub Total</Td>
+
                 {data?.aggregations.map((item:any, counter:number) =>
-                    <Td key={counter} borderRightWidth="1px" borderLeftWidth="1px" colSpan={1}>Total Amount: {item.total_amount_today}</Td>
+                    <Td key={counter} borderRightWidth="1px">Total Kg: {item.total_kg_today} Kg</Td>
                 )}
 
                 {data?.aggregations.map((item:any, counter:number) =>
-                    <Td key={counter} borderRightWidth="1px">Total Kg: {item.total_kg_today}</Td>
+                    <Td key={counter} borderRightWidth="1px" borderLeftWidth="1px" colSpan={1}>Total Amount: {item.total_amount_today?.toLocaleString()} NGN</Td>
                 )}
 
             </Tr>
@@ -358,7 +364,7 @@ export default (props: PageProps<[]>) => {
             <Tr>
                 <Td colSpan={3}>Total POS</Td>
                 {data?.aggregations.map((item:any, counter:number) =>
-                    <Td key={counter} borderRightWidth="1px"  borderLeftWidth="1px">{item.total_pos_sold}</Td>
+                    <Td key={counter} borderRightWidth="1px"  borderLeftWidth="1px">{item.total_pos_sold?.toLocaleString()} NGN</Td>
                 )}
 
             </Tr>
@@ -366,7 +372,7 @@ export default (props: PageProps<[]>) => {
             <Tr>
                 <Td colSpan={3}>Total Cash</Td>
                 {data?.aggregations.map((item:any, counter:number) =>
-                    <Td key={counter} borderRightWidth="1px" borderLeftWidth="1px">{item.total_cash_sold}</Td>
+                    <Td key={counter} borderRightWidth="1px" borderLeftWidth="1px">{item.total_cash_sold?.toLocaleString()} NGN</Td>
                 )}
 
             </Tr>
@@ -374,7 +380,7 @@ export default (props: PageProps<[]>) => {
             <Tr>
                 <Td colSpan={3}>Closing Stock</Td>
                 {data?.aggregations.map((item:any, counter:number) =>
-                    <Td key={counter} borderRightWidth="1px" borderLeftWidth="1px">{item.closing_stock}</Td>
+                    <Td key={counter} borderRightWidth="1px" borderLeftWidth="1px">{item.closing_stock} Kg</Td>
                 )}
 
             </Tr>

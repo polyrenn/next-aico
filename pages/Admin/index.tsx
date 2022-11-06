@@ -186,12 +186,12 @@ export default (props: PageProps<[]>) => {
 
                 <HStack justifyContent="space-between">
                   <Text>Kg Sold</Text>
-                  <Text>{item.total_kg}</Text>
+                  <Text>{item.total_kg} Kg</Text>
                 </HStack>
 
                 <HStack justifyContent="space-between">
                   <Text>Total Amount</Text>
-                  <Text>{item.amount_sold}</Text>
+                  <Text>{item.amount_sold?.toLocaleString()} NGN</Text>
                 </HStack>
 
                 <HStack justifyContent="space-between">

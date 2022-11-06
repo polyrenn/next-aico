@@ -25,7 +25,7 @@ const BranchRadios:FC<any> = (props:any) => {
   const checkbox = getCheckboxProps()
 
   return (
-    <Box mr={{base: 2, md: 4}} mb={{base: 2, md: 4}} as='label'>
+    <Box mr={{base: 2, md: 4}} mb={{base: 2, md: 0}} as='label'>
       <input {...input} />
       <Box
         {...checkbox}

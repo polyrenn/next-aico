@@ -60,7 +60,7 @@ export default async (req: any, res: any) => {
     for (const item of result) {
       let aggregated = await prisma.$queryRawUnsafe(`
       SELECT 
-      (select cast(count(*) as float) from sales s where category = '${item.category}'
+      (select cast(count(*) as float) from crbs s where category = '${item.category}'
         and timestamp::date =  date '${formattedDate}'
         and s.branch_id = ${branch}
       ),
@@ -80,7 +80,7 @@ export default async (req: any, res: any) => {
     return [data]
  }
  const totals = await prisma.$queryRaw`SELECT
- (select cast(count(*) as float) as count_invoice from sales s where
+ (select cast(count(*) as float) as count_invoice from crbs s where
    timestamp::date =  ${formattedDate}::date
    and s.category != 'Switch'
  ),

@@ -12,10 +12,19 @@ import {
   Spinner,
   Center
 } from "@chakra-ui/react";
+import {  useFormik,
+  Formik,
+  FormikHelpers,
+  FormikProps,
+  FieldArray,
+  Form,
+  Field,
+  FieldProps } from "formik";
 
 import useSWR from "swr";
+import ReactToPrint from "react-to-print";
 
-import React, { FC, useEffect, Ref, useState } from "react";
+import React, { FC, useEffect, useRef, Ref, useState } from "react";
 
 type Summary = {
     kg: string,
@@ -23,9 +32,14 @@ type Summary = {
     total: number,
 }
 
+type FormValues = {
+  friends: []
+};
+
 interface SummaryProps {
   summary: any;
   ref: any;
+  form: FormikProps<any>
   customer: string
   pricePerKg: number
   cancelSummary: any
@@ -39,9 +53,12 @@ import CrbNumber from "./CrbNumber";
 const SummaryCard:FC<SummaryProps> = React.forwardRef(
   (props, ref) => {
 
+    let componentRef = useRef<null | HTMLDivElement>(null);
+
     const summary = props.summary;
     let sidebar
     console.log(props.customer)
+    const form = props.form
     //const customer = formValues.current.values.user
   
     useEffect(() => {
@@ -50,7 +67,7 @@ const SummaryCard:FC<SummaryProps> = React.forwardRef(
 
     sidebar = (
         
-      summary.map((item) =>
+      summary.map((item:any) =>
       <Box bg="#fafafa" key={item.kg}>
         <HStack border='2px solid' my={4} h="48px" px={8} justify="space-between">
           <Flex>
@@ -78,12 +95,45 @@ const handleCancel = () => {
   props.cancelSummary([])
 }
 
+const Print:FC<any> = React.forwardRef((props, ref) => {
+  return(
+    <Box ref={ref} p={4}>
+      <Stack justifyContent="space-between" direction="row" spacing={1}>
+        <Box>
+        <Heading size="md">Summary</Heading>
+        </Box>
+  
+        <Box>
+        <Heading size="md">{props.category}</Heading>
+        </Box>
+  
+      </Stack>
+          <CrbNumber></CrbNumber>
+      <VStack w="100%">
+      </VStack>
+      <Box>
+          <Heading size="xs">Customer: {props.customer}</Heading>
+          <Stack>
+          {new Date().toLocaleDateString()}
+        </Stack>
+        </Box>
+      <Divider my={4} orientation="horizontal" />
+      <CrbTable pricePerKg={props.pricePerKg} summary={summary}></CrbTable>
+      <VStack my={4}>
+        <Heading size="sm">Proceed to CashPoint</Heading>
+      </VStack>
+     { /* <Button isDisabled={summary.length == 0 ? true : false} width="full" onClick={() => form.current.submitForm()} colorScheme="purple">Complete</Button> */ }
+    </Box>
+  )
+ 
+  })
+
 const CrbNumber2 = () => {
 
   const [number, setNumber] = useState<number>(0)
 
   const fetcher = (url:string) => fetch(url).then((res) => res.json())
-  const { data, error } = useSWR('/api/dummycrb', fetcher, {
+  const { data, error } = useSWR('/api/dummycrb', {refreshInterval: 1000}, fetcher, {
     onSuccess: (data) => {
       setNumber(data.id)
     }
@@ -91,7 +141,7 @@ const CrbNumber2 = () => {
 
   if(!data) return <Center><Spinner></Spinner></Center>
   
-
+  console.log(props.form)
 
   return (
     <Text fontSize={'sm'}
@@ -114,36 +164,24 @@ const CrbNumber2 = () => {
     
     
        return (
-      <Box style={{
-        position: 'sticky',
-        top: 0,
-        alignSelf: 'flex-start'
-      }} className="summary-card" ref={ref} p={4} bg="white" w="fit-content" rounded="md">
-        <Stack justifyContent="space-between" direction="row" spacing={1}>
-          <Box>
-          <Heading size="md">Summary</Heading>
-          </Box>
+        <Box style={{
+          position: 'sticky',
+          top: 0,
+          alignSelf: 'flex-start'
+        }} className="summary-card" p={4} bg="white" w="fit-content" rounded="md">
+          <Print customer={props.customer} category={props.category} ref={(el:any) => (componentRef = el)}>
 
-          <Box>
-          <Heading size="md">{props.category}</Heading>
-          </Box>
-
-        </Stack>
-            <CrbNumber></CrbNumber>
-        <VStack w="100%">
-        </VStack>
-        <Box>
-            <Heading size="xs">Customer: {props.customer}</Heading>
-            <Stack>
-            {new Date().toLocaleDateString()}
-          </Stack>
-          </Box>
-        <Divider my={4} orientation="horizontal" />
-        <CrbTable pricePerKg={props.pricePerKg} summary={summary}></CrbTable>
-        <VStack my={4}>
-          <Heading size="sm">Proceed to CashPoint</Heading>
-        </VStack>
-      </Box>
+          </Print>
+           <ReactToPrint
+        trigger={() =><Button type="submit" isDisabled={summary.length == 0 ? true : false} width="full" onClick={() => form.current.submitForm()} colorScheme="purple">Complete</Button>
+      }
+      onAfterPrint={() => form.current.submitForm()}
+        content={() => componentRef}
+        />
+        <Button mt={4} onClick={() => props.cancelSummary([])} width="full" color="white" bg="black">Cancel</Button>
+        </Box>
+  
+       
     );
   }
 );

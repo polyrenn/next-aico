@@ -12,6 +12,5 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     WHERE timestamp::date = ${date}::date
     
     `
-    console.log(result.length)
   res.status(200).json(result);
 };

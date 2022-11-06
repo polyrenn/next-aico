@@ -156,7 +156,7 @@ export default (props: PageProps<[]>) => {
 
 
   return (
-    <Flex height="100vh" width="100vw">
+    <Flex width="100vw">
         <Head title="Admin - Tanks"></Head> 
         <Box height="100%" className="navigation">
             <AdminNav  toggled={toggled}  handleToggleClose={handleToggleClose} company={props.company}></AdminNav>
@@ -174,7 +174,7 @@ export default (props: PageProps<[]>) => {
                 </Box>
                 )}  
             </Box>
-
+            {/*
             <Box p={6} className="stocks">
             <Flex my={2} justify="space-between">
             <HStack {...group}>
@@ -196,7 +196,7 @@ export default (props: PageProps<[]>) => {
             </Flex>
             
         </Box>
-           
+    */}  
 
 
         </Box>

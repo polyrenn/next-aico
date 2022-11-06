@@ -18,6 +18,7 @@ export default async (req: any, res: any) => {
     const formattedDate = date?.split('T')[0] 
  
 let openingSales:Sales[] = await prisma.$queryRaw`SELECT b.name,
+companies.company_id,
 (select ts.sale_number from sales ts where b.branch_id = ts.branch_id
      and ts.timestamp::date = ${formattedDate}::date
      and ts.category != 'Switch'
@@ -49,6 +50,9 @@ let openingSales:Sales[] = await prisma.$queryRaw`SELECT b.name,
      order by id asc limit 1   
 )
 From branches b
+Left JOIN companies
+ON b.company_id = companies.company_id
+WHERE b.company_id != 111111
 order by b.id asc
 
 
@@ -56,6 +60,7 @@ order by b.id asc
 `; // Refactor to Swr  
 
 let closingSales:Sales[] = await prisma.$queryRaw`SELECT b.name,
+companies.company_id,
 (select ts.sale_number from sales ts where b.branch_id = ts.branch_id
      and ts.timestamp::date = ${formattedDate}::date
      and ts.category != 'Switch'
@@ -87,12 +92,16 @@ let closingSales:Sales[] = await prisma.$queryRaw`SELECT b.name,
      order by id desc limit 1   
 )
 From branches b
+Left JOIN companies
+ON b.company_id = companies.company_id
+WHERE b.company_id != 111111
 order by b.id asc
 
 `; // Refactor to Swr  
 
 const salesAggregations:any = await prisma.$queryRaw`SELECT b.id,
 b.name, 
+companies.company_id,
 (select cast(count(*) as integer) as sales_count from sales s where b.branch_id = s.branch_id
     and s.category != 'Switch'
     and s.timestamp::date = ${formattedDate}::date
@@ -101,6 +110,7 @@ companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
+WHERE b.company_id != 111111
 ORDER BY b.id asc 
 `;
 
@@ -118,6 +128,7 @@ ORDER BY b.id asc
 
 const totalAmount:any = await prisma.$queryRaw`SELECT b.id,
 b.name, 
+companies.company_id,
 (select cast(sum(s.amount) as float) as amount_sold from sales s where b.branch_id = s.branch_id
     and s.timestamp::date = ${formattedDate}::date
 ),
@@ -125,11 +136,13 @@ companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
+WHERE b.company_id != 111111
 ORDER BY b.id asc 
 `;
 
 const totalCash:any = await prisma.$queryRaw`SELECT b.id,
 b.name, 
+companies.company_id,
 (select cast(sum(s.amount) as float) as total_cash_amount from sales s where b.branch_id = s.branch_id
      and s.timestamp::date = ${formattedDate}::date
      and s.payment_method = 'cash'
@@ -138,11 +151,13 @@ companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
+WHERE b.company_id != 111111
 ORDER BY b.id asc 
 `;
 
 const totalPos:any = await prisma.$queryRaw`SELECT b.id,
 b.name, 
+companies.company_id,
 (select cast(sum(s.amount) as float) as total_pos_amount from sales s where b.branch_id = s.branch_id
      and s.timestamp::date = ${formattedDate}::date
      and s.payment_method = 'pos'
@@ -151,11 +166,13 @@ companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
+WHERE b.company_id != 111111
 ORDER BY b.id asc 
 `;
 
 const openingStock:any = await prisma.$queryRaw`SELECT b.id,
 b.name,
+companies.company_id,
 (select ts.opening as opening_stock from sales ts where b.branch_id = ts.branch_id
     and ts.timestamp::date = ${formattedDate}::date
     order by id asc limit 1   
@@ -164,11 +181,13 @@ companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
+WHERE b.company_id != 111111
 ORDER BY b.id asc 
 `;
 
 const balanceStock:any = await prisma.$queryRaw`SELECT b.id,
 b.name,
+companies.company_id,
 (select ts.closing as closing_stock from sales ts where b.branch_id = ts.branch_id
     and ts.category != 'Switch'
     and ts.timestamp::date = ${formattedDate}::date
@@ -178,17 +197,20 @@ companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
+WHERE b.company_id != 111111
 ORDER BY b.id asc 
 `;
 
 const branchDetails:any = await prisma.$queryRaw`SELECT b.id,
 b.name,
 b.current_tank,
+companies.company_id,
 (select ts.designation as desig from tanks ts where b.current_tank = ts.tank_id),
 companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
+WHERE b.company_id != 111111
 ORDER BY b.id asc 
 `;
 

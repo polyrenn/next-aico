@@ -46,9 +46,8 @@ import {
 import { withSessionSsr } from "../../lib/withSession";
 import AdminNav from "../../components/Navigation/Admin";
 import CategoryRadios from "../../components/FrontDesk/ChangeCategory";
-import CompanyComponent from "../../components/Admin/Customers/CompanyComponent";
-import StockTable from "../../components/Admin/Stock/StockTable";
 import CustomerTable from "../../components/Admin/Customers/CustomerTable";
+import BranchRadios from "../../components/Admin/ChangeBranch";
 
 export const BranchContext = createContext<
   { address: string; branchId: number }[]
@@ -81,6 +80,68 @@ interface PageProps<T> {
 
   customers: []
 }
+
+const CompanyComponent: FC<any> = (props) => {
+
+  const toast = useToast()
+ // const [branch, setBranch] = useState<{ tanks: {}[]; address: string }>();
+ const [branch, setBranch] = useState<number>()
+  const handleIncrement = (currBranch: any) => {
+    setBranch(currBranch);
+    console.log(currBranch);
+  };
+
+ 
+ 
+  const handleChange = (value:any) => {
+      toast({
+        title: `The value got changed to ${value}!`,
+        status: 'success',
+        duration: 2000,
+      });
+
+      let price = branches.find(element => element.name === value)?.branchId;
+      setBranch(price)
+      props.handleBranchChange(price)
+      console.log(branch)
+    }
+
+  const handleSelect = (params: any) => {
+    setBranch(params);
+    console.log(branch);
+  };
+
+  const { value, getRootProps, getRadioProps } = useRadioGroup({
+      name: 'framework',
+      onChange: handleChange
+    })
+  
+  const group = getRootProps()
+  const branches: { name: string, address: string, branchId: number }[] = props.company.branches
+  const options:string[] = branches.map(a => a.name);
+
+  
+  return (
+    <Box mb={8}>
+      <Heading key={props.company.id} size="sm">
+        {props.comapany?.name}
+      </Heading>
+      <Text color="gray.500">Select Branch {branch}</Text>
+      <Flex alignContent="flex-start" flexFlow={{ base: 'row wrap',}} my={2}>
+      {options.map((value, index) => {
+      const radio = getRadioProps({ value })
+      return (
+         <BranchRadios key={value} {...radio}>
+          {value}
+        </BranchRadios>
+       
+      )
+    })}
+    </Flex>
+    <CustomerTable branch={branch}></CustomerTable>
+    </Box>
+  );
+};
 
 export default (props: PageProps<[]>) => {
 
@@ -146,7 +207,7 @@ export default (props: PageProps<[]>) => {
               <Heading key={item.id} size="sm">
                 {item.name}
               </Heading>
-              <CompanyComponent handleBranchChange={handleBranchChange} company={item}></CompanyComponent>
+              <CompanyComponent branch={branch} handleBranchChange={handleBranchChange} company={item}></CompanyComponent>
             </Box>
           ))}
         </Box>
@@ -180,7 +241,6 @@ export default (props: PageProps<[]>) => {
                 </Box>
                
             </Flex>
-            <CustomerTable branch={branch}></CustomerTable>
         </Box>
       </Box>
     </Flex>

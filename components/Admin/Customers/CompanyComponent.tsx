@@ -31,6 +31,7 @@ import { useRadioGroup, useColorModeValue } from "@chakra-ui/react";
 import useSWR from "swr";
 import { useDisclosure } from "@chakra-ui/react";
 import BranchRadios from "../ChangeBranch";
+import CustomerTable from "./CustomerTable";
 const CompanyComponent: FC<any> = (props) => {
 
     const toast = useToast()
@@ -88,7 +89,6 @@ const CompanyComponent: FC<any> = (props) => {
         )
       })}
       </Flex>
-        
       </Box>
     );
   };

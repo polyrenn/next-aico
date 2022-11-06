@@ -11,7 +11,7 @@ const Queue:FC<any> = (props) => {
 
     const [number, setNumber] = useState<number>(0)
   
-    const fetcher = (...args) => fetch(...args).then((res) => res.json())
+    const fetcher = (url:any) => fetch(url).then((res) => res.json())
     const { data, error } = useSWR('/api/FrontDesk/FetchQueue', fetcher, {
       onSuccess: async (data) => {
         const resCrb = await fetch(`/api/Customer/IsRegistered?id=${data.customerId}`, {
@@ -36,7 +36,7 @@ const Queue:FC<any> = (props) => {
   
   
     return (
-       <Box>
+       <Box mr={2}>
       {
         data.map((item:any, counter:number) => 
         <Button

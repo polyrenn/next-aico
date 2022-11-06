@@ -1,6 +1,6 @@
 import { FC, useState } from "react"
 //Utility Imports
-import { Heading, useDisclosure, VStack } from "@chakra-ui/react"
+import { Divider, Heading, useDisclosure, VStack } from "@chakra-ui/react"
 import {  Formik, Field, Form, FormikHelpers } from "formik"
 import * as Yup from 'yup';
 import axios from "axios";
@@ -64,7 +64,7 @@ const Report:FC<ModalProps> = (props) => {
 
     const branchId = props.branchId
     const today = new Date().toDateString();
-    const { data, error } = useSWR(`/api/FrontDesk/SaleReport?branch=${branchId}`, fetcher, {
+    const { data, error } = useSWR(`/api/FrontDesk/CrbReport?branch=${branchId}`, fetcher, {
         onSuccess: (data) => {
          
     }});
@@ -80,30 +80,59 @@ const Report:FC<ModalProps> = (props) => {
             {today}
             </Box>
             <Flex justifyContent="space-between">
-             {data?.map((item:any) => 
-                <HStack ml={2} flex={1} color={`${textCode(item.category)}`} backgroundColor={`${colorCode(item.category)}`}>
-                <Box>
+             {data ? data[0]?.map((item:any) => 
+                <HStack key={item.category} ml={2} flex={1} color={`${textCode(item.category)}`} backgroundColor={`${colorCode(item.category)}`}>
+                <Box fontWeight={500} p={4}>
                     <Heading size="sm">
                         {item.category}
                     </Heading>
-                    <Box>
+                    <Box mb={2}>
                         <Text>Sales Count</Text>
-                        <Text>1</Text>
+                        <Text>{item.count}</Text>
                     </Box>
-                    <Box>
+                    <Box mb={2}>
                         <Text>Total Kg</Text>
-                        <Text>1</Text>
+                        <Text>{item.total_kg_sold} KG</Text>
                     </Box>
     
-                    <Box>
+                    <Box mb={2}>
                         <Text>Amount Sold</Text>
-                        <Text>1</Text>
+                        <Text>{item.total_amount_sold?.toLocaleString()} NGN</Text>
                     </Box>
                     
                 </Box>
               </HStack>
-             )}   
+              
+             ) : null}  
             </Flex>
+
+            <Divider/>
+
+            <Box my={4}>
+                <Heading fontWeight={500} color="gray.600" size="md">Total Stats</Heading>
+            {data ? data[1]?.map((item:any) =>
+                <Box>
+                    <Box my={4}>
+                        <Text>Total Sold Today</Text>
+                        <Text>{item.count_invoice}</Text>
+                    </Box>
+
+                    <Divider/>
+
+                    <Box my={4}>
+                        <Text>Total Kg Today</Text>
+                        <Text>{item.kg_sold} KG</Text>
+                    </Box> 
+
+                    <Divider/>
+
+                    <Box my={4}>
+                        <Text>Amount Sold Today</Text>
+                        <Text>{item.amount_sold?.toLocaleString()} NGN</Text>
+                    </Box>     
+                </Box>     
+            ) : null}
+            </Box>
           
           
             

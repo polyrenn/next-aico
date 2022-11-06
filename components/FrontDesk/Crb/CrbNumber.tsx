@@ -15,11 +15,7 @@ const CrbNumber:FC<any> = (props) => {
      const [number, setNumber] = useState<number>(0)
 
      const fetcher = (url:string) => fetch(url).then((res) => res.json())
-     const { data, error } = useSWR(`/api/dummycrb?id=${branch}`, fetcher, {
-       onSuccess: (data) => {
-
-       }
-     });
+     const { data, error } = useSWR(`/api/dummycrb?id=${branch}`, fetcher, { refreshInterval: 1000 });
    
    // if(!data) return <Center><Spinner></Spinner></Center>
      

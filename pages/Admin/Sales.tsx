@@ -163,7 +163,10 @@ export default (props: PageProps<[]>) => {
     isAdmin = false
   }
 
-  const { data, error } = useSWR(`/api/Sales/SalesSummary?date=${new Date(currentDate).toISOString()}&isadmin=${isAdmin}`, fetcher, {
+
+  const { data, error } = useSWR(isAdmin ? `/api/Sales/SalesSummary?date=${new Date(currentDate).toISOString()}&isadmin=${isAdmin}` :
+  `/api/Sales/SalesSummaryS?date=${new Date(currentDate).toISOString()}&isadmin=${isAdmin}`,
+   fetcher, {
     onSuccess: (data) => {
      
     }});  
@@ -556,17 +559,38 @@ const formattedClosingSales = closingSales.map(item => ({
     timestampTime: new Date(item.timestamp).toLocaleTimeString("en-US", {timeZone:'UTC',hour12:true,hour:'numeric',minute:'numeric'}),
     ...item
 }))
+
+    
+    let branches
   
-    const branches = await prisma.branch.findMany({
-      select: {
-        address: true,
-        branchId: true,
-        name: true
-      },
-      orderBy: {
-        id: 'asc'
+    
+
+    if(user?.role == 'Admin') {
+        branches = await prisma.branch.findMany({
+            select: {
+              address: true,
+              branchId: true,
+              name: true
+            },
+            orderBy: {
+              id: 'asc'
+            }
+          });
+      } else {
+        branches = await prisma.branch.findMany({
+            where: {
+                companyID: user.company
+            },
+            select: {
+              address: true,
+              branchId: true,
+              name: true
+            },
+            orderBy: {
+              id: 'asc'
+            }
+          });
       }
-    });
   
 
     

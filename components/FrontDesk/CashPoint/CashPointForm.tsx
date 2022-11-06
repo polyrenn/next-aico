@@ -109,9 +109,6 @@ const CashPointForm: FC<any> = (props) => {
         if (!value) {
           error = 'Amount is required'
         } 
-        if(value < amount ) {
-          error = 'Cannot Be Less Than Sales Amount'
-        }
         return error
       }    
 

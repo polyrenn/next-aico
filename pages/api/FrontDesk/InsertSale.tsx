@@ -45,8 +45,7 @@ export default async (req:any, res:any) => {
 
 
       //Increment Purcahse Count
-      if(isreg == 'true') {
-        const purchaseCount = await prisma.customer.update({
+        const purchaseCount = await prisma.customer.updateMany({
           where: {
             uniqueId: customerId,
           },
@@ -57,7 +56,8 @@ export default async (req:any, res:any) => {
           },
         
       });
-      }
+
+      console.log(isreg)
      
 
       const updateTank = await prisma.tank.updateMany({

@@ -28,6 +28,9 @@ export const colorCode = (item:string) => {
         
         case 'Civil Servant':
             return 'yellow.300'
+
+        case 'Other':
+            return 'yellow.300'            
                     
         default:
             break;

@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../../lib/prisma";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-    const { id, date } = req.query
+    const { id, date, branch } = req.query
     const today = new Date().toISOString()
     const formattedDate = today.split('T')[0]
 
@@ -35,10 +35,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     FROM branches b
     Left JOIN companies
     ON b.company_id = companies.company_id 
-    WHERE b.branch_id = 131313 
+    WHERE b.branch_id = ${parseInt(branch)}
     ORDER BY b.id asc 
     
     `
-    console.log(result.length)
+
   res.status(200).json(result);
 };

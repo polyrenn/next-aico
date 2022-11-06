@@ -79,6 +79,7 @@ const AdminNav: FC<any> = (props) => {
 
 
           </SubMenu>
+          {/*
           <SubMenu title="Stock" icon={<StockIcon />}>
           <MenuItem style={{padding: "8px"}}>
             <Link href="/Admin/#">View Stock Records</Link>
@@ -87,6 +88,7 @@ const AdminNav: FC<any> = (props) => {
             <Link href="/Admin/#">Add & Update Stock</Link>
           </MenuItem>
           </SubMenu>
+          */}
           <MenuItem icon={<StockIcon />}>
             <Link href="/Admin/Stock">Stock</Link>
           </MenuItem>

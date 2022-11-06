@@ -39,6 +39,7 @@ import { withSessionSsr } from "../../lib/withSession";
 import summary from '../../data/data'
 import Report from "../../components/FrontDesk/CashPoint/Report";
 import SwitchLog from "../../components/Common/SwitchLog";
+import DayStats from "../../components/Common/DayStats";
 
 const fetcher = (url:string) => fetch(url).then((res) => res.json())
 interface BranchDetails {
@@ -74,6 +75,7 @@ export default (props: any) => {
   const branchId = props.branch.branchId
   const branchList = props.branches
   const user = props.user
+  const currentDate = new Date().toISOString()
   let resultant:any;
   // const [branch, setBranch] = useState<string | undefined>();
   interface ReturnedQueue {
@@ -147,7 +149,7 @@ export default (props: any) => {
   
   
     return (
-       <Box>
+       <Box mr={2}>
       {
         data.map((item:any, counter:number) => 
         <Button
@@ -158,6 +160,7 @@ export default (props: any) => {
             px={4}
             color={"cyan.900"}
             rounded={"md"}
+            mr={2}
           >
             {item.crbNumber}
           </Button>
@@ -181,9 +184,9 @@ const {isOpen, onClose, onOpen} = useDisclosure()
         <Center mt={2} className="switch-log">
             <SwitchLog branch={props.branch.branchId} date={new Date().toISOString()}></SwitchLog>
         </Center>
-        <Box my={4} className="stats">
-          <StatBlock branch={branchId} ></StatBlock>
-        </Box>
+        <Center className='stats'>
+          <DayStats date={currentDate} branch={branchId}></DayStats>
+        </Center>
 
         <Box className="Utils">
           <Center>

@@ -16,17 +16,17 @@ const SwitchLog:FC<SwitchProps> = (props) => {
     //Map Switch Log      
     console.log(switchLog == [] ? 'Hey' : 'No')
     return (
-        <Box display={switchLog == [] ? 'none' : 'block'}>
-             <Flex p={4} w="max-content" bg="yellow.100">
+        <Box display={switchLog && switchLog?.length < 1 ? 'none' : 'block'}>
+             <Flex w="max-content">
          {switchLog?.map((item:any) => 
-            <Flex flexFlow="row wrap" fontWeight={500} key={item.id}>
-            <Text> Switched To: {item.meta[0]?.switchedTo}</Text>
-            ✳︎
-            <Text>Loss: {item.meta[0]?.loss}</Text>
-            ✳︎
-            <Text>Kg Sold: {item.meta[0]?.total_kg}</Text>
-            ✳︎
-            <Text>Opening Stock: {item.meta[0]?.opening_old}</Text>
+            <Flex color="red.500" flexFlow="row wrap" fontWeight={500} key={item.id}>
+            <Text mr={1}> Switched To: {item.meta[0]?.switchedTo}</Text>
+            <Text mr={1}>|</Text>
+            <Text mr={1}>Loss: {item.meta[0]?.loss}</Text>
+            <Text mr={1}>|</Text>
+            <Text mr={1}>Kg Sold: {item.meta[0]?.total_kg}</Text>
+            <Text mr={1}>|</Text>
+            <Text mr={1}>Opening Stock: {item.meta[0]?.opening_old}</Text>
            </Flex>
          )}
         </Flex>

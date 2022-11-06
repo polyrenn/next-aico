@@ -10,6 +10,7 @@ export default async (req:any, res:any) => {
     b.name,
     b.current_tank,
     (select ts.amount as loss from tanks ts where b.current_tank = ts.tank_id),
+    (select ts.designation as old_name from tanks ts where b.current_tank = ts.tank_id),
     (select ts.amount as opening_new from tanks ts where ts.tank_id = ${current}),
     (select cs.opening as opening_old from sales cs where b.branch_id = cs.branch_id
      and timestamp > ${formattedDate}::timestamp
@@ -49,7 +50,6 @@ export default async (req:any, res:any) => {
 
      const [aggResults] = aggregate as any 
 
-    console.log(aggResults)
     const formattedAggregations = aggregate.map((item:any) => ({
           switchedTo: newname,
           ...item

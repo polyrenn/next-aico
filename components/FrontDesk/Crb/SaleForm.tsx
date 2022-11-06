@@ -113,12 +113,7 @@ const SaleForm:FC<SaleFormProps> = (props) => {
       console.log(data)
     }
 
-     const { data: crbData, error: crbError } = useSWR(`/api/dummycrb?id=${branch}`, fetcher, {
-       onSuccess: (data) => {
-
-       }
-     });
-   
+    const { data:crbData, error: crbError } = useSWR(`/api/dummycrb?id=${branch}`, fetcher, { refreshInterval: 1000 });
 
   //Should be async
   
@@ -320,6 +315,7 @@ const handleSubmit = async (values: { customer: string }, actions:any) => {
 const [priceKgs, setPriceKgs] = useState<number[]>([1,2,3])
 
 const formRef = useRef<FormikProps<FormValues>>(null);
+const formikRef = useRef<FormikProps<any>>(null);
 console.log(formRef)
 type FormValues = {
   friends: []
@@ -353,7 +349,8 @@ const createSummary = (values:any, actions:any ) => { // Type Values Actions:For
   setSummary(result)
   console.log(summary)
   actions(false)
-  //alert(JSON.stringify(formRef.current?.values, null, 2));
+  //alert(JSON.stringify(formikRef.current?.values, null, 2));
+  //alert(JSON.stringify(formikRef.current?.values.friends.length, null, 2));
 }
 
 useEffect(() => {
@@ -364,7 +361,7 @@ useEffect(() => {
       event.preventDefault();
 
       // 👇️ your logic here
-      createSummary(formRef.current?.values, formRef.current?.setSubmitting )
+      createSummary(formikRef.current?.values, formikRef.current?.setSubmitting )
      
     }
   };
@@ -377,8 +374,9 @@ useEffect(() => {
 }, []);
 
 const handleSaleCompletion = async (values:any, actions:any) => {
+
   const totalKg = computeTotal(summary)
-  const saleAmount = computeTotal(summary) * props.pricePerKg
+  const saleAmount = computeTotalAmount(summary)
   const category = props.category
 
   const today = new Date();
@@ -472,21 +470,26 @@ const handleSaleCompletion = async (values:any, actions:any) => {
 const computeTotalAmount = (arr:any) => {
   let res = 0;
   for(let i = 0; i < arr.length; i++){
-     res += arr[i]?.amount;
+     arr[i] == null ? 0 : res += arr[i]?.amount
   };
   return res;
 };
 
-const pricePerKg = props.pricePerKg
+const convertToLocaleString = (number: number) => {
+  return number.toLocaleString();
+}
+
+const pricePerKg = props.pricePerKg 
+let total:number
 
  
    
   return (
  
-    <Flex justify="space-between" px={6} py={6} borderWidth='1px'  borderColor='gray.200' h="fit-content">
+    <Flex flexFlow={{base: 'column', md: 'row'}} justify="space-between" px={6} py={6} borderWidth='1px'  borderColor='gray.200' h="fit-content">
       <Box bg="white" w="4xl" p={4} rounded="md">     
     <Formik
-        innerRef={formRef}
+        innerRef={formikRef}
         initialValues={initialValues}
         //validationSchema={saleValidation}
         onSubmit={(values, actions) => {
@@ -600,11 +603,12 @@ const pricePerKg = props.pricePerKg
                               variant="filled"
                               type="number"
                               onKeyUp={(e) => {
+                                total = computeTotalAmount(props.values.friends)
                                 props.setFieldValue(`friends.${counter}.isChecked`, true);
                                 props.setFieldValue(`friends.${counter}.kg`, item);
                                 props.setFieldValue(`friends.${counter}.quantity`, field.value);
                                 props.setFieldValue(`friends.${counter}.total`, item * field.value);
-                                props.setFieldValue(`friends.${counter}.amount`, field.value * item * pricePerKg );
+                                props.setFieldValue(`friends.${counter}.amount`, field.value * Math.ceil((pricePerKg * item) /10 ) * 10 );
                                 !field.value
                                   ? props.setFieldValue(`friends.${counter}.isChecked`, false)
                                   : console.log("Populated");
@@ -625,19 +629,19 @@ const pricePerKg = props.pricePerKg
                       </Td>
                       <Td>
                       <Box className={styles.ppkgo} p={4} bg="gray.50">
-                        {pricePerKg * item }
+                        {convertToLocaleString(Math.ceil((pricePerKg * item) /10 ) * 10 )}
                       </Box>
                       </Td>
 
                       <Td>
                       <Box className={styles.totalkgo} p={4} bg="gray.50">
-                        { props.values?.friends[counter]?.name ? item * props.values?.friends[counter]?.name : '' }
+                        { props.values?.friends[counter]?.name ? convertToLocaleString(item * props.values?.friends[counter]?.name) : '0' }
                       </Box>
                       </Td>
 
                       <Td>
                       <Box className={styles.amounto} p={4} bg="gray.50">
-                        { props.values.friends[counter]?.name ?  item * pricePerKg * props.values.friends[counter]?.name : '' }
+                        { props.values.friends[counter]?.name ? convertToLocaleString(Math.ceil((pricePerKg * item) /10 ) * 10 * props.values.friends[counter]?.name) : '0' }
                       </Box>
                       </Td>
                      
@@ -655,7 +659,7 @@ const pricePerKg = props.pricePerKg
                     <Td></Td>
                     <Td colSpan={2}>
                       <Box p={4} bg="gray.50">
-                         {`${computeTotalAmount(props.values.friends)}`}
+                         <Text>{computeTotalAmount(props.values.friends)} NGN</Text>
                         
                       </Box>
                     </Td>
@@ -671,7 +675,7 @@ const pricePerKg = props.pricePerKg
             <Heading mb={2} mt={2} size="md">Other</Heading>  
             <FieldArray name="other">
             {({ insert, remove, push }) => (
-                <TableContainer borderWidth="1px" width="container.md">
+                <TableContainer borderWidth="1px" width="container.xl">
                   <Table className={styles.table} variant="simple">
                     <Thead>
                       <Tr>
@@ -835,6 +839,7 @@ const pricePerKg = props.pricePerKg
                 </TableContainer>
               )}        
             </FieldArray>
+            {/*
             <Flex mt={4} justifyContent="space-between" className="action-buttons">
               <HStack>
               <Button onClick={() => createSummary(props.values, props.setSubmitting)}>
@@ -860,7 +865,7 @@ const pricePerKg = props.pricePerKg
               </HStack>
                
             </Flex>
-           
+              */}
           </Form>
         )}
       </Formik>
@@ -870,8 +875,9 @@ const pricePerKg = props.pricePerKg
       
       
     <CreateCustomer branch={props.branch} isOpen={isOpen} onClose={onClose}></CreateCustomer>
-    <SummaryCard pricePerKg={props.pricePerKg}
+    <SummaryCard pricePerKg={pricePerKg}
      customer={customer}
+     form={formikRef}
      summary={summary}
      category={props.category}
      cancelSummary={setSummary}
