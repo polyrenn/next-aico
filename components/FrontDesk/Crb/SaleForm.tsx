@@ -582,7 +582,7 @@ let total:number
                     </Thead>
                     <Tbody>
                     {availableKgs?.map((item, counter) => (
-                    <Tr  key={counter}>
+                    <Tr fontWeight={600}  key={counter}>
                       <Td>
                       <Field name={`friends.${counter}.kg`}>
         {({ field, form }:any) => (
@@ -658,7 +658,7 @@ let total:number
                     <Td></Td>
                     <Td></Td>
                     <Td colSpan={2}>
-                      <Box p={4} bg="gray.50">
+                      <Box fontWeight={600} p={4} bg="green.400">
                          <Text>{computeTotalAmount(props.values.friends)} NGN</Text>
                         
                       </Box>
