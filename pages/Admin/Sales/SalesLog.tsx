@@ -348,7 +348,7 @@ export default (props: PageProps<[]>) => {
                 <Td textAlign="center" fontWeight={700} colSpan={100}>Day's Summary</Td>
             </Tr>
 
-            <Tr>
+            <Tr fontWeight={600}>
                 <Td colSpan={3}>Sub Total</Td>
 
                 {data?.aggregations.map((item:any, counter:number) =>
@@ -361,7 +361,7 @@ export default (props: PageProps<[]>) => {
 
             </Tr>
 
-            <Tr>
+            <Tr fontWeight={600}>
                 <Td colSpan={3}>Total POS</Td>
                 {data?.aggregations.map((item:any, counter:number) =>
                     <Td key={counter} borderRightWidth="1px"  borderLeftWidth="1px">{item.total_pos_sold?.toLocaleString()} NGN</Td>
@@ -369,7 +369,7 @@ export default (props: PageProps<[]>) => {
 
             </Tr>
 
-            <Tr>
+            <Tr fontWeight={600}>
                 <Td colSpan={3}>Total Cash</Td>
                 {data?.aggregations.map((item:any, counter:number) =>
                     <Td key={counter} borderRightWidth="1px" borderLeftWidth="1px">{item.total_cash_sold?.toLocaleString()} NGN</Td>
@@ -377,7 +377,7 @@ export default (props: PageProps<[]>) => {
 
             </Tr>
 
-            <Tr>
+            <Tr fontWeight={600}>
                 <Td colSpan={3}>Closing Stock</Td>
                 {data?.aggregations.map((item:any, counter:number) =>
                     <Td key={counter} borderRightWidth="1px" borderLeftWidth="1px">{item.closing_stock} Kg</Td>
