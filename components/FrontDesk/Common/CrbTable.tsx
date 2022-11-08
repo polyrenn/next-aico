@@ -41,6 +41,14 @@ const CrbTable:FC<TableProps> = (props) => {
     return res;
  };
 
+ const computeTotalAmount = (arr:any) => {
+  let res = 0;
+  for(let i = 0; i < arr.length; i++){
+     arr[i] == null ? 0 : res += arr[i]?.amount
+  };
+  return res;
+};
+
  const computeTotalQty = (arr:any) => {
   let res = 0;
   for(let i = 0; i < arr.length; i++){
@@ -81,7 +89,9 @@ const CrbTable:FC<TableProps> = (props) => {
             <Td >{`${computeTotalQty(props.summary)}`}</Td>
 
             <Td >{`${computeTotal(props.summary)}`} KG</Td>
-            <Td  isNumeric>{props.pricePerKg ? `${Math.ceil((props.pricePerKg * computeTotal(props.summary)) /10 ) * 10}`: props.summary[0]?.amount} NGN</Td>
+            <Td  isNumeric>{`${computeTotalAmount(props.summary)}`} NGN</Td>
+
+           {/* <Td  isNumeric>{props.pricePerKg ? `${Math.ceil((props.pricePerKg * computeTotalAmount(props.summary)) /10 ) * 10}`: props.summary[0]?.amount} NGN</Td> */}
         </Tr>
           
           
