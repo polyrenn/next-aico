@@ -85,7 +85,7 @@ import SummaryCard from "./SummaryCard";
 import styles from "./SaleTable.module.css"
 
 interface SaleFormProps {
-  pricePerKg: number 
+  pricePerKg: number | undefined
   post: any
   branch: any
   category: String | undefined

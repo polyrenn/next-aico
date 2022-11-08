@@ -57,7 +57,7 @@ export default (props:any) => {
   const visibility = false
   //const options:string[] = ['Domestic', 'Dealer', 'Eatery', 'Other']
   const options:string[] = categoryPrices.map(a => a.category);
-  const [category, setCategory] = useState<string>();
+  const [category, setCategory] = useState<string>('Domestic');
 
   const [availableKgs, setAvailableKgs] = useState<number[]>()
 
@@ -107,9 +107,11 @@ console.log(props.branch)
 
 console.log(prices[0][1])
 
-  const [priceKgs, setPriceKgs] = useState<number[] | undefined>([])
+  const defaultKgs = categoryPrices.find(element => element.category === 'Domestic')?.availableKgs;
+  const defaultPrice = categoryPrices.find(element => element.category === 'Domestic')?.pricePerKg;
+  const [priceKgs, setPriceKgs] = useState<number[] | undefined>(defaultKgs)
 
-  const [pricePerKg, setPricePerKg] = useState<number>(0)
+  const [pricePerKg, setPricePerKg] = useState<number | undefined>(defaultPrice)
   
   const toast = useToast()
   const currentDate = new Date().toISOString()
@@ -139,7 +141,8 @@ console.log(prices[0][1])
 
   const { value, getRootProps, getRadioProps } = useRadioGroup({
     name: 'framework',
-    onChange: handleChange
+    onChange: handleChange,
+    defaultValue: 'Domestic'
   })
 
   const group = getRootProps()
