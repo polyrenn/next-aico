@@ -169,6 +169,22 @@ export default (props: PageProps<[]>) => {
     setToggled(value);
   };
 
+  const computeTotalAmount = (arr:any) => {
+    let res = 0;
+    for(let i = 0; i < arr.length; i++){
+       arr[i] == null ? 0 : res += arr[i]?.amount
+    };
+    return res;
+  };
+  
+   const computeTotalKg = (arr:any) => {
+    let res = 0;
+    for(let i = 0; i < arr.length; i++){
+       res += arr[i].total_kg;
+    };
+    return res;
+  };
+
   const user = props.user
 
     const colorCode = (item:string) => {
@@ -314,7 +330,7 @@ export default (props: PageProps<[]>) => {
           </Tr>
         </Thead>
         <Tbody>
-            {data?.map((item:any) => 
+            {data?.crbLog?.map((item:any) => 
               <Tr key={item.id}>
                  <Td>{item.crb_number}</Td>
                  <Td>{!item.customer && !item.phone ? 
@@ -339,6 +355,15 @@ export default (props: PageProps<[]>) => {
                  <Td>{item.amount.toLocaleString()}</Td>
               </Tr>
                
+            )}
+            {data?.aggregations?.map((item:any) =>
+            <Tr key={item.id}>
+                <Td>Total</Td>
+                <Td></Td>
+                <Td>{item.total_kg_sold} KG</Td>
+                <Td>{item.total_amount_sold?.toLocaleString()} NGN</Td>
+
+            </Tr>
             )}
           </Tbody>
         <Tfoot>

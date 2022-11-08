@@ -18,7 +18,7 @@ export default async (req: any, res: any) => {
   const { branch } = req.query;
   const formattedDate = date?.split("T")[0];
   const formattedToday = today.split("T")[0]
-  let result
+  let result:any
   if(date == '' && branch == '') {
     result = await prisma.$queryRaw`
     SELECT * from crbs cs
@@ -35,6 +35,31 @@ export default async (req: any, res: any) => {
     order by cs.timestamp asc
     `
   }
+
+  let aggregations:any
+  if(branch == '') {
+    aggregations = null
+  } else {
+    aggregations = await prisma.$queryRaw`SELECT cast(sum(amount) as float) as total_amount_sold,
+    (select cast(sum(cs.total_kg) as float) as total_kg_sold from crbs cs where cs.timestamp::date = ${formattedDate}::date
+    and cs.branch_id = ${parseInt(branch)}::integer
+    )
+    From crbs cs
+    Where cs.timestamp::date = ${formattedDate}::date
+    and cs.branch_id = ${parseInt(branch)}::int
+    `
+  }
+
+  const formattedResult = {
+    crbLog: [
+        ...result
+    ],
+    aggregations: [
+        ...aggregations
+    ]
+  }
+
+
   
-  res.status(200).json(result);
+  res.status(200).json(formattedResult);
 };
