@@ -326,7 +326,7 @@ const [destructuredSum] = props.summary
 
   return (
     <Flex
-      justify="space-between"
+      justify="center"
       px={6}
       py={6}
       borderWidth="1px"

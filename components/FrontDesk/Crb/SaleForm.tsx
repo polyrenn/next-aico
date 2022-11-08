@@ -486,7 +486,7 @@ let total:number
    
   return (
  
-    <Flex flexFlow={{base: 'column', md: 'row'}} justify="space-between" px={6} py={6} borderWidth='1px'  borderColor='gray.200' h="fit-content">
+    <Flex flexFlow={{base: 'column', md: 'row'}} justify="center" px={6} py={6} borderWidth='1px'  borderColor='gray.200' h="fit-content">
       <Box bg="white" w="4xl" p={4} rounded="md">     
     <Formik
         innerRef={formikRef}
