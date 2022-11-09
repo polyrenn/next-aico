@@ -10,6 +10,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     SELECT s.*
     FROM switch_log s
     WHERE timestamp::date = ${date}::date
+    AND s.branch_id = ${parseInt(branch)}
     
     `
   res.status(200).json(result);

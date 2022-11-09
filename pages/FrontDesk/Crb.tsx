@@ -156,7 +156,7 @@ console.log(prices[0][1])
         <Box className='main-content' mx={8}>
             {/* Optional Prop Number that determines Number of Stat to Render in the Block */}
             <Center mt={2} className="switch-log">
-            <SwitchLog branch={props.branch.branchId} date={new Date().toISOString()}></SwitchLog>
+            <SwitchLog branch={branchId} date={new Date().toISOString()}></SwitchLog>
             </Center>
             <Center className='stats'>
                 <DayStats date={currentDate} branch={branchId}></DayStats>

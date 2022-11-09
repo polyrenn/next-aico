@@ -156,7 +156,7 @@ export default (props: PageProps<[]>) => {
 
 
   return (
-    <Flex width="100vw">
+    <Flex height="100vh" width="100vw">
         <Head title="Admin - Tanks"></Head> 
         <Box height="100%" className="navigation">
             <AdminNav  toggled={toggled}  handleToggleClose={handleToggleClose} company={props.company}></AdminNav>

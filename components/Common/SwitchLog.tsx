@@ -9,7 +9,7 @@ interface SwitchProps {
     branch: any
 }
 const SwitchLog:FC<SwitchProps> = (props) => {
-    const { data:switchLog, error:switchError } = useSWR(`/api/Common/SwitchLog?date=${new Date(props.date).toISOString()}&branch=${131313}`, fetcher, {
+    const { data:switchLog, error:switchError } = useSWR(`/api/Common/SwitchLog?date=${new Date(props.date).toISOString()}&branch=${props.branch}`, fetcher, {
         onSuccess: (data) => {
          
     }});
