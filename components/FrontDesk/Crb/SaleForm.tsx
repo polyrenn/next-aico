@@ -85,7 +85,7 @@ import SummaryCard from "./SummaryCard";
 import styles from "./SaleTable.module.css"
 
 interface SaleFormProps {
-  pricePerKg: number | undefined
+  pricePerKg: number
   post: any
   branch: any
   category: String | undefined
@@ -321,13 +321,17 @@ type FormValues = {
   friends: []
 };
 
+const friendsInit = availableKgs?.map((row:any) => {
+  return { name: '' };
+});
+
 const initialValues = {
-  friends: [
-    
-  ],
+  friends: friendsInit,
   other: [
 
   ],
+
+  customer: ''
 };
 
 const saleValidation = Yup.object().shape({
@@ -462,8 +466,8 @@ const handleSaleCompletion = async (values:any, actions:any) => {
 }
   )
 
+  actions.setFieldValue("friends.0.name", 5)
   actions.resetForm()
-  actions.setFieldValue("friends", [])
   setSummary([])
 }
 
