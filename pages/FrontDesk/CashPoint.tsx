@@ -140,10 +140,7 @@ export default (props: any) => {
     const [number, setNumber] = useState<number>(0)
   
     const fetcher = (url:any) => fetch(url).then((res) => res.json())
-    const { data, error } = useSWR(`/api/FrontDesk/FetchQueue?id=${branch.branchId}`, fetcher, {
-      onSuccess: (data) => {
-       
-  }});
+    const { data, error } = useSWR(`/api/FrontDesk/FetchQueue?id=${branch.branchId}`, fetcher, { refreshInterval: 1000 });
   
     if(!data) return <Center><Spinner></Spinner></Center> // Or If returned equals empty array
   

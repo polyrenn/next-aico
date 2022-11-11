@@ -108,10 +108,10 @@ console.log(props.branch)
 console.log(prices[0][1])
 
   const defaultKgs = categoryPrices.find(element => element.category === 'Domestic')?.availableKgs;
-  const defaultPrice = categoryPrices.find(element => element.category === 'Domestic')?.pricePerKg;
+  const defaultPrice = categoryPrices.find(element => element.category === 'Domestic')?.pricePerKg as number
   const [priceKgs, setPriceKgs] = useState<number[] | undefined>(defaultKgs)
 
-  const [pricePerKg, setPricePerKg] = useState<number | undefined>(defaultPrice)
+  const [pricePerKg, setPricePerKg] = useState<number>(defaultPrice)
   
   const toast = useToast()
   const currentDate = new Date().toISOString()
