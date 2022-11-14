@@ -14,6 +14,7 @@ import {
   Center,
   Heading,
   Divider,
+  Input,
 } from "@chakra-ui/react";
 import { Tab, Tabs, TabList, TabPanel, TabPanels } from "@chakra-ui/react";
 // Element Imports
@@ -48,6 +49,7 @@ import AdminNav from "../../components/Navigation/Admin";
 import CategoryRadios from "../../components/FrontDesk/ChangeCategory";
 import CustomerTable from "../../components/Admin/Customers/CustomerTable";
 import BranchRadios from "../../components/Admin/ChangeBranch";
+import Search from "../../components/Admin/Customers/Search";
 
 export const BranchContext = createContext<
   { address: string; branchId: number }[]
@@ -61,6 +63,7 @@ interface PageProps<T> {
   };
 
   branches: {
+    name: string;
     address: string;
     branchId: number;
   }[];
@@ -82,6 +85,10 @@ interface PageProps<T> {
 }
 
 const CompanyComponent: FC<any> = (props) => {
+
+  //Modal Helpers
+
+  const { isOpen, onClose, onOpen } = useDisclosure()
 
   const toast = useToast()
  // const [branch, setBranch] = useState<{ tanks: {}[]; address: string }>();
@@ -190,6 +197,36 @@ export default (props: PageProps<[]>) => {
     setBranch(branchId)
   }
 
+  // Branch Radios
+  const toast = useToast()
+  const [ branchId, setBranchId ] = useState<number>()  
+
+  const handleChange = (value: any) => {
+    toast({
+      title: `The value got changed to ${value}!`,
+      status: "success",
+      duration: 2000,
+    });
+
+    let branchId = branches.find(
+        (element) => element.name === value
+    )?.branchId;
+    
+    setBranchId(branchId)
+
+  };
+
+  const { value, getRootProps, getRadioProps } = useRadioGroup({
+    name: "framework",
+    onChange: handleChange,
+  });
+
+  const group = getRootProps();
+
+  const branches: { name: string, address: string; branchId: number;}[] =
+    props.branches; 
+  const options: string[] = branches.map((a) => a.name);
+
 
   return (
     <Flex height="100vh" width="100vw">
@@ -200,8 +237,9 @@ export default (props: PageProps<[]>) => {
 
       <Box overflowY="auto" w="100%" className="main-content">
         <WithSubnavigation user={user} handleCollapsedChange={handleCollapsedChange} handleToggleSidebar={handleToggleSidebar} branch={props.branch}></WithSubnavigation>
-        <Box p={6} className="branches">
-        <Heading mb={4} color="gray.500" size="lg">Customer Loyalty</Heading>
+        <Box mt={4} px={6} className="branches">
+        <Heading mb={2} color="gray.500" size="lg">Customer Loyalty</Heading>
+          { /*
           {props.companies.map((item: any) => (
             <Box key={item.id}>
               <Heading key={item.id} size="sm">
@@ -209,9 +247,30 @@ export default (props: PageProps<[]>) => {
               </Heading>
               <CompanyComponent branch={branch} handleBranchChange={handleBranchChange} company={item}></CompanyComponent>
             </Box>
-          ))}
+          ))} */}
         </Box>
 
+            <Box px={6} className="branches">
+            <Input width="max-content" onClick={onOpen} type="text" placeholder="Search"></Input>
+            <Flex my={2} justify="space-between">
+            <HStack {...group}>
+      {options.map((value) => {
+        const radio = getRadioProps({ value })
+        return (
+          <Box>
+           <BranchRadios key={value} {...radio}>
+            {value}
+          </BranchRadios>
+          </Box>
+         
+        )
+      })}
+    </HStack>
+            </Flex>
+            
+        </Box>
+
+      { /*
         <Box p={6} className="customers">
             <Flex my={2} justify="space-between">
                 <Text fontSize="medium" color="gray.500">AicoGas - {branch}</Text>
@@ -242,6 +301,12 @@ export default (props: PageProps<[]>) => {
                
             </Flex>
         </Box>
+          */ }
+        <Box px={6}>
+          <CustomerTable branch={branchId}></CustomerTable>  
+        </Box>  
+        
+        <Search branch={branchId} onClose={onClose} isOpen={isOpen}></Search>
       </Box>
     </Flex>
   );

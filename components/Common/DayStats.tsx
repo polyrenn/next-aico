@@ -22,11 +22,11 @@ const DayStats:FC<DayProps> = (props) => {
             <Text mr={1}>|</Text>  
             <Text mb={1} mr={1}>Current Tank: {item.desig}</Text>
             <Text mr={1}>|</Text>
+            <Text mb={1} mr={1}>Opening Stock: {item.opening_stock}</Text>
+            <Text mr={1}>|</Text>
             <Text mb={1} mr={1}>Balance Stock: {item.closing_stock}</Text>
             <Text mr={1}>|</Text>
             <Text mb={1} mr={1}>Kg Sold: {item.total_kg}</Text>
-            <Text mr={1}>|</Text>
-            <Text mb={1} mr={1}>Opening Stock: {item.opening_stock}</Text>
             <Text mr={1}>|</Text>
             <Text mb={1} mr={1}>Sales Count: {item.sales_count}</Text>
            </Flex>
