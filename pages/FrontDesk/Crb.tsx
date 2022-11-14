@@ -139,11 +139,19 @@ console.log(prices[0][1])
   console.log(props.user)
   
 
-  const { value, getRootProps, getRadioProps } = useRadioGroup({
+  const { value, getRootProps, getRadioProps, setValue } = useRadioGroup({
     name: 'framework',
     onChange: handleChange,
     defaultValue: 'Domestic'
   })
+
+  const resetToDefault = () => {
+    setPricePerKg(defaultPrice)
+    setPriceKgs(defaultKgs)
+    setCategory("Domestic")
+    setValue('Domestic')
+  }
+  
 
   const group = getRootProps()
   //Report Helpers
@@ -211,6 +219,7 @@ console.log(prices[0][1])
             <Box my={4}>
             <BranchContext.Provider value={props.branch}>
                 <SaleForm
+                  resetToDefault={resetToDefault}
                  availableKgs={priceKgs}
                  category={category} branch={props.branch} post={props.post} pricePerKg={pricePerKg}></SaleForm>
             </BranchContext.Provider>    

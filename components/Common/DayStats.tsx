@@ -20,7 +20,7 @@ const DayStats:FC<DayProps> = (props) => {
             <Flex flexFlow="row wrap" fontWeight={500} key={item.id}>
             <Text mb={1} mr={1}>Load Number : {item.load_number}</Text>
             <Text mr={1}>|</Text>  
-            <Text mb={1} mr={1}>Current Tank: {item.desig}</Text>
+            <Text mb={1} mr={1}>Current Tank: {item.current_desig}</Text>
             <Text mr={1}>|</Text>
             <Text mb={1} mr={1}>Opening Stock: {item.opening_stock}</Text>
             <Text mr={1}>|</Text>

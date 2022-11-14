@@ -199,13 +199,36 @@ export const getServerSideProps = withSessionSsr(
       },
     });
 
-  const branches = await prisma.branch.findMany({
-    select: {
-      name: true,  
-      address: true,
-      branchId: true,
-    },
-  });
+    let branches
+  
+    
+
+    if(user?.role == 'Admin') {
+        branches = await prisma.branch.findMany({
+            select: {
+              address: true,
+              branchId: true,
+              name: true
+            },
+            orderBy: {
+              id: 'asc'
+            }
+          });
+      } else {
+        branches = await prisma.branch.findMany({
+            where: {
+                companyID: user.company
+            },
+            select: {
+              address: true,
+              branchId: true,
+              name: true
+            },
+            orderBy: {
+              id: 'asc'
+            }
+          });
+      }
 
   const company = await prisma.company.findFirst({
     select: {
@@ -224,10 +247,26 @@ export const getServerSideProps = withSessionSsr(
     },
   });
 
-  const staffs = await prisma.staff.findMany({
+  let staffs
+  
     
-  });
 
+    if(user?.role == 'Admin') {
+        staffs = await prisma.staff.findMany({
+            orderBy: {
+              id: 'asc'
+            }
+          });
+      } else {
+        staffs = await prisma.staff.findMany({
+            where: {
+                companyID: user.company
+            },
+            orderBy: {
+              id: 'asc'
+            }
+          });
+      }
   return {
     props: { branch, company, branches, companies, staffs, user },
   };

@@ -23,6 +23,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         and timestamp::date = ${date}::date
         order by id asc limit 1   
     ),
+    (select cs.current_tank as current_desig from sales cs where b.branch_id = cs.branch_id
+        and timestamp::date = ${date}::date
+        order by id desc limit 1   
+    ),
     (select cs.closing as closing_stock from sales cs where b.branch_id = cs.branch_id
         and timestamp::date = ${date}::date
         order by id desc limit 1   

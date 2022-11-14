@@ -9,7 +9,7 @@ export default async (req, res) => {
         data: {
           ...data,
           branch: {
-            connect: { branchId: branch },
+            connect: { branchId: parseInt(branch) },
           },
         },
         

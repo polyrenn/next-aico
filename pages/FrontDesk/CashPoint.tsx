@@ -258,7 +258,8 @@ export const getServerSideProps = withSessionSsr(
     },
     select: {
       address: true,
-      branchId: true
+      branchId: true,
+      name: true
     },
     orderBy: {
       id: "asc"

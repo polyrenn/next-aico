@@ -30,7 +30,7 @@ export const colorCode = (item:string) => {
             return 'yellow.300'
 
         case 'Other':
-            return 'yellow.300'            
+            return 'red.300'            
                     
         default:
             break;

@@ -8,6 +8,7 @@ import {
     VStack,
     Heading,
     Text,
+    Center,
   } from "@chakra-ui/react";
   
   
@@ -54,9 +55,13 @@ import CashPointTable from "./CashPointTable";
       const sidebar = (
         
         branchList.map((item:any) =>
-        <Box fontWeight={600} key={item.branchId}>
+        <Center fontWeight={600} key={item.branchId}>
+          <VStack mb={2} spacing={0}>
+          <Text>{item.name}</Text>
           <Text>{item.address}</Text>
-           </Box>
+          </VStack>
+         
+           </Center>
         )  
   
     );

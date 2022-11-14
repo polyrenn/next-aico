@@ -20,13 +20,13 @@ const SwitchLog:FC<SwitchProps> = (props) => {
              <Flex w="max-content">
          {switchLog?.map((item:any) => 
             <Flex color="red.500" flexFlow="row wrap" fontWeight={500} key={item.id}>
-            <Text mr={1}> Switched To: {item.meta[0]?.switchedTo}</Text>
-            <Text mr={1}>|</Text>
-            <Text mr={1}>Loss: {item.meta[0]?.loss}</Text>
-            <Text mr={1}>|</Text>
-            <Text mr={1}>Kg Sold: {item.meta[0]?.total_kg}</Text>
+            <Text mr={1}> Previous Tank: {item.meta[0]?.old_name}</Text>
             <Text mr={1}>|</Text>
             <Text mr={1}>Opening Stock: {item.meta[0]?.opening_old}</Text>
+            <Text mr={1}>|</Text>
+            <Text mr={1}>Balance Stock: {item.meta[0]?.loss}</Text>
+            <Text mr={1}>|</Text>
+            <Text mr={1}>Kg Sold: {item.meta[0]?.total_kg}</Text>
            </Flex>
          )}
         </Flex>

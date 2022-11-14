@@ -332,7 +332,7 @@ export default (props: PageProps<[]>) => {
             <Td>Total Credit</Td>
             </Tr>
 
-            <Tr backgroundColor="teal.400">
+            <Tr fontWeight={600} backgroundColor="teal.400">
             <Td>Total Amount</Td>
             {data?.totalAmount.map((item:any) =>
                 <Td>
@@ -349,7 +349,7 @@ export default (props: PageProps<[]>) => {
                <Td textAlign="center" colSpan={100}>Tank Analysis</Td> 
             </Tr>
 
-            <Tr>
+            <Tr fontWeight={600}>
             <Td>Current Tank</Td>
             {data?.currentTank.map((item:any) =>
                 <Td>
@@ -361,7 +361,7 @@ export default (props: PageProps<[]>) => {
             )}
             </Tr>
 
-            <Tr>
+            <Tr fontWeight={600}>
             <Td>Opening Stock</Td>
             {data?.openingStock.map((item:any) =>
                 <Td>
@@ -373,7 +373,7 @@ export default (props: PageProps<[]>) => {
             )}
             </Tr>
             
-            <Tr>
+            <Tr fontWeight={600}>
             <Td>Balance Stock</Td>
             {data?.closingStock.map((item:any) =>
                 <Td>
@@ -385,7 +385,7 @@ export default (props: PageProps<[]>) => {
             )}
             </Tr>
 
-             <Tr>   
+             <Tr fontWeight={600}>   
             <Td>Closing Stock</Td>
             {data?.closingStock.map((item:any) =>
                 <Td>

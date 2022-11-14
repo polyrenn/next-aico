@@ -84,12 +84,14 @@ import SummaryCard from "./SummaryCard";
 //Styles
 import styles from "./SaleTable.module.css"
 
+type ResetToDefault = () => void;
 interface SaleFormProps {
   pricePerKg: number
   post: any
   branch: any
   category: String | undefined
   availableKgs: number[] | undefined
+  resetToDefault: ResetToDefault
 }
 
 const fetcher = (url:string) => fetch(url).then((res) => res.json())
@@ -340,6 +342,8 @@ const saleValidation = Yup.object().shape({
     .min(1, 'Minimum of 3 friends')   
 });
 
+const resetToDefault = props.resetToDefault
+
 const createSummary = (values:any, actions:any ) => { // Type Values Actions:FormikHelpers<FormValues>
   let result
 
@@ -469,6 +473,7 @@ const handleSaleCompletion = async (values:any, actions:any) => {
   actions.setFieldValue("friends.0.name", 5)
   actions.resetForm()
   setSummary([])
+  props.resetToDefault()
 }
 
 const computeTotalAmount = (arr:any) => {
