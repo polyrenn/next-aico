@@ -37,7 +37,7 @@ export default async (req: any, res: any) => {
     On s.customer_id = cs.unique_id
     Where s.timestamp::date = ${formattedDate}::date
     and s.branch_id = ${parseInt(branch)}::int
-    order by s.timestamp asc
+    order by s.id asc
     `;
 
   const salesAggregations: any = await prisma.$queryRaw`SELECT

@@ -151,10 +151,10 @@ export default (props: any) => {
         data.map((item:any, counter:number) => 
         <Button
             onClick={() => getData(item.id)}
-            fontSize={"sm"}
-            fontWeight={500}
+            fontSize={16}
+            fontWeight={600}
             bg={useColorModeValue("cyan.50", "cyan.900")}
-            px={4}
+            p={6}
             color={"cyan.900"}
             rounded={"md"}
             mr={2}
