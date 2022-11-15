@@ -171,13 +171,24 @@ export default (props: PageProps<[]>) => {
             case 'Civil Servant':
                 return 'yellow.300'
             
-            case 'Other':
+            case 'Others':
                 return 'red.500'    
                         
             default:
                 break;
         }
     }  
+
+    const colorCodeText = (item:string) => {
+      switch (item) {
+          
+          case 'Others':
+              return 'white'    
+                      
+          default:
+              break;
+      }
+  }  
 
   const { isOpen, onClose, onOpen } = useDisclosure()  
   const { query } = useRouter()  
@@ -282,7 +293,7 @@ export default (props: PageProps<[]>) => {
             {data?.sales.map((item:any) =>
                item.category != 'Switch' ? 
                
-               <Tr key={item.id} backgroundColor={`${colorCode(item.category)}`}>
+               <Tr key={item.id} color={`${colorCodeText(item.category)}`} backgroundColor={`${colorCode(item.category)}`}>
                <Td>{item.sale_number}</Td>
                <Td>
                    {!item.customer && !item.phone ? 
