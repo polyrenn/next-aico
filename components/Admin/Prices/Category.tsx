@@ -29,7 +29,7 @@ export const colorCode = (item:string) => {
         case 'Civil Servant':
             return 'yellow.300'
 
-        case 'Other':
+        case 'Others':
             return 'red.300'            
                     
         default:
