@@ -8,9 +8,6 @@ export default async (req, res) => {
       const result = await prisma.declinedSales.create({
         data: {
           ...data,
-          branch: {
-            connect: { branchId: parseInt(branch) },
-          },
         },
         
       });

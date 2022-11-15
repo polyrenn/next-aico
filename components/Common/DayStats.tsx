@@ -15,7 +15,7 @@ const DayStats:FC<DayProps> = (props) => {
     }});
     //Map Day Stats     
     return (
-        <Flex flexFlow="column wrap" py={4}>
+        <Flex color="teal.500" fontSize={18} flexFlow="column wrap" py={4}>
          {dayStats?.map((item:any) => 
             <Flex flexFlow="row wrap" fontWeight={500} key={item.id}>
             <Text mb={1} mr={1}>Load Number : {item.load_number}</Text>

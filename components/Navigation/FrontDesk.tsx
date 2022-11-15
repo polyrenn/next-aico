@@ -15,6 +15,7 @@ import {
     useColorModeValue,
     useBreakpointValue,
     useDisclosure,
+    Heading
   } from '@chakra-ui/react';
   import {
     HamburgerIcon,
@@ -80,12 +81,13 @@ interface NavProps {
             />
           </Flex>
           <Flex flex={{ base: 'none', md: 1 }} justify={{ base: 'center', md: 'start' }}>
-            <Text
+            <Heading
+              size="md"
               textAlign={useBreakpointValue({ base: 'center', md: 'left' })}
               fontFamily={'heading'}
-              color={useColorModeValue('gray.800', 'white')}>
+              color={useColorModeValue('gray.500', 'white')}>
               Almarence International Company Limited
-            </Text>
+            </Heading>
   
             <Flex display={{ base: 'none', md: 'flex' }} ml={10}>
               <DesktopNav />

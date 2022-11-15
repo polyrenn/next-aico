@@ -258,7 +258,7 @@ const delcineSale = async (actions:FormikProps<any>,
     totalKg: destructuredSum.totalKg,
     description: destructuredSum.description,
     customerId: destructuredSum.customerId,
-    branch: destructuredSum.branchId,
+    branchId: destructuredSum.branchId,
     declineReason: values.narrative
   }
 
