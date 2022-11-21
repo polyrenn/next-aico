@@ -1,14 +1,16 @@
 .receipt tr th {
     border-color: #333333;
-    border-bottom: 1px solid;
     padding-top: 4px;
     padding-bottom: 4px;
 }
 
 .receipt tr td {
     border-color: #333333;
-    border-bottom: 1px solid;
     padding-top: 4px;
     padding-bottom: 4px;
+}
+
+.receipt tr td {
+    border: 2px solid #333333
 }
 
