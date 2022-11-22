@@ -15,3 +15,7 @@
 .receipt tr td {
     border: 2px solid #333333
 }
+
+.receipt tr:last-child td {
+    font-weight: 800;
+}

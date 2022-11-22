@@ -68,7 +68,7 @@ const CashPointTable:FC<TableProps> = (props) => {
         )}
 
         {props.summary.map((item:any, counter:number) => 
-             <Tr key={counter}>
+             <Tr className={styles.total} key={counter}>
              <Th>Total</Th>
              <Td>{`${computeTotalQty(item.description)}`}</Td>
              <Td>{item.totalKg} KG</Td>
