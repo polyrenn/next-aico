@@ -14,7 +14,6 @@ const SwitchLog:FC<SwitchProps> = (props) => {
          
     }});
     //Map Switch Log      
-    console.log(switchLog == [] ? 'Hey' : 'No')
     return (
         <Box display={switchLog && switchLog?.length < 1 ? 'none' : 'block'}>
              <Flex w="max-content">

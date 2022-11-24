@@ -474,6 +474,8 @@ const handleSaleCompletion = async (values:any, actions:any) => {
   actions.resetForm()
   setSummary([])
   props.resetToDefault()
+  setCustomer('')
+  setCustomerId('')
 }
 
 const computeTotalAmount = (arr:any) => {
