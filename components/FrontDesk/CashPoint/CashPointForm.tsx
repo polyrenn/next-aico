@@ -82,7 +82,7 @@ const CashPointForm: FC<any> = (props) => {
   const { data: branchDetails }  = useContext(BranchContext)  as any
   console.log(branchDetails)
   const toast = useToast();
-    const formikRef = useRef<FormikProps<any>>(null);
+  const formikRef = useRef<FormikProps<any>>(null);
 
  
 
@@ -95,6 +95,8 @@ const CashPointForm: FC<any> = (props) => {
    const currentChange = props.customer?.change
 
     let cashPointRef = useRef<null | HTMLDivElement>(null);
+
+    const [ isDisabled, setIsDisabled ] = useState<boolean>(true)
 
     function validateEmpty(value:string) {
         let error
@@ -119,6 +121,37 @@ const CashPointForm: FC<any> = (props) => {
     change: false,
     usechange: false
   };
+
+  const SignupSchema = Yup.object().shape({
+    name: Yup.string()
+      .min(2, 'Too Short!')
+      .max(50, 'Too Long!')
+      .required('Required'),
+    phone: Yup.string()
+      .min(11, 'Too Short!')
+      .max(11, 'Too Long!')
+      .required('Required'),
+  });
+
+  const cashValidation = Yup.object().shape({
+    payment: Yup.string()
+    .required('Required'),
+
+    amount: Yup.string()
+    .required('Required'),
+
+    narrative: Yup.string()
+    .required('Required'),
+  });
+
+
+  const checkIsDisabled = (formik:FormikProps<any>): boolean | undefined => {
+    if(formik.dirty && formik.isValid) {
+      return false
+    } else {
+      return true
+    }
+  }
 
   const CustomerDetails = () => {
       if(!props.isRegistered) return null
@@ -335,6 +368,7 @@ const [destructuredSum] = props.summary
     >
       <Box bg="white" w="500px" p={4} rounded="md">
         <Formik
+          validationSchema={cashValidation}
           innerRef={formikRef}
           initialValues={initialValues}
           onSubmit={(values, actions) => {
@@ -395,7 +429,7 @@ const [destructuredSum] = props.summary
           </Box>  
           
 
-              <Field validate={validateEmpty} name="payment">
+              <Field name="payment">
                 {({ field, form }: any) => (
                   <FormControl
                     mb={2}
@@ -420,7 +454,7 @@ const [destructuredSum] = props.summary
                 )}
               </Field>
 
-              <Field validate={validateEmpty} name="narrative">
+              <Field name="narrative">
                 {({ field, form }: any) => (
                   <FormControl
                     mb={2}
@@ -448,8 +482,8 @@ const [destructuredSum] = props.summary
               </Field>
                 
 
-              
-              <Field validate={() => validateAmount(props.values.amount, destructuredSum?.amount)} name='amount'>
+              {/* validate={() => validateAmount(props.values.amount, destructuredSum?.amount)} */}
+              <Field name='amount'>
             {({ field, form, onChange }:any) => (
               <FormControl isInvalid={form.errors.amount && form.touched.amount}>
               <FormLabel color={'gray.500'} htmlFor="amount">Amount Paid</FormLabel>
@@ -479,7 +513,7 @@ const [destructuredSum] = props.summary
 
           
           <ReactToPrint
-              trigger={() => <Button my={4} colorScheme="purple" type="submit" width="full">Print Receipt</Button>}
+              trigger={() => <Button isDisabled={checkIsDisabled({...props})} my={4} colorScheme="purple" type="submit" width="full">Print Receipt</Button>}
               content={() => cashPointRef}
           />
           <Button w="full" color="white" onClick={() => delcineSale({...props}, props.values)} bg="red.500">Decline Sale</Button>
@@ -496,7 +530,7 @@ const [destructuredSum] = props.summary
       narrative={narrative}
       payment={payment}
       amount={amount}
-       ref={(el:any) => (cashPointRef = el)} summary={props.summary}></ReceiptCard>
+       ref={(el:any) => (cashPointRef = el)} summary={summary}></ReceiptCard>
     </Flex>
   );
 };
