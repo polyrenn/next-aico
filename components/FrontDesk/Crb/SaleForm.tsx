@@ -327,7 +327,9 @@ const handleCancel = () => {
 }
 
 const friendsInit = availableKgs?.map((row:any) => {
-  return { name: '' };
+  return { name: '',
+          amount: 0
+ };
 });
 
 const initialValues = {
@@ -507,7 +509,7 @@ let total:number
         initialValues={initialValues}
         //validationSchema={saleValidation}
         onSubmit={(values, actions) => {
-         // alert(JSON.stringify(values, null, 2));
+         alert(JSON.stringify(values, null, 2));
       
           //createSummary(values, actions)
           handleSaleCompletion(values, actions)
@@ -673,7 +675,7 @@ let total:number
                     <Td></Td>
                     <Td colSpan={2}>
                       <Box fontWeight={600} p={4} bg="green.400">
-                         <Text>{computeTotalAmount(props.values.friends)} NGN</Text>
+                         <Text>{`${computeTotalAmount(props.values.friends).toLocaleString()}`} NGN</Text>
                         
                       </Box>
                     </Td>
@@ -853,33 +855,16 @@ let total:number
                 </TableContainer>
               )}        
             </FieldArray>
-            {/*
+            
             <Flex mt={4} justifyContent="space-between" className="action-buttons">
               <HStack>
               <Button onClick={() => createSummary(props.values, props.setSubmitting)}>
-              Check
-            </Button>
-            <Button color="gray.100" bg="gray.900" >
-              Cancel
-              </Button>          
-              </HStack>
-
-              <HStack>
-                <ReactToPrint
-              trigger={() =>
-                <Button type="submit" isDisabled={summary.length == 0 ? true : false} isLoading={props.isSubmitting}
-                colorScheme="purple">
-                  Complete
-                </Button>
-                }
-              content={() => componentRef}
-             
-          />
-                  
+              Verify
+            </Button>     
               </HStack>
                
             </Flex>
-              */}
+            
           </Form>
         )}
       </Formik>
