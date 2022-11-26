@@ -67,7 +67,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         ),
         (select ts.designation as desig from tanks ts where b.current_tank = ts.tank_id),
         (select meta->0->'opening_new' as opening_stock from switch_log cs where b.branch_id = cs.branch_id
-            and timestamp::date = ${date}::date
+            and timestamp::date = ${formattedDate}::date
             order by id asc limit 1   
         ),
         (select cs.current_tank as current_desig from sales cs where b.branch_id = cs.branch_id
