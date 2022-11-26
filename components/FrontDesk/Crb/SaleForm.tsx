@@ -509,7 +509,7 @@ let total:number
         initialValues={initialValues}
         //validationSchema={saleValidation}
         onSubmit={(values, actions) => {
-         alert(JSON.stringify(values, null, 2));
+        // alert(JSON.stringify(values, null, 2));
       
           //createSummary(values, actions)
           handleSaleCompletion(values, actions)
