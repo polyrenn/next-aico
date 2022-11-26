@@ -8,11 +8,11 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
     const didSwitch:any = await prisma.$queryRaw`
     SELECT * FROM switch_log 
-    WHERE timestamp::date = ${today}::date
+    WHERE timestamp::date = ${date}::date
     `
 
     let result:any
-    if(didSwitch.length < 1) {
+    if(didSwitch.length == 0) {
         result = await prisma.$queryRaw`
         SELECT b.id,
         b.name,
@@ -50,6 +50,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         ORDER BY b.id asc 
         
         `
+        
+        
     } else {
         result = await prisma.$queryRaw`
         SELECT b.id,
@@ -64,7 +66,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             and timestamp::date = ${date}::date
         ),
         (select ts.designation as desig from tanks ts where b.current_tank = ts.tank_id),
-        (select cs.meta[0]->>'opening_new' as opening_stock from switch_log cs where b.branch_id = cs.branch_id
+        (select cs.meta[0]->'opening_new' as opening_stock from switch_log cs where b.branch_id = cs.branch_id
             and timestamp::date = ${date}::date
             order by id asc limit 1   
         ),
@@ -86,10 +88,9 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         ON b.company_id = companies.company_id 
         WHERE b.branch_id = ${parseInt(branch)}
         ORDER BY b.id asc 
-        
         `
     }
    
-console.log(result)
-  res.status(200).json(result);
+    console.log(didSwitch.length)
+     res.status(200).json(result);
 };
