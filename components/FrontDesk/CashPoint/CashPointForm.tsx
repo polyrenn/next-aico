@@ -401,7 +401,7 @@ const [destructuredSum] = props.summary
             )}
           </Flex>
           <Center py={4} bg="cyan.50" color="cyan.700" className="purchase-amount">
-                <Text fontSize={18} fontWeight={600}>Purchase Amount: {destructuredSum?.amount}</Text>
+                <Text fontSize={22} fontWeight={600}>Purchase Amount: {destructuredSum?.amount?.toLocaleString()}</Text>
             </Center>
           <Divider></Divider>
 
