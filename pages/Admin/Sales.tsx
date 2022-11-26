@@ -307,12 +307,12 @@ export default (props: PageProps<[]>) => {
             {data?.totalCash.map((item:any) =>
                 <Td>
                 <Stack direction="column">
-                    <Text>{item.total_cash_amount} NGN</Text>
+                    <Text>{item.total_cash_amount?.toLocaleString()} NGN</Text>
                 </Stack>
                 
                 </Td>
             )}
-            <Td>{data?.summation.total_cash_sold} NGN</Td>
+            <Td>{data?.summation.total_cash_sold?.toLocaleString()} NGN</Td>
             </Tr>
 
              <Tr>
@@ -320,12 +320,12 @@ export default (props: PageProps<[]>) => {
             {data?.totalPos.map((item:any) =>
                 <Td>
                 <Stack direction="column">
-                    <Text>{item.total_pos_amount} NGN</Text>
+                    <Text>{item.total_pos_amount?.toLocaleString()} NGN</Text>
                 </Stack>
                 
                 </Td>
             )}
-            <Td>{data?.summation.total_pos_sold} NGN</Td>
+            <Td>{data?.summation.total_pos_sold?.toLocaleString()} NGN</Td>
             </Tr>
 
              <Tr>
@@ -337,12 +337,12 @@ export default (props: PageProps<[]>) => {
             {data?.totalAmount.map((item:any) =>
                 <Td>
                 <Stack direction="column">
-                    <Text>{item.amount_sold} NGN</Text>
+                    <Text>{item.amount_sold?.toLocaleString()} NGN</Text>
                 </Stack>
                 
                 </Td>
             )}
-            <Td>{data?.summation.total_amount_sold} NGN</Td>
+            <Td>{data?.summation.total_amount_sold?.toLocaleString()} NGN</Td>
             </Tr> 
 
             <Tr>
