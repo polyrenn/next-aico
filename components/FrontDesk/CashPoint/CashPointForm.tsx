@@ -530,7 +530,7 @@ const [destructuredSum] = props.summary
       narrative={narrative}
       payment={payment}
       amount={amount}
-       ref={(el:any) => (cashPointRef = el)} summary={summary}></ReceiptCard>
+       ref={(el:any) => (cashPointRef = el)} summary={props.summary}></ReceiptCard>
     </Flex>
   );
 };
