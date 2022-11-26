@@ -58,7 +58,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         b.name,
         b.current_tank,
         (select st.load_number from stock st where b.branch_id = st.branch_id
-        order by date desc
+        order by id desc
         limit 1
         ),
         (select cast(count(*) as integer) as sales_count from sales s where b.branch_id = s.branch_id
