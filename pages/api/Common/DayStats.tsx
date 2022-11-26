@@ -66,7 +66,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             and timestamp::date = ${date}::date
         ),
         (select ts.designation as desig from tanks ts where b.current_tank = ts.tank_id),
-        (select (cs.meta[0]->>'opening_new')::text as opening_stock from switch_log cs where b.branch_id = cs.branch_id
+        (select cs.meta[0]->'opening_new' as opening_stock from switch_log cs where b.branch_id = cs.branch_id
             and timestamp::date = ${date}::date
             order by id asc limit 1   
         ),
@@ -91,6 +91,6 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         `
     }
    
-    console.log(didSwitch.length)
+     console.log(result)
      res.status(200).json(result);
 };
