@@ -4,7 +4,7 @@ import { prisma } from "../../../lib/prisma";
 export default async (req: NextApiRequest, res: NextApiResponse) => {
     const { id, date, branch } = req.query
     const today = new Date().toISOString()
-    const formattedDate = today.split('T')[0]
+    const formattedDate = date?.split('T')[0]
 
     const didSwitch:any = await prisma.$queryRaw`
     SELECT * FROM switch_log 
@@ -66,7 +66,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             and timestamp::date = ${date}::date
         ),
         (select ts.designation as desig from tanks ts where b.current_tank = ts.tank_id),
-        (select cs.meta[0]->'opening_new' as opening_stock from switch_log cs where b.branch_id = cs.branch_id
+        (select cs.meta[0]->>'opening_new' as opening_stock from switch_log cs where b.branch_id = cs.branch_id
             and timestamp::date = ${date}::date
             order by id asc limit 1   
         ),
