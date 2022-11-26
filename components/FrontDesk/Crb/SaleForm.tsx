@@ -856,12 +856,11 @@ let total:number
               )}        
             </FieldArray>
             
-            <Flex mt={4} justifyContent="space-between" className="action-buttons">
-              <HStack>
-              <Button onClick={() => createSummary(props.values, props.setSubmitting)}>
+            <Flex justifyContent="flex-end" mt={4} className="action-buttons">
+      
+              <Button fontSize={18} px={24} h={16} onClick={() => createSummary(props.values, props.setSubmitting)}>
               Verify
             </Button>     
-              </HStack>
                
             </Flex>
             

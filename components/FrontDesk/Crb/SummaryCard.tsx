@@ -56,6 +56,7 @@ const SummaryCard:FC<SummaryProps> = React.forwardRef(
     let componentRef = useRef<null | HTMLDivElement>(null);
 
     const summary = props.summary;
+    const customer = props.customer
     let sidebar
     console.log(props.customer)
     const form = props.form
@@ -94,6 +95,8 @@ const SummaryCard:FC<SummaryProps> = React.forwardRef(
 const handleCancel = () => {
   props.cancelSummary([])
 }
+
+console.log(summary.length == 0 || customer == "" )
 
 const Print:FC<any> = React.forwardRef((props, ref) => {
   return(
@@ -173,7 +176,7 @@ const CrbNumber2 = () => {
 
           </Print>
            <ReactToPrint
-        trigger={() =><Button type="submit" isDisabled={summary.length == 0 ? true : false} width="full" onClick={() => form.current.submitForm()} colorScheme="purple">Complete</Button>
+        trigger={() =><Button type="submit" isDisabled={customer == '' || summary.length == 0 ? true : false} width="full" onClick={() => form.current.submitForm()} colorScheme="purple">Complete</Button>
       }
       onAfterPrint={() => form.current.submitForm()}
         content={() => componentRef}
