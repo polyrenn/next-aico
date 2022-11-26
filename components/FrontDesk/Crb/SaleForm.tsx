@@ -207,11 +207,6 @@ const SaleSchema = Yup.object().shape({
     
 });
 
-const handleCancel = () => {
-  const { current: { values } } = valuesRef;
-  values.cart = 0
-  setSummary([])
-}
 
 // Compute Amount From Summary
 const computeTotal = (arr:any) => {
@@ -322,6 +317,14 @@ console.log(formRef)
 type FormValues = {
   friends: []
 };
+
+const handleCancel = () => {
+  formikRef.current?.resetForm()
+  setSummary([])
+  props.resetToDefault()
+  setCustomer('')
+  setCustomerId('')
+}
 
 const friendsInit = availableKgs?.map((row:any) => {
   return { name: '' };
@@ -891,7 +894,7 @@ let total:number
      form={formikRef}
      summary={summary}
      category={props.category}
-     cancelSummary={setSummary}
+     cancelSummary={handleCancel}
      ref={(el:any) => (componentRef = el)}></SummaryCard>
       
     </Flex>
