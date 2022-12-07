@@ -187,7 +187,7 @@ const {isOpen, onClose, onOpen} = useDisclosure()
 
         <Box className="Utils">
           <Center>
-            <Button onClick={onOpen} colorScheme="green">Report</Button>
+            <Button w="56" onClick={onOpen} colorScheme="purple">Report</Button>
           </Center>
         </Box>
         <Box className="queue">
