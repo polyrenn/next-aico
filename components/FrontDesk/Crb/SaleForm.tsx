@@ -675,7 +675,7 @@ let total:number
                     <Td></Td>
                     <Td colSpan={2}>
                       <Box fontWeight={600} p={4} bg="green.400">
-                         <Text>{`${computeTotalAmount(props.values.friends).toLocaleString()}`} NGN</Text>
+                         <Text fontSize="lg">{`${computeTotalAmount(props.values.friends).toLocaleString()}`} NGN</Text>
                         
                       </Box>
                     </Td>
