@@ -370,7 +370,7 @@ const [destructuredSum] = props.summary
       borderColor="gray.200"
       h="fit-content"
     >
-      <Box bg="white" w="500px" p={4} rounded="md">
+      <Box bg="white" w="2xl" p={4} rounded="md">
         <Formik
           validationSchema={cashValidation}
           innerRef={formikRef}
