@@ -542,7 +542,7 @@ let total:number
                 }}
                 
                >
-                <AutoCompleteInput autoComplete="off" {...field} width="full" h="56px" variant="outline" />
+                <AutoCompleteInput placeholder="Customer Search" autoComplete="off" {...field} width="full" h="56px" variant="filled" />
                     <AutoCompleteList>
                       <AutoCompleteGroup showDivider>
                         {customerComplete}
