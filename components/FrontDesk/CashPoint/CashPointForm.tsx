@@ -447,6 +447,7 @@ const [destructuredSum] = props.summary
                       id="payment"
                       name="payment"
                       h="56px"
+                      variant="filled"
                       placeholder="Select Payment Method"
                     >
                       <option value="cash">Cash</option>
@@ -472,6 +473,7 @@ const [destructuredSum] = props.summary
                       id="narrative"
                       name="narrative"
                       h="56px"
+                      variant="filled"
                       placeholder="Narrative"
                       _placeholder={{ opacity: 0.2, color: 'gray.500' }}
                     >
@@ -491,7 +493,7 @@ const [destructuredSum] = props.summary
             {({ field, form, onChange }:any) => (
               <FormControl isInvalid={form.errors.amount && form.touched.amount}>
               <FormLabel color={'gray.500'} htmlFor="amount">Amount Paid</FormLabel>
-                <Input {...field} id="amount" h='56px' type="number" min="1" />
+                <Input variant="filled" {...field} id="amount" h='56px' type="number" min="1" />
                 <FormErrorMessage>{form.errors.amount}</FormErrorMessage>
             </FormControl>
             )}
