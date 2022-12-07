@@ -404,7 +404,7 @@ const [destructuredSum] = props.summary
               </Flex>  
             )}
           </Flex>
-          <Center py={4} bg="green.500" color="white" className="purchase-amount">
+          <Center rounded={8} py={4} bg="green.500" color="white" className="purchase-amount">
                 <Text fontSize={22} fontWeight={600}>Purchase Amount: {destructuredSum?.amount?.toLocaleString()}</Text>
             </Center>
           <Divider></Divider>
@@ -493,7 +493,7 @@ const [destructuredSum] = props.summary
             {({ field, form, onChange }:any) => (
               <FormControl isInvalid={form.errors.amount && form.touched.amount}>
               <FormLabel color={'gray.500'} htmlFor="amount">Amount Paid</FormLabel>
-                <Input borderColor="green.500" variant="outline" {...field} id="amount" h='56px' type="number" min="1" />
+                <Input rounded={6} borderColor="green.500" variant="outline" {...field} id="amount" h='56px' type="number" min="1" />
                 <FormErrorMessage>{form.errors.amount}</FormErrorMessage>
             </FormControl>
             )}
