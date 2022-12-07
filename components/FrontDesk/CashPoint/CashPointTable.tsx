@@ -61,7 +61,7 @@ const CashPointTable:FC<TableProps> = (props) => {
             <Td>{inner.kg} KG</Td>
              <Td>{inner.quantity}</Td> 
              <Td>{inner.total} KG</Td> 
-             <Td isNumeric>{inner.amount} NGN</Td>
+             <Td isNumeric>{inner.amount?.toLocaleString()} NGN</Td>
           </Tr>
             )
             
@@ -72,7 +72,7 @@ const CashPointTable:FC<TableProps> = (props) => {
              <Th>Total</Th>
              <Td>{`${computeTotalQty(item.description)}`}</Td>
              <Td>{item.totalKg} KG</Td>
-             <Td isNumeric>{item.amount} NGN</Td>
+             <Td isNumeric>{item.amount?.toLocaleString()} NGN</Td>
          </Tr>
         )}
        

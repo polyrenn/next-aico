@@ -53,6 +53,10 @@
     background-color: #ffffff;
 } 
 
+.other tbody tr {
+    background-color: #dd4747 !important;
+}
+
 .ppkgo, .totalkgo, .amounto {
     color: #0D0D0D
 }

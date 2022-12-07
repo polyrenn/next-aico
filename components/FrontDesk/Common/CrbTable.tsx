@@ -79,7 +79,7 @@ const CrbTable:FC<TableProps> = (props) => {
              <Td >{item.total} KG</Td> 
 
           
-             <Td  isNumeric>{item.amount} NGN</Td>
+             <Td  isNumeric>{item.amount?.toLocaleString()} NGN</Td>
            </Tr>
         )}
 
@@ -89,7 +89,7 @@ const CrbTable:FC<TableProps> = (props) => {
             <Td >{`${computeTotalQty(props.summary)}`}</Td>
 
             <Td >{`${computeTotal(props.summary)}`} KG</Td>
-            <Td  isNumeric>{`${computeTotalAmount(props.summary)}`} NGN</Td>
+            <Td  isNumeric>{`${computeTotalAmount(props.summary).toLocaleString()}`} NGN</Td>
 
            {/* <Td  isNumeric>{props.pricePerKg ? `${Math.ceil((props.pricePerKg * computeTotalAmount(props.summary)) /10 ) * 10}`: props.summary[0]?.amount} NGN</Td> */}
         </Tr>

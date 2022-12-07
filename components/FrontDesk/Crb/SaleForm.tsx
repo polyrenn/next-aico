@@ -644,19 +644,19 @@ let total:number
                       </Field>
                       </Td>
                       <Td>
-                      <Box className={styles.ppkgo} p={4} bg="gray.50">
+                      <Box rounded={4} className={styles.ppkgo} p={4} bg="gray.50">
                         {convertToLocaleString(Math.ceil((pricePerKg * item) /10 ) * 10 )}
                       </Box>
                       </Td>
 
                       <Td>
-                      <Box className={styles.totalkgo} p={4} bg="gray.50">
+                      <Box rounded={4} className={styles.totalkgo} p={4} bg="gray.50">
                         { props.values?.friends[counter]?.name ? convertToLocaleString(item * props.values?.friends[counter]?.name) : '0' }
                       </Box>
                       </Td>
 
                       <Td>
-                      <Box className={styles.amounto} p={4} bg="gray.50">
+                      <Box rounded={4} className={styles.amounto} p={4} bg="gray.50">
                         { props.values.friends[counter]?.name ? convertToLocaleString(Math.ceil((pricePerKg * item) /10 ) * 10 * props.values.friends[counter]?.name) : '0' }
                       </Box>
                       </Td>
@@ -692,7 +692,7 @@ let total:number
             <FieldArray name="other">
             {({ insert, remove, push }) => (
                 <TableContainer borderWidth="1px" width="container.xl">
-                  <Table className={styles.table} variant="simple">
+                  <Table className={`${styles.table} ${styles.other}`} variant="simple">
                     <Thead>
                       <Tr>
                         <Th></Th>
@@ -727,7 +727,7 @@ let total:number
                             <Input
                               variant="filled"
                               type="number"
-                              width={16}
+                              width={32}
                               onKeyUp={(e) => {
                                 props.setFieldValue(`other.${counter}.isChecked`, true);
                                 props.setFieldValue(`other.${counter}.kg`, item);
@@ -772,7 +772,7 @@ let total:number
                                   ? props.setFieldValue(`other.${counter}.isChecked`, false)
                                   : console.log("Populated");
                               }}
-                              w={16}
+                              w={32}
                               {...field}
                               placeholder="Quantity"
                               h="56px"
@@ -797,7 +797,7 @@ let total:number
                             <Input
                               variant="filled"
                               type="number"
-                              width={16}
+                              width={32}
                               onKeyUp={(e) => {
                                 props.setFieldValue(`other.${counter}.isChecked`, true);
                                 props.setFieldValue(`other.${counter}.kg`, item);
@@ -832,13 +832,13 @@ let total:number
                       */} 
 
                       <Td>
-                      <Box className={styles.totalkgo} p={4} bg="gray.50">
+                      <Box rounded={4} className={styles.totalkgo} p={4} bg="gray.50">
                         {props.values?.other[counter]?.customkg * props.values?.other[counter]?.name }
                       </Box>
                       </Td>
 
                       <Td>
-                      <Box className={styles.amounto} p={4} bg="gray.50">
+                      <Box rounded={4} className={styles.amounto} p={4} bg="gray.50">
                         {props.values?.other[counter]?.customkg * props.values?.other[counter]?.pricepkg * props.values.other[counter]?.name }
                       </Box>
                       </Td>

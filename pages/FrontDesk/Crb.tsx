@@ -172,7 +172,7 @@ console.log(prices[0][1])
 
             <Box className='Utils'>
                 <Center>
-                    <Button onClick={onOpen} colorScheme='gray'>Report</Button>
+                    <Button w="56" onClick={onOpen} colorScheme='purple'>Report</Button>
                 </Center>
             </Box>
           {
