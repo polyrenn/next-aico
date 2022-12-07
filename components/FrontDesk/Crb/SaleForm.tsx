@@ -674,7 +674,7 @@ let total:number
                     <Td></Td>
                     <Td></Td>
                     <Td colSpan={2}>
-                      <Box fontWeight={600} p={4} bg="green.400">
+                      <Box rounded={8} fontWeight={600} p={4} bg="green.400">
                          <Text fontSize="lg">{`${computeTotalAmount(props.values.friends).toLocaleString()}`} NGN</Text>
                         
                       </Box>
@@ -730,7 +730,7 @@ let total:number
                               width={32}
                               onKeyUp={(e) => {
                                 props.setFieldValue(`other.${counter}.isChecked`, true);
-                                props.setFieldValue(`other.${counter}.kg`, item);
+                                props.setFieldValue(`other.${counter}.kg`, field.value);
                                 props.setFieldValue(`other.${counter}.quantity`, field.value);
                                 props.setFieldValue(`other.${counter}.total`, item * field.value);
                                 props.setFieldValue(`other.${counter}.amount`, field.value * item * pricePerKg );
@@ -764,9 +764,8 @@ let total:number
                               type="number"
                               onKeyUp={(e) => {
                                 props.setFieldValue(`other.${counter}.isChecked`, true);
-                                props.setFieldValue(`other.${counter}.kg`, item);
                                 props.setFieldValue(`other.${counter}.quantity`, field.value);
-                                props.setFieldValue(`other.${counter}.total`, item * field.value);
+                                props.setFieldValue(`other.${counter}.total`, props.values?.other[counter]?.customkg * field.value);
                                 props.setFieldValue(`other.${counter}.amount`, field.value * item * pricePerKg );
                                 !field.value
                                   ? props.setFieldValue(`other.${counter}.isChecked`, false)
@@ -800,7 +799,6 @@ let total:number
                               width={32}
                               onKeyUp={(e) => {
                                 props.setFieldValue(`other.${counter}.isChecked`, true);
-                                props.setFieldValue(`other.${counter}.kg`, item);
                               
                                
                                 props.setFieldValue(`other.${counter}.amount`, field.value * props.values?.other[counter]?.customkg * props.values.other[counter]?.name);
