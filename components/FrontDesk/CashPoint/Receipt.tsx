@@ -77,7 +77,7 @@ import CashPointTable from "./CashPointTable";
       
       
          return (
-        <Box ref={ref} p={4} bg="white" rounded="md">
+        <Box ref={ref} p={4} bg="white" maxW="2xl" rounded="md">
           <VStack spacing={1}>
             <Heading size="md">Aico Gas Limited</Heading>
             {sidebar}
