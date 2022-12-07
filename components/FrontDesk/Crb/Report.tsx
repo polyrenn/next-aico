@@ -111,7 +111,7 @@ const Report:FC<ModalProps> = (props) => {
             <Box my={4}>
                 <Heading fontWeight={500} color="gray.600" size="md">Total Stats</Heading>
             {data ? data[1]?.map((item:any) =>
-                <Box>
+                <Box fontWeight={500} fontSize={18}>
                     <Box my={4}>
                         <Text>Total Sold Today</Text>
                         <Text>{item.count_invoice}</Text>
