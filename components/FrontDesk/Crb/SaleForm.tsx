@@ -577,7 +577,7 @@ let total:number
             )}
           </Field>  
             
-             <Button onClick={onOpen} my={4} width="full" leftIcon={<AddIcon />} colorScheme='gray'>New Customer</Button>
+             <Button onClick={onOpen} my={4} width="full" leftIcon={<AddIcon />} colorScheme="green">New Customer</Button>
 
             </FormControl>
              )}
@@ -632,7 +632,7 @@ let total:number
                               w="min-content"
                               {...field}
                               placeholder="Quantity"
-                              h="56px"
+                              h="48px"
                               textTransform="capitalize"
                               min={1}
                             />
@@ -858,7 +858,7 @@ let total:number
             
             <Flex justifyContent="flex-end" mt={4} className="action-buttons">
       
-              <Button fontSize={18} px={24} h={16} onClick={() => createSummary(props.values, props.setSubmitting)}>
+              <Button colorScheme="green" fontSize={18} px={24} h={16} onClick={() => createSummary(props.values, props.setSubmitting)}>
               Verify
             </Button>     
                
