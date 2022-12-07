@@ -197,7 +197,12 @@ const {isOpen, onClose, onOpen} = useDisclosure()
 
         <Box my={4}>
         <BranchContext.Provider value={{branch, branchList, data, user}}>
-            <CashPointForm isRegistered={isRegistered} customer={customer} currentSale={currentSale} summary={returned}></CashPointForm>
+            <CashPointForm
+             isRegistered={isRegistered}
+             customer={customer}
+             currentSale={currentSale}
+             setReturned={setReturned}
+             summary={returned}></CashPointForm>
         </BranchContext.Provider>
           
         </Box>

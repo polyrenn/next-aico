@@ -274,7 +274,6 @@ const CashPointForm: FC<any> = (props) => {
     )
 
     actions.resetForm()
-  
   }
 
 const delcineSale = async (actions:FormikProps<any>,
@@ -352,7 +351,12 @@ const delcineSale = async (actions:FormikProps<any>,
   )
 
   actions.resetForm()
+  props.setReturned([]) 
 
+}
+
+const handleAfterPrint = () => {
+  props.setReturned([]);
 }
 
 const [destructuredSum] = props.summary
@@ -513,6 +517,7 @@ const [destructuredSum] = props.summary
 
           
           <ReactToPrint
+              onAfterPrint={() => handleAfterPrint()}
               trigger={() => <Button isDisabled={checkIsDisabled({...props})} my={4} colorScheme="purple" type="submit" width="full">Print Receipt</Button>}
               content={() => cashPointRef}
           />
