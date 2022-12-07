@@ -395,9 +395,9 @@ const [destructuredSum] = props.summary
 
           {/* Sale Description */}
           <Divider mt={4}></Divider>
-          <Flex flexFlow="row wrap" my={1}>
+          <Flex flexFlow="row wrap" my={4}>
             {destructuredSum?.description.map((item:any) => 
-              <Flex mr={2} flexFlow="column" justifyContent="space-between">
+              <Flex py={2} pr={8} borderBottom="1px" borderBottomColor="gray.200" alignItems="flex-start" flexFlow="column" justifyContent="space-between">
                 <Text fontWeight={600} color="cyan.600">Total Kg: {item.total} KG</Text>
                 <Text fontWeight={600} color="cyan.600">Quantity: {item.quantity}</Text>
                   <Text fontWeight={600} color="cyan.600">Amount: {item.amount} NGN</Text>
