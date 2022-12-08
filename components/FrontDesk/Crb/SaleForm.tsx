@@ -84,6 +84,9 @@ import SummaryCard from "./SummaryCard";
 //Styles
 import styles from "./SaleTable.module.css"
 
+//Customer Type
+import { Customer } from "@prisma/client";
+
 type ResetToDefault = () => void;
 interface SaleFormProps {
   pricePerKg: number
@@ -104,7 +107,7 @@ const SaleForm:FC<SaleFormProps> = (props) => {
     const availableKgs = props.availableKgs
 
     const { branchId: branch } = useContext(BranchContext) as any
-    const [returned, setReturned] = useState([]);
+    const [returned, setReturned] = useState<Customer[]>([]);
     const { data, error } = useSWR(`/api/Customer/GetCustomers?branch=${branch}`, fetcher, {
       onSuccess: (data) => {
           setReturned(data)
@@ -171,8 +174,14 @@ const SaleForm:FC<SaleFormProps> = (props) => {
     { name: "Ryan Florence", image: "https://bit.ly/ryan-florence" },
   ];
 
+  const transformedCustomer = returned.map((customer) => ({
+    names: customer.name + customer.phone + customer.uniqueId, 
+    ...customer
 
-const customerComplete = returned.map((person, oid) => (
+  }))
+
+
+const customerComplete = transformedCustomer.map((person:Customer, oid) => (
     <AutoCompleteItem
       key={`option-${oid}`}
       value={person}
@@ -180,7 +189,7 @@ const customerComplete = returned.map((person, oid) => (
       align="center"
     >
       <Avatar size="sm" name={person.name}/>
-      <Text ml="4">{person.name}</Text>
+      <Text ml="4">{person.name} , {person.uniqueId}, {person.phone}</Text>
     </AutoCompleteItem>
 ))
 
@@ -368,7 +377,6 @@ const createSummary = (values:any, actions:any ) => { // Type Values Actions:For
 
 useEffect(() => {
   const keyDownHandler = (event:any) => {
-    console.log('User pressed: ', event.key);
 
     if (event.key === 'Enter') {
       event.preventDefault();
@@ -533,8 +541,8 @@ let total:number
                 creatable
                 openOnFocus
                 onChange={(e, value:any) => {
-                props.setFieldValue("customer", value.value)
-                setCustomer(value.value)
+                props.setFieldValue("customer", value.originalValue.name)
+                setCustomer(value.originalValue.name)
                 setCustomerId(value.originalValue?.uniqueId || value.value /* == undefined ? value.value : value.originalValue?.uniqueId */)
                 setCustomerType(value.originalValue?.customerType)
                 console.log(value)
