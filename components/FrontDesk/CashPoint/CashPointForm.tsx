@@ -520,7 +520,7 @@ const [destructuredSum] = props.summary
           
           <ReactToPrint
               onAfterPrint={() => handleAfterPrint()}
-              trigger={() => <Button isDisabled={checkIsDisabled({...props})} my={4} colorScheme="purple" type="submit" width="full">Print Receipt</Button>}
+              trigger={() => <Button isLoading={props.isSubmitting} isDisabled={checkIsDisabled({...props})} my={4} colorScheme="purple" type="submit" width="full">Print Receipt</Button>}
               content={() => cashPointRef}
           />
           <Button w="full" color="white" onClick={() => delcineSale({...props}, props.values)} bg="red.500">Decline Sale</Button>
