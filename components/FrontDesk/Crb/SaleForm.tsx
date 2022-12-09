@@ -495,7 +495,7 @@ const handleSaleCompletion = async (values:any, actions:any) => {
 
 const computeTotalAmount = (arr:any) => {
   let res = 0;
-  for(let i = 0; i < arr.length; i++){
+  for(let i = 0; i < arr?.length; i++){
      arr[i] == null ? 0 : res += arr[i]?.amount
   };
   return res;
