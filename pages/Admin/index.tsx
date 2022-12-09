@@ -177,7 +177,7 @@ export default (props: PageProps<[]>) => {
                
             </Stack>
 
-            <Stack my={4} mx={4} spacing={4} p={2} bgColor="gray.50" className="content">
+            <Stack fontSize={18} my={4} mx={4} spacing={4} p={2} bgColor="gray.50" className="content">
 
                 <HStack justifyContent="space-between">
                   <Text>Successful Sales</Text>

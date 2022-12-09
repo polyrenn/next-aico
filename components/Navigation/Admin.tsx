@@ -24,6 +24,7 @@ import {
 import { useDisclosure } from "@chakra-ui/react";
 import CreateCompany from "../Admin/CreateCompany";
 import CreateBranch from "../Admin/CreateBranch";
+import styles from "./Nav.module.css"
 
 
 
@@ -36,7 +37,7 @@ const AdminNav: FC<any> = (props) => {
 
 
   return (
-    <ProSidebar toggled={props.toggled} collapsed={props.collapsed} breakPoint="md">
+    <ProSidebar className={styles.container} toggled={props.toggled} collapsed={props.collapsed} breakPoint="md">
       <SidebarHeader
         style={{
           marginBottom: "24px",

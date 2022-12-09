@@ -17,7 +17,7 @@ import { Box, Flex, Spacer } from "@chakra-ui/react";
 const fetcher = (url: any) => fetch(url).then((res) => res.json());
 const CustomerTable: FC<any> = (props) => {
   const { data, error } = useSWR(
-    props.branch ? `/api/Customer/GetCustomers?branch=${props.branch}` : null,
+    props.branch ? `/api/Customer/GetRawCustomers?branch=${props.branch}` : null,
     fetcher,
     {
       onSuccess: (data) => {},
@@ -41,18 +41,18 @@ const CustomerTable: FC<any> = (props) => {
           </Tr>
         </Thead>
         <Tbody>
-           {data?.map((item:any) => 
-                <Tr key={item.phone}>
-                    <Td>{item.name}</Td>
-                    <Td>{item.phone}</Td>
-                    <Td>{item.branchId}</Td>
-                    <Td></Td>
-                    <Td></Td>
-                    <Td></Td>
-                    <Td></Td>
-                    <Td>{item.purchaseCount}</Td>
-                </Tr>
-           )}
+        {data?.map((item:any) => 
+                      <Tr key={item.phone}>
+                      <Td>{item.name}</Td>
+                      <Td>{item.phone}</Td>
+                      <Td>{item.branch_id}</Td>
+                      <Td>{item.total_kg}</Td>
+                      <Td>{item.total_amount?.toLocaleString()} NGN</Td>
+                      <Td>{item.first_purchase}</Td>
+                      <Td>{item.last_purchase}</Td>
+                      <Td>{item.purchase_count}</Td>
+                  </Tr>
+                  )}
           </Tbody>
         <Tfoot>
         <Tr>

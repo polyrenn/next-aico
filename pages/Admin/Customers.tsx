@@ -51,6 +51,8 @@ import CustomerTable from "../../components/Admin/Customers/CustomerTable";
 import BranchRadios from "../../components/Admin/ChangeBranch";
 import Search from "../../components/Admin/Customers/Search";
 
+import { Customer } from "@prisma/client";
+
 export const BranchContext = createContext<
   { address: string; branchId: number }[]
 >([]);
@@ -181,7 +183,13 @@ export default (props: PageProps<[]>) => {
     return info;
   };
 
-  const customerComplete = props.customers.map((person:any, oid) => (
+  const transformedCustomer = props.customers.map((customer:Customer) => ({
+    names: customer.name + customer.phone + customer.uniqueId, 
+    ...customer
+
+  }))
+
+  const customerComplete = transformedCustomer.map((person:any, oid) => (
     <AutoCompleteItem
       key={`option-${oid}`}
       value={person}
@@ -189,7 +197,7 @@ export default (props: PageProps<[]>) => {
       align="center"
     >
       <Avatar size="sm" name={person.name}/>
-      <Text ml="4">{person.name}</Text>
+      <Text ml="4">{person.name} , {person.uniqueId}, {person.phone}</Text>
     </AutoCompleteItem>
 ))
 

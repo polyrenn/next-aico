@@ -233,7 +233,7 @@ export default (props: PageProps<[]>) => {
                 <Th>
                     <Stack direction="column">
                     <Text>{item.name}</Text>
-                    <Button w="min-content">
+                    <Button colorScheme="teal" w="min-content">
                     <Link href={`/Admin/Sales/SalesLog?branch=${item.branchId}`}>Go to Sales Log</Link>
                     </Button>
                     </Stack>

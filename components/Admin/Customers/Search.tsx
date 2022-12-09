@@ -114,16 +114,19 @@ const SignupSchema = Yup.object().shape({
               </Tr>
             </Thead>
             <Tbody>
-                    <Tr key={data?.phone}>
-                        <Td>{data?.name}</Td>
-                        <Td>{data?.phone}</Td>
-                        <Td>{data?.branchId}</Td>
-                        <Td></Td>
-                        <Td></Td>
-                        <Td></Td>
-                        <Td></Td>
-                        <Td>{data?.purchaseCount}</Td>
-                    </Tr>
+                  {data?.map((item:any) => 
+                      <Tr key={item.phone}>
+                      <Td>{item.name}</Td>
+                      <Td>{item.phone}</Td>
+                      <Td>{item.branch_id}</Td>
+                      <Td>{item.total_kg}</Td>
+                      <Td>{item.total_amount?.toLocaleString()} NGN</Td>
+                      <Td>{item.first_purchase}</Td>
+                      <Td>{item.last_purchase}</Td>
+                      <Td>{item.purchase_count}</Td>
+                  </Tr>
+                  )}
+                    
               </Tbody>
             <Tfoot>
             <Tr>
@@ -149,10 +152,18 @@ const Search:FC<ModalProps> = (props) => {
     //const [ customer, setCustomer ] = useState()
     const [ customer, setCustomer ] = useState<Customer | null>(null)
 
+    const [returned, setReturned] = useState<Customer[]>([]);
     const { data, error } = useSWR(`/api/Customer/GetCustomers?branch=${props.branch}`, fetcher, {
-      });
+    });
 
-    const customerComplete = data?.map((person:any, oid:number) => (
+    const transformedCustomer = data?.map((customer:Customer) => ({
+      names: `${customer.name} ${customer.phone} ${customer.uniqueId}` , 
+      ...customer
+  
+    }))
+  
+
+    const customerComplete = transformedCustomer?.map((person:any, oid:number) => (
         <AutoCompleteItem
           key={`option-${oid}`}
           value={person}
@@ -160,7 +171,7 @@ const Search:FC<ModalProps> = (props) => {
           align="center"
         >
           <Avatar size="sm" name={person.name}/>
-          <Text ml="4">{person.name}</Text>
+          <Text ml="4">{person.name} , {person.uniqueId}, {person.phone}</Text>
         </AutoCompleteItem>
     ))
     

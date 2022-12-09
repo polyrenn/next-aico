@@ -312,7 +312,6 @@ export default (props: PageProps<[]>) => {
             <Th>Total Kg</Th>
             <Th>Amount</Th>
             <Th>Reason For Decline</Th>
-            <Th>Action</Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -325,7 +324,7 @@ export default (props: PageProps<[]>) => {
                  <Td>{item.total_kg}</Td>
                  <Td>{item.amount}</Td>
                  <Td>{item.decline_reason}</Td>
-                 <Td><Button onClick={() => deleteSale(item.id)} colorScheme="red">Delete</Button></Td>
+               { /*  <Td><Button onClick={() => deleteSale(item.id)} colorScheme="red">Delete</Button></Td> */}
 
               </Tr>
                
@@ -340,7 +339,6 @@ export default (props: PageProps<[]>) => {
             <Th>Total Kg</Th>
             <Th>Amount</Th>
             <Th>Reason For Decline</Th>
-            <Th>Action</Th>
           </Tr>
         </Tfoot>
       </Table>

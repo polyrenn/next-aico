@@ -334,8 +334,8 @@ export default (props: PageProps<[]>) => {
                 <Text>Total of {item.description[0].old_name}</Text>
             </Td>
             <Td></Td>
-            <Td><Text>{item.description[0].total_kg} Kg</Text></Td>
-            <Td><Text>{item.description[0].amount_sold?.toLocaleString()} NGN</Text></Td>
+            <Td><Text fontWeight={500}>{item.description[0].total_kg} Kg</Text></Td>
+            <Td><Text fontWeight={500}>{item.description[0].amount_sold?.toLocaleString()} NGN</Text></Td>
             <Td textAlign="center" fontWeight="600" color="white" backgroundColor="purple.500" colSpan={7}>
                 <Stack direction="column">
                     <Text>Loss on previous tank: {item.description[0].loss} Kg</Text>
@@ -349,8 +349,8 @@ export default (props: PageProps<[]>) => {
             {data?.tankAggregations.map((item:any, counter:number) => 
                 <Tr key={counter}>
                 <Td colSpan={3}>Total of {item.desig}</Td>
-                <Td borderRightWidth="1px">{item.total_kg} Kg</Td>
-                <Td borderRightWidth="1px">{item.total_amount_sold?.toLocaleString()} NGN</Td>
+                <Td fontWeight={500} borderRightWidth="1px">{item.total_kg} Kg</Td>
+                <Td fontWeight={500} borderRightWidth="1px">{item.total_amount_sold?.toLocaleString()} NGN</Td>
                 </Tr>
             )}
             

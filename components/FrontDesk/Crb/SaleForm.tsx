@@ -183,6 +183,7 @@ const SaleForm:FC<SaleFormProps> = (props) => {
 
 const customerComplete = transformedCustomer.map((person:Customer, oid) => (
     <AutoCompleteItem
+      onClick={() => console.log("Clicked")}
       key={`option-${oid}`}
       value={person}
       textTransform="capitalize"
@@ -192,6 +193,7 @@ const customerComplete = transformedCustomer.map((person:Customer, oid) => (
       <Text ml="4">{person.name} , {person.uniqueId}, {person.phone}</Text>
     </AutoCompleteItem>
 ))
+
 
 const { isOpen, onOpen, onClose } = useDisclosure()
 const [customer, setCustomer] = useState('')

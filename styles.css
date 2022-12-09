@@ -1,0 +1,15 @@
+.navigation .pro-sidebar > .pro-sidebar-inner {
+    background: rgb(70, 53, 201);
+}
+
+.navigation .pro-sidebar .pro-menu a, .navigation .pro-sidebar {
+    color: #ffffff;
+}
+
+.navigation .pro-sidebar .pro-menu .pro-menu-item {
+    font-size: 1rem;
+}
+
+.navigation .pro-sidebar .pro-menu > ul > .pro-sub-menu > .pro-inner-list-item {
+    background: rgb(56, 43, 161);
+}
