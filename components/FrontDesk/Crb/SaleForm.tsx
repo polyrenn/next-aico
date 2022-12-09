@@ -174,14 +174,14 @@ const SaleForm:FC<SaleFormProps> = (props) => {
     { name: "Ryan Florence", image: "https://bit.ly/ryan-florence" },
   ];
 
-  const transformedCustomer = returned.map((customer) => ({
+  const transformedCustomer = data?.map((customer:Customer) => ({
     names: `${customer.name}  ${customer.phone}  ${customer.uniqueId}`, 
     ...customer
 
   }))
 
 
-const customerComplete = transformedCustomer.map((person:Customer, oid) => (
+const customerComplete = transformedCustomer.map((person:Customer, oid:number) => (
     <AutoCompleteItem
       onClick={() => console.log("Clicked")}
       key={`option-${oid}`}
