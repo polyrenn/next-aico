@@ -134,6 +134,7 @@ const NewStockModal:FC<ModalProps> = (props) => {
         
     }
       )
+      actions.resetForm();
     }
 
     function validateName(value:string) {
