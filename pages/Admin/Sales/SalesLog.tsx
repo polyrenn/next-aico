@@ -203,6 +203,8 @@ export default (props: PageProps<[]>) => {
      
     }});
 
+  const {data:branchData, error:branchError} = useSWR(`/api/Sales/GetBranch?branch=${query.branch}`, fetcher)  
+
   const handleChange = (event:any) => {
     setCurrentDate(event.target.value)
   }
@@ -227,10 +229,16 @@ export default (props: PageProps<[]>) => {
             <SwitchLog branch={query.branch} date={new Date(currentDate).toISOString()}></SwitchLog>
         </Flex>
 
+        <Center flexFlow="column">
+        <Heading color="gray.500" size="lg">Sales Log for {branchData?.name} {new Date(currentDate).toDateString()}</Heading>
+
         <DayStats branch={query.branch} date={new Date(currentDate).toISOString()}></DayStats>
 
 
-        <Heading color="gray.500" size="lg">Sales Log for {new Date(currentDate).toDateString()}</Heading>
+
+        </Center>
+
+        
         <Box mt={2}>
         <Text mb={1} color="gray.500">Choose Date</Text>    
         <Input
