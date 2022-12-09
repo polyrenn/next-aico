@@ -115,7 +115,7 @@ const Print:FC<any> = React.forwardRef((props, ref) => {
       <VStack w="100%">
       </VStack>
       <Box>
-          <Heading size="xs">Customer: {props.customer}</Heading>
+          <Heading size="xs">Customer: {props.customer?.split('0')[0]}</Heading>
           <Stack>
           {new Date().toLocaleDateString()}
         </Stack>

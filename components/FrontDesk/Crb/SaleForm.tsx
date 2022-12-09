@@ -175,7 +175,7 @@ const SaleForm:FC<SaleFormProps> = (props) => {
   ];
 
   const transformedCustomer = returned.map((customer) => ({
-    names: customer.name + customer.phone + customer.uniqueId, 
+    names: `${customer.name}  ${customer.phone}  ${customer.uniqueId}`, 
     ...customer
 
   }))
@@ -543,8 +543,8 @@ let total:number
                 creatable
                 openOnFocus
                 onChange={(e, value:any) => {
-                props.setFieldValue("customer", value.originalValue.name)
-                setCustomer(value.originalValue.name)
+                props.setFieldValue("customer", value?.value)
+                setCustomer(value?.value)
                 setCustomerId(value.originalValue?.uniqueId || value.value /* == undefined ? value.value : value.originalValue?.uniqueId */)
                 setCustomerType(value.originalValue?.customerType)
                 console.log(value)
