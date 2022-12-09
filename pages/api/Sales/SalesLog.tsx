@@ -80,10 +80,10 @@ export default async (req: any, res: any) => {
     ),
     (select ts.amount as balance_stock from tanks ts where b.current_tank = ts.tank_id),
     (select cast(sum(s.total_kg) as float) as total_kg from sales s where s.current_tank = ${currentTankName.desig}
-    and timestamp::date = ${date}::date
+    and timestamp::date = ${date}::date and s.branch_id = ${parseInt(branch)}
     ),
     (select cast(sum(amount) as float) as total_amount_sold from sales s where s.current_tank = ${currentTankName.desig}
-    and timestamp::date = ${date}::date
+    and timestamp::date = ${date}::date and s.branch_id = ${parseInt(branch)}
     ),
     companies.name as company_name
     FROM branches b
