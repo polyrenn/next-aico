@@ -78,6 +78,10 @@ import CashPointTable from "./CashPointTable";
       
          return (
         <Box ref={ref} p={4} bg="white" maxW="2xl" rounded="md">
+            <Center>
+            <Heading mb={2} size="md">Aico Gas Limited</Heading>
+            </Center>
+            
             <Text fontSize={'lg'}
             fontWeight={700}
             borderWidth={'1px'}
@@ -109,12 +113,15 @@ import CashPointTable from "./CashPointTable";
             <Text>Attendant: {branch.name} { user.role }</Text>
           </Stack>
 
+          <Divider my={1} borderColor="#0d0d0d" />
+
 
           <VStack spacing={1}>
-            <Heading size="md">Aico Gas Limited</Heading>
             {sidebar}
            
           </VStack>
+
+          <Divider my={1} borderColor="#0d0d0d" />
 
           <VStack fontSize="12px" spacing={1}>
             <Text fontWeight={700}>Thanks for your patronage</Text>

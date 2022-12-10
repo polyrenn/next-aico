@@ -198,7 +198,7 @@ const customerComplete = transformedCustomer?.map((person:Customer, oid:number) 
 const { isOpen, onOpen, onClose } = useDisclosure()
 const [customer, setCustomer] = useState('')
 const [customerId, setCustomerId] = useState('')
-const [ customerType, setCustomerType ] = useState('')
+const [ customerType, setCustomerType ] = useState<string | null>('')
 
 console.log(customerId)
 console.log(valuesRef)
@@ -543,7 +543,6 @@ let total:number
                 creatable
                 openOnFocus
                 onChange={(e, value:any) => {
-                props.setFieldValue("customer", value?.value)
                 setCustomer(value?.value)
                 setCustomerId(value.originalValue?.uniqueId || value.value /* == undefined ? value.value : value.originalValue?.uniqueId */)
                 setCustomerType(value.originalValue?.customerType)
@@ -552,10 +551,25 @@ let total:number
                 }}
                 
                >
-                <AutoCompleteInput placeholder="Customer Search" autoComplete="off" {...field} width="full" h="56px" variant="filled" />
+                <AutoCompleteInput placeholder="Customer Search" autoComplete="off" width="full" h="56px" variant="filled" />
                     <AutoCompleteList>
                       <AutoCompleteGroup showDivider>
-                        {customerComplete}
+                        {transformedCustomer?.map((person:Customer, oid:number) => (
+                            <AutoCompleteItem
+                              onClick={() => {
+                                setCustomer(person.name)
+                                setCustomerType(person.customerType)
+                                setCustomerId(person.uniqueId)
+                              }}
+                              key={`option-${oid}`}
+                              value={person}
+                              textTransform="capitalize"
+                              align="center"
+                            >
+                              <Avatar size="sm" name={person.name}/>
+                              <Text ml="4">{person.name} , {person.uniqueId}, {person.phone}</Text>
+                            </AutoCompleteItem>
+                      ))}
                       </AutoCompleteGroup>
 
                       <AutoCompleteCreatable>

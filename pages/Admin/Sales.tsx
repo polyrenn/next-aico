@@ -79,6 +79,9 @@ interface PageProps<T> {
     address: string;
     branchId: number;
     name: string;
+    company: {
+      name: string
+    }
   }[];
 
   company: {
@@ -232,7 +235,8 @@ export default (props: PageProps<[]>) => {
             {props.branches.map((item) => 
                 <Th>
                     <Stack direction="column">
-                    <Text>{item.name}</Text>
+                    <Heading size="sm">{item.company.name}</Heading>  
+                    <Text fontSize={18}>{item.name}</Text>
                     <Button colorScheme="teal" w="min-content">
                     <Link href={`/Admin/Sales/SalesLog?branch=${item.branchId}`}>Go to Sales Log</Link>
                     </Button>
@@ -570,7 +574,8 @@ const formattedClosingSales = closingSales.map(item => ({
             select: {
               address: true,
               branchId: true,
-              name: true
+              name: true,
+              company: true
             },
             orderBy: {
               id: 'asc'
@@ -584,7 +589,8 @@ const formattedClosingSales = closingSales.map(item => ({
             select: {
               address: true,
               branchId: true,
-              name: true
+              name: true,
+              company: true
             },
             orderBy: {
               id: 'asc'

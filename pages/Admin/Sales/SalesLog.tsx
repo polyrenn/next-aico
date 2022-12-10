@@ -355,7 +355,7 @@ export default (props: PageProps<[]>) => {
            </Tr> 
             )}
             {data?.tankAggregations.map((item:any, counter:number) => 
-                <Tr key={counter}>
+                <Tr fontSize={18} fontWeight={500} key={counter}>
                 <Td colSpan={3}>Total of {item.desig}</Td>
                 <Td fontWeight={500} borderRightWidth="1px">{item.total_kg} Kg</Td>
                 <Td fontWeight={500} borderRightWidth="1px">{item.total_amount_sold?.toLocaleString()} NGN</Td>
