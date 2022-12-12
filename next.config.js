@@ -13,6 +13,15 @@ module.exports = {
       },
     ]
 },
+async redirects() {
+  return [
+    {
+      source: '/',
+      destination: '/main.html',
+      permanent: true,
+    },
+  ]
+},
   typescript: {
     // !! WARN !!
     // Dangerously allow production builds to successfully complete even if
