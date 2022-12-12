@@ -174,7 +174,7 @@ const UpdateStockModal:FC<ModalProps> = (props) => {
           <ModalHeader>Update Stock</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-          <DayStats branch={props.branch} date={currentDate.split('T')[0]}></DayStats>  
+          <DayStats margin={true} branch={props.branch} date={currentDate.split('T')[0]}></DayStats>  
           <Formik
             initialValues={initialValues}
             onSubmit={(values, actions) => {
