@@ -14,6 +14,8 @@ export default async (req:any, res:any) => {
      order by id desc limit 1
     )
     From customers cs
+    Where cs.branch_id = ${parseInt(branch)}
+    Limit 50
     `
       res.status(200).json(result);
   };

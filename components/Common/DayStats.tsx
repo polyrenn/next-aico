@@ -6,7 +6,8 @@ import useSWR from "swr";
 const fetcher = (url:string) => fetch(url).then((res) => res.json())
 interface DayProps {
     date: any
-    branch: any
+    branch: any,
+    margin: boolean
 }
 const DayStats:FC<DayProps> = (props) => {
     const date = new Date(props.date)
@@ -15,7 +16,7 @@ const DayStats:FC<DayProps> = (props) => {
     }});
     //Map Day Stats     
     return (
-        <Flex color="teal.500" fontSize={18} flexFlow="column wrap" py={4}>
+        <Flex color="teal.500" fontSize={18} flexFlow="column wrap" py={props.margin ? 4 : 0}>
          {dayStats?.map((item:any) => 
             <Flex flexFlow="row wrap" fontWeight={500} key={item.id}>
             <Text mb={1} mr={1}>Load Number : {item.load_number}</Text>

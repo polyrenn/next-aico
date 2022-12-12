@@ -1,0 +1,51 @@
+.crb-list {
+  display: flex;
+  flex-flow: row-reverse;
+  margin-bottom: 1em;
+  margin-top: 1em;
+}
+
+.crb-queue-no {
+  margin-right: 1em;
+}
+  
+.crb-list {
+  display: flex;
+  flex-flow: row-reverse;
+  margin-bottom: 1em;
+  margin-top: 1em;
+  max-width: 100%;
+  overflow-x: auto;
+  padding-bottom: 1em;
+}
+
+.crb-queue-no {
+  margin-right: 1em;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.table {
+  width: 100%;
+  margin-bottom: 1rem;
+  color: #858796;
+}
+.table {
+  border-collapse: collapse;
+}
+.receipt-t table,
+th,
+td {
+  border: 1px solid #333333;
+  border-collapse: collapse;
+}
+.receipt-t th,
+td {
+  padding: 16px;
+}
+.receipt-t {
+  border: 2px solid #333333;
+}

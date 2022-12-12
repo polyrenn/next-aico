@@ -53,6 +53,7 @@ import CrbNumber from "./CrbNumber";
 const SummaryCard:FC<SummaryProps> = React.forwardRef(
   (props, ref) => {
 
+    const [error, setError] = useState(false)
     let componentRef = useRef<null | HTMLDivElement>(null);
 
     const summary = props.summary;
@@ -111,7 +112,7 @@ const Print:FC<any> = React.forwardRef((props, ref) => {
         </Box>
   
       </Stack>
-          <CrbNumber></CrbNumber>
+          <CrbNumber error={setError}></CrbNumber>
       <VStack w="100%">
       </VStack>
       <Box>
@@ -136,11 +137,7 @@ const CrbNumber2 = () => {
   const [number, setNumber] = useState<number>(0)
 
   const fetcher = (url:string) => fetch(url).then((res) => res.json())
-  const { data, error } = useSWR('/api/dummycrb', {refreshInterval: 1000}, fetcher, {
-    onSuccess: (data) => {
-      setNumber(data.id)
-    }
-  });
+  const { data, error } = useSWR('/api/dummycrb', fetcher, {refreshInterval: 1000});
 
   if(!data) return <Center><Spinner></Spinner></Center>
   
@@ -176,7 +173,8 @@ const CrbNumber2 = () => {
 
           </Print>
            <ReactToPrint
-        trigger={() =><Button type="submit" isDisabled={customer == '' || summary.length == 0 ? true : false} width="full" onClick={() => form.current.submitForm()} colorScheme="purple">Complete</Button>
+        trigger={() =><Button type="submit" isLoading={error} loadingText='Crb number unable to update - Check Network'
+        isDisabled={customer == '' || summary.length == 0 ? true : false} width="full" onClick={() => form.current.submitForm()} colorScheme="purple">Complete</Button>
       }
       onAfterPrint={() => form.current.submitForm()}
         content={() => componentRef}

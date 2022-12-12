@@ -80,7 +80,17 @@ interface PageProps<T> {
 
   companies: T[];
 
-  staffs: Staff[]
+  staffs: {
+    id: number;
+    companyID: number;
+    branchId: number;
+    username: string;
+    password: string;
+    role: string;
+    branch: {
+        name: string;
+    };
+  }[]
 }
 
 export default (props: PageProps<[]>) => {
@@ -253,6 +263,20 @@ export const getServerSideProps = withSessionSsr(
 
     if(user?.role == 'Admin') {
         staffs = await prisma.staff.findMany({
+            where: {
+             NOT: [
+              {
+              role: 'Admin'
+              }
+             ]
+            },
+            include: {
+              branch: {
+                select: {
+                  name: true
+                }
+              }
+            },
             orderBy: {
               id: 'asc'
             }
@@ -261,6 +285,13 @@ export const getServerSideProps = withSessionSsr(
         staffs = await prisma.staff.findMany({
             where: {
                 companyID: user.company
+            },
+            include: {
+              branch: {
+                select: {
+                  name: true
+                }
+              }
             },
             orderBy: {
               id: 'asc'

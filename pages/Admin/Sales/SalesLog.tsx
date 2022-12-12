@@ -226,13 +226,14 @@ export default (props: PageProps<[]>) => {
         <WithSubnavigation user={user} handleCollapsedChange={handleCollapsedChange} handleToggleSidebar={handleToggleSidebar} branch={props.branch}></WithSubnavigation>
         <Box p={6} className="actions">
         <Flex className="switch-log">
-            <SwitchLog branch={query.branch} date={new Date(currentDate).toISOString()}></SwitchLog>
         </Flex>
 
         <Center flexFlow="column">
-        <Heading color="gray.500" size="lg">Sales Log for {branchData?.name} {new Date(currentDate).toDateString()}</Heading>
+        <Heading mb={2} color="gray.500" size="lg">Sales Log for {branchData?.name} {new Date(currentDate).toDateString()}</Heading>
 
-        <DayStats branch={query.branch} date={new Date(currentDate).toISOString()}></DayStats>
+        <SwitchLog branch={query.branch} date={new Date(currentDate).toISOString()}></SwitchLog>
+
+        <DayStats margin={false} branch={query.branch} date={new Date(currentDate).toISOString()}></DayStats>
 
 
 
@@ -328,7 +329,7 @@ export default (props: PageProps<[]>) => {
                        <Text key={counter} mb={2}>{desc.quantity} X {desc.kg}Kg {item.category}</Text>
                    )}
                </Td>
-               <Td>{item.total_kg}</Td>
+               <Td>{item.total_kg} KG</Td>
                <Td>{item.amount?.toLocaleString()} NGN</Td>
                <Td>{item.payment_method.toUpperCase()}</Td>
                <Td>{item.current_tank}</Td>

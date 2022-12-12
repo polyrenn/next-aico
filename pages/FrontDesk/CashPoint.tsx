@@ -182,7 +182,7 @@ const {isOpen, onClose, onOpen} = useDisclosure()
             <SwitchLog branch={branchId} date={new Date().toISOString()}></SwitchLog>
         </Center>
         <Center className='stats'>
-          <DayStats date={currentDate} branch={branchId}></DayStats>
+          <DayStats margin={true} date={currentDate} branch={branchId}></DayStats>
         </Center>
 
         <Box className="Utils">
@@ -207,7 +207,7 @@ const {isOpen, onClose, onOpen} = useDisclosure()
           
         </Box>
 
-        <Report branchId={branchId} isOpen={isOpen} onClose={onClose}></Report>
+        <Report branch={props.branch} branchId={branchId} isOpen={isOpen} onClose={onClose}></Report>
       </Box>
       <style jsx global>{`
        .css-1zts0j {

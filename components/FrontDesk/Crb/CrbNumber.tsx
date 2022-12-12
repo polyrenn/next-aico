@@ -14,8 +14,22 @@ const CrbNumber:FC<any> = (props) => {
 
      const [number, setNumber] = useState<number>(0)
 
-     const fetcher = (url:string) => fetch(url).then((res) => res.json())
+     const fetcher = async (url:string) => {
+      const res = await fetch(url)
+    
+      // If the status code is not in the range 200-299,
+      // we still try to parse and throw it.
+      if (!res.ok) {
+        const error = new Error('An error occurred while fetching the data.')
+        // Attach extra info to the error object.
+        props.error(true)
+        throw error
+      }
+      props.error(false)
+      return res.json()
+    }
      const { data, error } = useSWR(`/api/dummycrb?id=${branch}`, fetcher, { refreshInterval: 1000 });
+
    
    // if(!data) return <Center><Spinner></Spinner></Center>
      

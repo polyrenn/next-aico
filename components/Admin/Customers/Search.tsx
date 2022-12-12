@@ -153,7 +153,8 @@ const Search:FC<ModalProps> = (props) => {
     const [ customer, setCustomer ] = useState<Customer | null>(null)
 
     const [returned, setReturned] = useState<Customer[]>([]);
-    const { data, error } = useSWR(`/api/Customer/GetCustomers?branch=${props.branch}`, fetcher, {
+    const { data, error } = useSWR( props.branch ? `/api/Customer/GetCustomers?branch=${props.branch}` : null,
+    fetcher, {
     });
 
     const transformedCustomer = data?.map((customer:Customer) => ({

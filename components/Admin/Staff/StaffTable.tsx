@@ -23,7 +23,17 @@ type MyFnType = () => void;
 type UserChange = (user: string) => void;
 interface TableProps {
     branch: number | undefined,
-    staff: Staff[]
+    staff: {
+      id: number;
+      companyID: number;
+      branchId: number;
+      username: string;
+      password: string;
+      role: string;
+      branch: {
+        name: string
+      }
+    }[]
     onOpenEdit: MyFnType
     userChange: UserChange
 }
@@ -92,8 +102,8 @@ const StaffTable: FC<TableProps> = (props) => {
                     <Td>{item.username}</Td>
                     <Td>{item.companyID}</Td>
                     <Td>{item.branchId}</Td>
-                    <Td></Td>
-                    <Td></Td>
+                    <Td>{item.branch.name}</Td>
+                    <Td>{item.password}</Td>
                     <Td></Td>
                     <Td>
                         <Button onClick={() => deleteStaff(item.username)} colorScheme="red">Delete</Button>

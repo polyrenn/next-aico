@@ -59,10 +59,10 @@ const DetailTable:FC<TableProps> = (props) => {
     {props.summary.map((item:any, counter:number) => 
             item.description.map( (inner:any, counter:number) => 
             <Tr key={counter}>
-            <Td>{inner.kg}</Td>
+            <Td>{inner.kg} KG</Td>
              <Td>{inner.quantity}</Td> 
-             <Td>{inner.total}</Td> 
-             <Td isNumeric>{inner.amount}</Td>
+             <Td>{inner.total} KG</Td> 
+             <Td isNumeric>{inner.amount} NGN</Td>
           </Tr>
             )
             
@@ -72,8 +72,8 @@ const DetailTable:FC<TableProps> = (props) => {
              <Tr key={counter}>
              <Th>Total</Th>
              <Td>{`${computeTotalQty(item.description)}`}</Td>
-             <Td>{item.total_kg}</Td>
-             <Td isNumeric>{item.amount}</Td>
+             <Td>{item.total_kg} KG</Td>
+             <Td isNumeric>{item.amount} NGN</Td>
          </Tr>
         )}
           

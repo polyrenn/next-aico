@@ -1,0 +1,185 @@
+
+<!doctype html>
+<html>
+<head>
+    <title>Almarence International Company Limited</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link href="https://fonts.googleapis.com/css?family=Mukta+Mahee:200,300,400|Playfair+Display:400,700" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/animate.css">
+    <link rel="stylesheet" href="css/owl.carousel.min.css">
+    <link rel="stylesheet" href="css/aos.css">
+    
+    <link rel="stylesheet" href="fonts/ionicons/css/ionicons.min.css">
+    <link rel="stylesheet" href="fonts/fontawesome/css/font-awesome.min.css">
+
+    <!-- Theme Style -->
+    <link rel="stylesheet" href="css/style.css">
+  </head>
+  <style>
+      #carouselExampleControls{
+        height:450px;
+      }
+  </style>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light border border-bottom-3 sticky-top" style="background-color: #f7f7f5">
+   <a class="navbar-brand" href="index.php">
+    <img class="mr-5" src="img/logo.jpeg" width="300px" height="65px">
+  </a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNavDropdown">
+    <ul class="navbar-nav">
+            <li><a href="#"></a></li>
+            <li><a href="#"></a></li>
+            <li><a href="#"></a></li>
+            <ul class="nav navbar-nav navbar-right pull-right float-right">
+        <li class="text-white mr-3"><a class="text-primary" href="team.html"><b>Our Team</b></a></li>
+        <li class="text-white mr-3"><a class="text-primary" href="contact.html"><b>Contact Us</b></a></li>
+    </ul>
+        
+    </ul>
+  </div>
+</nav>
+
+<div class="container-fluid p-5" style="background-image:Url('images/gas7.jpeg')">
+<div class="row">
+    <div class="col-12 col-lg-6 p-5">
+        <div class="card">
+            <div class="card-header bg-primary">
+                <h4 class=" display-4 text-white">Mission</h4>
+            </div>
+<div class="card-body">
+<p class="">With integrity and ethics, we aim to provide the best services and supports to our customers, with great focus on continuous improvement in all areas of our business and operations using existing and emerging technologies.</p>
+</div>
+        </div>
+
+
+
+    </div>
+
+<div class="col-12 col-lg-6 p-5">
+<div class="card">
+<div class="card-header bg-primary">
+<h4 class=" display-4 text-white">Vision</h4>
+</div>
+<div class="card-body">
+<p class="">Being a team with enthusiasm for continuous growth, improvement and excellence we see ourselves becoming the leading Nigerian gas company of choice.
+</p>
+</div>
+</div>
+
+
+
+</div>
+
+
+
+</div>
+
+</div>
+
+<div class="container p-5">
+      <h4 class="text-danger display-4">Locations</h4>
+      <div class="row locations d-flex justify-content-between">
+           
+      </div>
+
+</div>
+
+
+
+
+  
+    
+
+
+<footer>
+<div class="container-fluid bg-primary p-4">
+
+<div class="row">
+<div class="col-12 col-lg-3 pt-3 pb-3">
+
+<h5 class=" text-white" align="center"><b><span class="text-white">Almarence</span><br> International<br> Company Limited</b></h5>
+
+</div>
+<div class="col-12 col-lg-3 p-2">
+    <address>
+        <h4 class="text-white" align="center">AIRPORT ROAD</h4>
+        <p class="text-white" align="center">4 LIBERTY AIHIE CLOSE OPP OKO DAILY
+MARKET, OFF OKO-OGBA AIRPORT ROAD, BENIN CITY, EDO STATE 08150664289</p>
+    </address>
+</div>
+<div class="col-12 col-lg-3 p-2">
+    <h4 class="text-white" align="center">Contact Us</h4>
+<p class="text-white" align="center"><b>08150664289 or 07050791217 <br>Mail: aicogas2014@gmail.com</p>
+
+
+
+</div>
+<!-- <div class="col-12 col-lg-3 p-2">
+    <h4 class="text-white" align="center">Socials</h4>
+    <div class="">
+        <a class="text-white" href=""><i class="fab fa-twitter-square"></i>Twitter</a>
+    </div>
+</div>
+
+</div> -->
+
+
+</div>
+
+</footer>
+
+<script>
+
+async function getUsers() {
+    let url = `/api/Common/GetBranches`;
+    try {
+        let res = await fetch(url);
+        return await res.json();
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+   const renderData = async () => {
+    let data = await getUsers()
+    console.log(data);
+    let html = '';
+    data.forEach(branch => {
+        let htmlSegment = `<div class="user border">
+                                <div class="heading border-bottom px-2 py-2">
+                                    <h2>${branch.name}</h2>
+                                </div>    
+                            <div class="email text-lg-left font-weight-bold px-2">
+                                <p style="font-size: 20px">
+                                    ${branch.address}
+                                    </p>
+                                </div>
+                        </div>`;
+
+        html += htmlSegment;
+    });
+
+    let container = document.querySelector('.locations');
+    container.innerHTML = html;
+   }
+
+   renderData()
+
+</script>    
+
+<script src="js/jquery-3.2.1.min.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/owl.carousel.min.js"></script>
+    <script src="js/jquery.waypoints.min.js"></script>
+    <script src="js/aos.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

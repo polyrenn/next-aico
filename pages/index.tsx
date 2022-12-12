@@ -47,77 +47,14 @@ import { prisma } from "../lib/prisma";
 import CrbForm from "../components/Common/CrbForm";
 
 export default (props: any) => {
-  type FormValues = {
-      friends: []
-  };
-
-  const kgs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12.5, 15, 20, 25, 50];
-  const [priceKgs, setPriceKgs] = useState<number[]>([1,2,3])
-
-
-  const [summary, setSummary] = useState(); // Type State Later
-
-  const formRef = useRef<FormikProps<FormValues>>(null);
-
-  console.log(formRef)
-
-  const [currentBranch, setCurrentBranch] = useState({});
-
-  console.log(currentBranch);
-
-  const handleChange = (branch) => {
-    setCurrentBranch(branch);
-    console.log(branch.tank);
-    setPriceKgs([3,5,6,7,8,9])
-  };
-
-  const createSummary = (values:any, actions:FormikHelpers<FormValues> ) => { // Type Values 
-    const result = values.friends.filter((word:any) => word.kg == true);
-    setSummary(result)
-    console.log(summary)
-  }
-
-
-  const arrOfObjs = [
-    {
-      branch: "Airport",
-      branchId: 141414,
-      tankID: 242424,
-      tanks: ["TankAirA", "TankAirB"],
-    },
-    {
-      branch: "Ugbor",
-      branchId: 363636,
-      tankID: 646466,
-      tanks: ["TankUgbA", "TankUgbB"],
-    },
-
-    {
-      branch: "Aduwawa",
-      branchId: 734244,
-      tankID: 266524,
-      tanks: ["TankWawaA", "TankWawaB"],
-    },
-  ];
-
-  const initialValues = {
-    friends: [
-      
-    ],
-  };
-
-  const saleValidation = Yup.object().shape({
-    friends: Yup.array()
-      .required('Must have friends')
-      .min(1, 'Minimum of 3 friends'),
-  });
+  
 
   return (
     <div>
-      <WithSubnavigation branch={props.branch}></WithSubnavigation>
       <Head title="Home" />
       <Nav />
       <Box mx={8} className="hero">
+
         <h1 className="title">
           Welcome to Create Next App (Create Next.js App building tools)
         </h1>
@@ -140,147 +77,6 @@ export default (props: any) => {
         </div>
       </Box>
 
-      <Text>{currentBranch.branch}</Text>
-
-      <Box>
-        {arrOfObjs.map((item, counter) => (
-          <Button
-            variant="outline"
-            onClick={() => handleChange(item)}
-            mx={4}
-            key={counter}
-          >
-            {item.branch}
-          </Button>
-        ))}
-      </Box>
-
-      <Box>
-        <Select
-          placeholder="Tank"
-          width="300px"
-          onChange={(e) => console.log(e.target.value)}
-        >
-          {currentBranch?.tanks?.map((item, counter) => (
-            <option value={item}>{item}</option>
-          ))}
-        </Select>
-      </Box>
-
-{
-  /*
-    <Box>
-        {[1, 2, 3].map((item) => (
-          <CrbForm kg={item}></CrbForm>
-        ))}
-      </Box>
-  */
-}
-      
-
-      <Formik
-        innerRef={formRef}
-        initialValues={initialValues}
-        validationSchema={saleValidation}
-        onSubmit={(values, actions) => {
-         // alert(JSON.stringify(values, null, 2));
-      
-         createSummary(values, actions)
-        }}
-      >
-        {(props: FormikProps<any>) => (
-          <Form>
-            <FieldArray name="crb">
-              {({ insert, remove, push }) => (
-                <TableContainer borderWidth="1px" width="container.md">
-                  <Table variant="simple">
-                    <Thead>
-                      <Tr>
-                        <Th></Th>
-                        <Th>Qty</Th>
-                        <Th>Cyliner Price</Th>
-                        <Th>Total Kg</Th>
-                        <Th isNumeric>Amount</Th>
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                    {priceKgs.map((item, counter) => (
-                    <Tr key={counter}>
-                      <Td>
-                      <Field name={`friends.${counter}.kg`}>
-        {({ field, form }:any) => (
-              <FormControl mb={2}>
-               <Checkbox size="lg" isChecked={props.values.friends[counter]?.kg} {...field}>{item}</Checkbox>
-              </FormControl>
-            )}
-        </Field>
-                      </Td>
-                      <Td>
-                      <Field name={`friends.${counter}.name`}>
-                        {({ field, form, onChange }: any) => (
-                          <FormControl
-                            w="min-content"
-                            mb={2}
-                            isInvalid={form.errors.name && form.touched.name}
-                          >
-                            <Input
-                              type="number"
-                              onKeyUp={(e) => {
-                                props.setFieldValue(`friends.${counter}.kg`, true);
-                                props.setFieldValue(`friends.${counter}.total`, 600 * field.value);
-                                !field.value
-                                  ? props.setFieldValue(`friends.${counter}.kg`, false)
-                                  : console.log("Populated");
-                              }}
-                              w="min-content"
-                              {...field}
-                              placeholder="Customer Name"
-                              h="56px"
-                              textTransform="capitalize"
-                              min={1}
-                            />
-                            <FormErrorMessage>
-                              {form.errors.name}
-                            </FormErrorMessage>
-                          </FormControl>
-                        )}
-                      </Field>
-                      </Td>
-                      <Td>
-                      <Box className="price-per-kg" p={4} bg="gray.50">
-                        {760 * item}
-                      </Box>
-                      </Td>
-
-                      <Td>
-                      <Box className="total-kg" p={4} bg="gray.50">
-                        {item * props.values.friends[counter]?.name }
-                      </Box>
-                      </Td>
-
-                      <Td>
-                      <Box p={4} bg="gray.50">
-                        {item * 760 * props.values.friends[counter]?.name }
-                      </Box>
-                      </Td>
-                     
-                     
-
-                      
-                    </Tr>
-                  ))}
-                    </Tbody>
-                  </Table>
-                 
-                </TableContainer>
-              )}
-            </FieldArray>
-            <Button colorScheme="purple" type="submit">
-              Check
-            </Button>
-          </Form>
-        )}
-      </Formik>
 
       <style jsx>{`
         .hero {
@@ -333,28 +129,3 @@ export default (props: any) => {
   );
 };
 
-export const getServerSideProps = async ({ params }) => {
-  const post = await prisma.customer.findMany({
-    select: {
-      name: true,
-      branchId: true,
-    },
-  });
-
-  const branch = await prisma.branch.findFirst({
-    select: {
-      address: true,
-      branchId: true,
-    },
-  });
-
-  const prices = await prisma.prices.findFirst({
-    where: {
-      branchId: 131313,
-    },
-  });
-
-  return {
-    props: { post, branch, prices },
-  };
-};

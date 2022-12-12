@@ -5,6 +5,14 @@ module.exports = {
     }
     return config
   },
+  rewrites: async () => {
+    return [
+      {
+        source: '/',
+        destination: '/public/main.html',
+      },
+    ]
+},
   typescript: {
     // !! WARN !!
     // Dangerously allow production builds to successfully complete even if

@@ -68,6 +68,9 @@ interface PageProps<T> {
     name: string;
     address: string;
     branchId: number;
+    _count: {
+      customers: number
+    }
   }[];
 
   company: {
@@ -124,10 +127,12 @@ const CompanyComponent: FC<any> = (props) => {
       name: 'framework',
       onChange: handleChange
     })
+
   
   const group = getRootProps()
-  const branches: { name: string, address: string, branchId: number }[] = props.company.branches
+  const branches: { name: string, address: string, branchId: number, _count: {customers: number} }[] = props.company.branches
   const options:string[] = branches.map(a => a.name);
+  console.log(branches)
 
   
   return (
@@ -216,11 +221,15 @@ export default (props: PageProps<[]>) => {
       duration: 2000,
     });
 
+    let transformedValue = value.split(/(\d+)/)[0]
+    transformedValue = transformedValue.trim()
+
     let branchId = branches.find(
-        (element) => element.name === value
+        (element) => element.name == transformedValue
     )?.branchId;
     
     setBranchId(branchId)
+    console.log(transformedValue)
 
   };
 
@@ -231,9 +240,9 @@ export default (props: PageProps<[]>) => {
 
   const group = getRootProps();
 
-  const branches: { name: string, address: string; branchId: number;}[] =
+  const branches: { name: string, address: string; branchId: number; _count: {customers: number}}[] =
     props.branches; 
-  const options: string[] = branches.map((a) => a.name);
+  const options: string[] = branches.map((a) => `${a.name} ${a._count.customers} Members`);
 
 
   return (
@@ -260,21 +269,17 @@ export default (props: PageProps<[]>) => {
 
             <Box px={6} className="branches">
             <Input width="max-content" onClick={onOpen} type="text" placeholder="Search"></Input>
-            <Flex my={2} justify="space-between">
-            <HStack {...group}>
-      {options.map((value) => {
+            <Flex alignContent="flex-start" flexFlow={{ base: 'row wrap',}} my={2}>
+        {options.map((value, index) => {
         const radio = getRadioProps({ value })
         return (
-          <Box>
            <BranchRadios key={value} {...radio}>
             {value}
           </BranchRadios>
-          </Box>
          
         )
       })}
-    </HStack>
-            </Flex>
+      </Flex>
             
         </Box>
 
@@ -359,6 +364,11 @@ export const getServerSideProps = withSessionSsr(
       name: true,  
       address: true,
       branchId: true,
+      _count: {
+        select: {
+          customers: true
+        }
+      }
     },
   });
 
@@ -374,6 +384,11 @@ export const getServerSideProps = withSessionSsr(
       branches: {
         include: {
           tanks: true,
+          _count: {
+            select: {
+              customers: true
+            }
+          }
         },
       },
     },

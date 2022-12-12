@@ -40,6 +40,11 @@ interface ModalProps {
     isOpen: boolean
     onClose: any
     branchId: any
+    branch: {
+        name: string,
+        branchId: number,
+        address: string
+    }
 }
 export const textCode = (item:string) => {
     switch (item) {
@@ -73,12 +78,16 @@ const Report:FC<ModalProps> = (props) => {
         <Modal size="xl" isOpen={props.isOpen} onClose={props.onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Report</ModalHeader>
+          <ModalHeader></ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-          <Box borderWidth="1px" rounded={8} mb={2} p={4}>
-            {today}
-            </Box>
+          <Center flexFlow="column" borderWidth="1px" rounded={8} my={2} p={4}>
+          <Heading color="green.600" size="md">{props.branch.name} CRB's Report</Heading>
+            <Text fontSize="lg">
+                {today}
+            </Text>
+            
+            </Center>
             <Flex justifyContent="space-between">
              {data ? data[0]?.map((item:any) => 
                 <HStack key={item.category} ml={2} flex={1} color={`${textCode(item.category)}`} backgroundColor={`${colorCode(item.category)}`}>
@@ -113,8 +122,8 @@ const Report:FC<ModalProps> = (props) => {
             {data ? data[1]?.map((item:any) =>
                 <Box fontWeight={500} fontSize={18}>
                     <Box my={4}>
-                        <Text>Total Sold Today</Text>
-                        <Text>{item.count_invoice}</Text>
+                        <Text>Sales Count</Text>
+                        <Text>{item.count_invoice} Sales Today</Text>
                     </Box>
 
                     <Divider/>

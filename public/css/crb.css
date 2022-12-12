@@ -1,0 +1,23 @@
+input[type="checkbox"] {
+  width: 32px;
+  height: 32px;
+}
+
+.total-text {
+  text-align: center;
+  font-size: 1.4em;
+}
+
+.form-control {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.form-check {
+  display: flex;
+  align-items: center;
+}
+
+.form-check-label {
+  margin-left: 8px;
+}

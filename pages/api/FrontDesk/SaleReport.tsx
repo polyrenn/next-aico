@@ -83,6 +83,7 @@ export default async (req: any, res: any) => {
  (select cast(count(*) as float) as count_invoice from sales s where
    timestamp::date =  ${formattedDate}::date
    and s.category != 'Switch'
+   and s.branch_id = ${parseInt(branch)}
  ),
  CAST(SUM(total_kg) AS FLOAT) AS kg_sold,
  CAST(SUM(amount) AS FLOAT) AS amount_sold
