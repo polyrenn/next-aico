@@ -133,6 +133,7 @@ model Sale {
   opening Float 
   balance Float 
   closing Float
+  @@unique([saleNumber, balance])
   @@map(name: "sales")
 }
 
