@@ -44,6 +44,8 @@ import CashPointTable from "./CashPointTable";
      const { user }  = useContext(BranchContext)  as any
      const { branch }  = useContext(BranchContext)  as any
 
+     const phone = branch.address.split('0')[1]
+
       const summary = props.summary;
       let customer
 
@@ -79,7 +81,7 @@ import CashPointTable from "./CashPointTable";
          return (
         <Box ref={ref} p={4} bg="white" maxW="2xl" rounded="md">
             <Center>
-            <Heading mb={2} size="md">Aico Gas Limited</Heading>
+            <Heading mb={2} size="md">{branch.company.name}</Heading>
             </Center>
             
             <Text fontSize={'lg'}
@@ -126,7 +128,9 @@ import CashPointTable from "./CashPointTable";
           <VStack fontSize="12px" spacing={1}>
             <Text fontWeight={700}>Thanks for your patronage</Text>
             <Text fontWeight={700}>Visit us Monday to Saturdat 7:30am to 6pm</Text>
-            <Text fontWeight={700}>For complaints and enquries contact us on 08167875625</Text>
+            {branch.company.name == 'AicoGas Limited' ?  <Text fontWeight={700}>For complaints and enquries contact us on 08167875625</Text>
+            : null }
+           
           </VStack>
 
         </Box>

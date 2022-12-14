@@ -253,7 +253,12 @@ export const getServerSideProps = withSessionSsr(
     select: {
       address: true,
       branchId: true,
-      name: true
+      name: true,
+      company: {
+        select: {
+          name: true
+        }
+      }
     },
   });
 
