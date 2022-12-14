@@ -265,6 +265,9 @@ export const getServerSideProps = withSessionSsr(
                   tanks: true
               }
           }
+      },
+      orderBy: {
+        id: 'asc'
       }
   
     });
@@ -279,6 +282,9 @@ export const getServerSideProps = withSessionSsr(
                   tanks: true
               }
           }
+      },
+      orderBy: {
+        id: 'asc'
       }
   
     });

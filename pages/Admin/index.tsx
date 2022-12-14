@@ -355,6 +355,9 @@ export const getServerSideProps = withSessionSsr(
     });
   
     const company = await prisma.company.findFirst({
+      where: {
+        companyId: user?.company
+      },
       select: {
         name: true,
         companyId: true,

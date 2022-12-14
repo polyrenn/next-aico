@@ -287,6 +287,9 @@ if (user?.role !== 'Admin' && user?.role !== 'Supervisor') {
                   tanks: true
               }
           }
+      },
+      orderBy: {
+        id: 'asc'
       }
   
     });
@@ -301,6 +304,9 @@ if (user?.role !== 'Admin' && user?.role !== 'Supervisor') {
                   tanks: true
               }
           }
+      },
+      orderBy: {
+        id: 'asc'
       }
   
     });
