@@ -190,10 +190,13 @@ const CashPointForm: FC<any> = (props) => {
 
     const [destructuredSum] = props.summary;
 
+    const todayInDate = new Date().toISOString().split('T')[0]
+
     const data = {
       saleNumber: props.summary[0].crbNumber,
       amount: destructuredSum.amount,
       timestamp: new Date(),
+      date: new Date(todayInDate),
       category: destructuredSum.category,
       totalKg: destructuredSum.totalKg,
       description: destructuredSum.description,

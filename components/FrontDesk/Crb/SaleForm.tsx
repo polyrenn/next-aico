@@ -405,6 +405,8 @@ const handleSaleCompletion = async (values:any, actions:any) => {
   const today = new Date();
   today.setDate(today.getDate() + 1);
 
+  const todayInDate = new Date().toISOString().split('T')[0]
+
   const data = {
     branchId: branch,
     amount: saleAmount,
@@ -423,6 +425,7 @@ const handleSaleCompletion = async (values:any, actions:any) => {
     description: summary,
     customerId: customerId,
     timestamp: new Date(),
+    date: new Date(todayInDate),
     totalKg: totalKg
   }
 

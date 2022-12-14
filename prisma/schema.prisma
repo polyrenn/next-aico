@@ -96,6 +96,8 @@ model Crb {
   totalKg Float @map(name: "total_kg") @default(0)
   category String
   timestamp DateTime @db.Timestamptz()
+  date DateTime? @db.Date()
+  @@unique([crbNumber, branchId, date])
   @@map(name: "crbs")
 }
 
@@ -112,6 +114,8 @@ model Queue {
   totalKg Float @map(name: "total_kg") @default(0)
   category String
   timestamp DateTime @db.Timestamptz()
+  date DateTime? @db.Date()
+  @@unique([crbNumber, branchId, date])
   @@map(name: "queue")
 }
 
@@ -124,6 +128,7 @@ model Sale {
   amount Int
   category String
   timestamp DateTime @db.Timestamptz()
+  date DateTime? @db.Date()
   customerId String @map(name: "customer_id")
   description Json // Meta Data
   narrative String 
@@ -133,7 +138,7 @@ model Sale {
   opening Float 
   balance Float 
   closing Float
-  @@unique([saleNumber, balance])
+  @@unique([saleNumber, branchId, date])
   @@map(name: "sales")
 }
 

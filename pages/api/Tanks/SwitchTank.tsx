@@ -65,6 +65,7 @@ export default async (req:any, res:any) => {
     
     //Insert into sales 
 
+
     const switchSale = await prisma.sale.create({
      data: {
           branch: {
@@ -77,7 +78,7 @@ export default async (req:any, res:any) => {
        opening: 0,
        closing: 0,
        balance: 0,
-       saleNumber: 0,
+       saleNumber: Math.floor(Math.random() * 10000),
        paymentMethod: "",
        narrative: "Successful",
        change: 0,
