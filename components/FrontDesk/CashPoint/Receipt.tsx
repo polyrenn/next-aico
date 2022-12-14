@@ -127,7 +127,7 @@ import CashPointTable from "./CashPointTable";
 
           <VStack fontSize="12px" spacing={1}>
             <Text fontWeight={700}>Thanks for your patronage</Text>
-            <Text fontWeight={700}>Visit us Monday to Saturdat 7:30am to 6pm</Text>
+            <Text fontWeight={700}>Visit us Monday to Saturday 7:30am to 6pm</Text>
             {branch.company.name == 'AicoGas Limited' ?  <Text fontWeight={700}>For complaints and enquries contact us on 08167875625</Text>
             : null }
            
