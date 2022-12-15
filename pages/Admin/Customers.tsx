@@ -359,18 +359,45 @@ export const getServerSideProps = withSessionSsr(
       },
     });
 
-  const branches = await prisma.branch.findMany({
-    select: {
-      name: true,  
-      address: true,
-      branchId: true,
-      _count: {
-        select: {
-          customers: true
+
+  let branches
+
+  if(user?.role == 'Admin') {
+    branches = await prisma.branch.findMany({
+      select: {
+        name: true,  
+        address: true,
+        branchId: true,
+        _count: {
+          select: {
+            customers: true
+          }
         }
+      },
+      orderBy: {
+        id: 'asc'
       }
-    },
-  });
+    });
+  } else {
+    branches = await prisma.branch.findMany({
+      where: {
+        companyID: user?.company
+      },
+      select: {
+        name: true,  
+        address: true,
+        branchId: true,
+        _count: {
+          select: {
+            customers: true
+          }
+        }
+      },
+      orderBy: {
+        id: 'asc'
+      }
+    });
+  }
 
   const company = await prisma.company.findFirst({
     where: {
