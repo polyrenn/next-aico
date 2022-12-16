@@ -576,7 +576,14 @@ let total:number
                       </AutoCompleteGroup>
 
                       <AutoCompleteCreatable>
-                        {({ value }) => <Text>Add {value} to List</Text>}
+                        {({ value }) => <Text width="100%" height="100%" onClick={
+                          () => {
+                            setCustomer(value)
+                            console.log(`${value} hhhhhhhhhhhhhhhh`)
+                          }
+                          }>
+                          Add {value} to List
+                          </Text>}
                       </AutoCompleteCreatable>
                        
                     </AutoCompleteList>
