@@ -102,8 +102,8 @@ order by b.id asc
 `; // Refactor to Swr  
 
 const salesAggregations:any = await prisma.$queryRaw`SELECT b.id,
-b.name, 
-companies.company_id,
+b.name,
+b.company_id,
 (select cast(count(*) as integer) as sales_count from sales s where b.branch_id = s.branch_id
     and s.category != 'Switch'
     and s.timestamp::date = ${formattedDate}::date
@@ -193,7 +193,7 @@ b.name,
 companies.company_id,
 (select ts.closing as closing_stock from sales ts where b.branch_id = ts.branch_id
     and ts.category != 'Switch'
-    and ts.timestamp::date = date '2022-12-16'
+    and ts.timestamp::date = ${formattedDate}::date
     order by id desc limit 1   
 ),
 companies.name as company_name
@@ -213,22 +213,37 @@ companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
-WHERE branch_id = ${parseInt(branch)}
-and b.company_id != ${parseInt(company)}
+Where b.company_id = ${parseInt(company)}
 ORDER BY b.id asc 
 `;
 
-const summation:any = await prisma.$queryRaw`SELECT
-(select cast(count(*) as float) as count_invoice from sales s where
-  timestamp::date = ${formattedDate}::date
+const summation:any = await prisma.$queryRaw`SELECT b.id,
+b.name,
+b.company_id,
+(select cast(count(*) as integer) as count_invoice from sales s where b.branch_id = s.branch_id
+    and s.category != 'Switch'
+    and s.timestamp::date = ${formattedDate}::date
 ),
-CAST(SUM(total_kg) AS FLOAT) AS total_kg_sold,
-CAST(SUM(amount) FILTER (WHERE payment_method = 'cash') AS FLOAT) AS total_cash_sold,
-CAST(SUM(amount) FILTER (WHERE payment_method = 'pos') AS FLOAT) AS total_pos_sold,
-CAST(SUM(amount) AS FLOAT) AS total_amount_sold
-From sales s
-where timestamp::date= ${formattedDate}::date
-and s.branch_id = ${parseInt(branch)}
+(select cast(sum(s.total_kg) as float) as total_kg_sold from sales s where b.branch_id = s.branch_id
+    and s.timestamp::date = ${formattedDate}::date
+),
+(select cast(sum(s.amount) as float) as total_amount_sold from sales s where b.branch_id = s.branch_id
+    and s.timestamp::date = ${formattedDate}::date
+),
+(select cast(sum(s.amount) as float) as total_pos_sold from sales s where b.branch_id = s.branch_id
+     and s.timestamp::date = ${formattedDate}::date
+     and s.payment_method = 'pos'
+),
+(select cast(sum(s.amount) as float) as total_cash_sold from sales s where b.branch_id = s.branch_id
+     and s.timestamp::date = ${formattedDate}::date
+     and s.payment_method = 'cash'
+),
+companies.name as company_name
+FROM branches b
+Left JOIN companies
+ON b.company_id = companies.company_id
+Where b.company_id = ${parseInt(company)}
+ORDER BY b.id asc 
 `
 const [formattedSummation] = summation
 
