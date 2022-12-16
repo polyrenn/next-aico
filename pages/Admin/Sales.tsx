@@ -123,6 +123,8 @@ interface PageProps<T> {
     id: number,
     admin: boolean,
     role: string
+    company: number
+    branch: number
   };
 }
 const fetcher = (url:string) => fetch(url).then((res) => res.json())
@@ -168,7 +170,7 @@ export default (props: PageProps<[]>) => {
 
 
   const { data, error } = useSWR(isAdmin ? `/api/Sales/SalesSummary?date=${new Date(currentDate).toISOString()}&isadmin=${isAdmin}` :
-  `/api/Sales/SalesSummaryS?date=${new Date(currentDate).toISOString()}&isadmin=${isAdmin}`,
+  `/api/Sales/SalesSummaryS?date=${new Date(currentDate).toISOString()}&isadmin=${isAdmin}&branch=${user?.branch}`,
    fetcher, {
     onSuccess: (data) => {
      

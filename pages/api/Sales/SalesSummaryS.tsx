@@ -15,6 +15,7 @@ export default async (req: any, res: any) => {
 
     const today = new Date().toISOString()   
     const { date } = req.query
+    const { branch } = req.query
     const formattedDate = date?.split('T')[0] 
  
 let openingSales:Sales[] = await prisma.$queryRaw`SELECT b.name,
@@ -52,7 +53,8 @@ companies.company_id,
 From branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
-WHERE b.company_id != 111111
+WHERE branch_id = ${parseInt(branch)}
+and b.company_id != 111111
 order by b.id asc
 
 
@@ -94,7 +96,8 @@ companies.company_id,
 From branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
-WHERE b.company_id != 111111
+WHERE branch_id = ${parseInt(branch)}
+and b.company_id != 111111
 order by b.id asc
 
 `; // Refactor to Swr  
@@ -110,7 +113,8 @@ companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
-WHERE b.company_id != 111111
+WHERE branch_id = ${parseInt(branch)}
+and b.company_id != 111111
 ORDER BY b.id asc 
 `;
 
@@ -123,6 +127,8 @@ companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
+WHERE branch_id = ${parseInt(branch)}
+and b.company_id != 111111
 ORDER BY b.id asc 
 `;
 
@@ -136,7 +142,8 @@ companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
-WHERE b.company_id != 111111
+WHERE branch_id = ${parseInt(branch)}
+and b.company_id != 111111
 ORDER BY b.id asc 
 `;
 
@@ -151,7 +158,8 @@ companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
-WHERE b.company_id != 111111
+WHERE branch_id = ${parseInt(branch)}
+and b.company_id != 111111
 ORDER BY b.id asc 
 `;
 
@@ -166,7 +174,8 @@ companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
-WHERE b.company_id != 111111
+WHERE branch_id = ${parseInt(branch)}
+and b.company_id != 111111
 ORDER BY b.id asc 
 `;
 
@@ -181,7 +190,8 @@ companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
-WHERE b.company_id != 111111
+WHERE branch_id = ${parseInt(branch)}
+and b.company_id != 111111
 ORDER BY b.id asc 
 `;
 
@@ -197,7 +207,8 @@ companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
-WHERE b.company_id != 111111
+WHERE branch_id = ${parseInt(branch)}
+and b.company_id != 111111
 ORDER BY b.id asc 
 `;
 
@@ -210,7 +221,8 @@ companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
-WHERE b.company_id != 111111
+WHERE branch_id = ${parseInt(branch)}
+and b.company_id != 111111
 ORDER BY b.id asc 
 `;
 
@@ -224,6 +236,7 @@ CAST(SUM(amount) FILTER (WHERE payment_method = 'pos') AS FLOAT) AS total_pos_so
 CAST(SUM(amount) AS FLOAT) AS total_amount_sold
 From sales s
 where timestamp::date= ${formattedDate}::date
+and s.branch_id = ${parseInt(branch)}
 `
 const [formattedSummation] = summation
 
