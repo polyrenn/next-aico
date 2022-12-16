@@ -16,6 +16,7 @@ export default async (req: any, res: any) => {
     const today = new Date().toISOString()   
     const { date } = req.query
     const { branch } = req.query
+    const { company } = req.query
     const formattedDate = date?.split('T')[0] 
  
 let openingSales:Sales[] = await prisma.$queryRaw`SELECT b.name,
@@ -53,8 +54,7 @@ companies.company_id,
 From branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
-WHERE branch_id = ${parseInt(branch)}
-and b.company_id != 111111
+Where b.company_id = ${parseInt(company)}
 order by b.id asc
 
 
@@ -96,8 +96,7 @@ companies.company_id,
 From branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
-WHERE branch_id = ${parseInt(branch)}
-and b.company_id != 111111
+Where b.company_id = ${parseInt(company)}
 order by b.id asc
 
 `; // Refactor to Swr  
@@ -113,8 +112,7 @@ companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
-WHERE branch_id = ${parseInt(branch)}
-and b.company_id != 111111
+Where b.company_id = ${parseInt(company)}
 ORDER BY b.id asc 
 `;
 
@@ -127,8 +125,7 @@ companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
-WHERE branch_id = ${parseInt(branch)}
-and b.company_id != 111111
+Where b.company_id = ${parseInt(company)}
 ORDER BY b.id asc 
 `;
 
@@ -142,8 +139,7 @@ companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
-WHERE branch_id = ${parseInt(branch)}
-and b.company_id != 111111
+Where b.company_id = ${parseInt(company)}
 ORDER BY b.id asc 
 `;
 
@@ -158,8 +154,7 @@ companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
-WHERE branch_id = ${parseInt(branch)}
-and b.company_id != 111111
+Where b.company_id = ${parseInt(company)}
 ORDER BY b.id asc 
 `;
 
@@ -174,8 +169,7 @@ companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
-WHERE branch_id = ${parseInt(branch)}
-and b.company_id != 111111
+Where b.company_id = ${parseInt(company)}
 ORDER BY b.id asc 
 `;
 
@@ -190,8 +184,7 @@ companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
-WHERE branch_id = ${parseInt(branch)}
-and b.company_id != 111111
+Where b.company_id = ${parseInt(company)}
 ORDER BY b.id asc 
 `;
 
@@ -200,15 +193,14 @@ b.name,
 companies.company_id,
 (select ts.closing as closing_stock from sales ts where b.branch_id = ts.branch_id
     and ts.category != 'Switch'
-    and ts.timestamp::date = ${formattedDate}::date
+    and ts.timestamp::date = date '2022-12-16'
     order by id desc limit 1   
 ),
 companies.name as company_name
 FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
-WHERE branch_id = ${parseInt(branch)}
-and b.company_id != 111111
+Where b.company_id = ${parseInt(company)}
 ORDER BY b.id asc 
 `;
 
@@ -222,7 +214,7 @@ FROM branches b
 Left JOIN companies
 ON b.company_id = companies.company_id
 WHERE branch_id = ${parseInt(branch)}
-and b.company_id != 111111
+and b.company_id != ${parseInt(company)}
 ORDER BY b.id asc 
 `;
 

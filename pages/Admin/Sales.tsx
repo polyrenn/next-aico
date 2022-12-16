@@ -170,7 +170,7 @@ export default (props: PageProps<[]>) => {
 
 
   const { data, error } = useSWR(isAdmin ? `/api/Sales/SalesSummary?date=${new Date(currentDate).toISOString()}&isadmin=${isAdmin}` :
-  `/api/Sales/SalesSummaryS?date=${new Date(currentDate).toISOString()}&isadmin=${isAdmin}&branch=${user?.branch}`,
+  `/api/Sales/SalesSummaryS?date=${new Date(currentDate).toISOString()}&isadmin=${isAdmin}&branch=${user?.branch}&company=${user?.company}`,
    fetcher, {
     onSuccess: (data) => {
      
