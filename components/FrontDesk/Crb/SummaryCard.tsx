@@ -54,6 +54,7 @@ const SummaryCard:FC<SummaryProps> = React.forwardRef(
   (props, ref) => {
 
     const [error, setError] = useState(false)
+    const [currentTime, setCurrentTime] = useState('')
     let componentRef = useRef<null | HTMLDivElement>(null);
 
     const summary = props.summary;
@@ -97,6 +98,14 @@ const handleCancel = () => {
   props.cancelSummary([])
 }
 
+const getTime = () => {
+  return new Date().toLocaleTimeString()
+}
+
+const getDate = () => {
+    return new Date().toLocaleDateString('en-UK')
+}
+
 console.log(summary.length == 0 || customer == "" )
 
 const Print:FC<any> = React.forwardRef((props, ref) => {
@@ -113,14 +122,22 @@ const Print:FC<any> = React.forwardRef((props, ref) => {
   
       </Stack>
           <CrbNumber error={setError}></CrbNumber>
-      <VStack w="100%">
-      </VStack>
       <Box>
           <Heading size="xs">Customer: {props.customer?.split('0')[0]}</Heading>
           <Stack>
           {new Date().toLocaleDateString()}
         </Stack>
         </Box>
+
+        <Box fontWeight={500} fontSize={18} my={2} w="100%">
+        <Heading mb={2} size="xs">
+         Date: {summary.length > 0 ? getDate() : ''}
+        </Heading>
+
+        <Heading size="xs">
+          Time: {summary.length > 0 ? getTime() : ''}
+        </Heading>
+      </Box>
       <Divider my={4} orientation="horizontal" />
       <CrbTable pricePerKg={props.pricePerKg} summary={summary}></CrbTable>
       <VStack my={4}>
