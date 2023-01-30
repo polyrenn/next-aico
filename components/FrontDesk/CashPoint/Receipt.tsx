@@ -59,8 +59,7 @@ import CashPointTable from "./CashPointTable";
         branchList.map((item:any) =>
         <Center fontWeight={600} key={item.branchId}>
           <VStack textAlign="center" mb={2} spacing={0}>
-          <Text>{item.name}</Text>
-          <Text textAlign="center">{}</Text>
+          <Text textAlign="center">{item.address}</Text>
           </VStack>
          
            </Center>
