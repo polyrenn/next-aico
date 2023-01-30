@@ -60,7 +60,7 @@ import CashPointTable from "./CashPointTable";
         <Center fontWeight={600} key={item.branchId}>
           <VStack textAlign="center" mb={2} spacing={0}>
           <Text>{item.name}</Text>
-          <Text textAlign="center">{item.address.match(/(\d+)/)?.[0]}</Text>
+          <Text textAlign="center">{}</Text>
           </VStack>
          
            </Center>
