@@ -119,7 +119,7 @@ import CashPointTable from "./CashPointTable";
 
 
           <VStack spacing={1}>
-            {sidebar}
+            
            
           </VStack>
 
