@@ -171,9 +171,14 @@ console.log(prices[0][1])
             </Center>
 
             <Box className='Utils'>
+              {
+
+              /*
                 <Center>
                     <Button w="56" onClick={onOpen} colorScheme='purple'>Report</Button>
                 </Center>
+              */
+              }  
             </Box>
           {
             /*

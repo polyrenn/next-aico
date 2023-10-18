@@ -186,9 +186,14 @@ const {isOpen, onClose, onOpen} = useDisclosure()
         </Center>
 
         <Box className="Utils">
-          <Center>
+          {
+            /*
+              <Center>
             <Button w="56" onClick={onOpen} colorScheme="purple">Report</Button>
-          </Center>
+             </Center>
+            */
+          }
+          
         </Box>
         <Box className="queue">
           <Text my={2} fontWeight={500} fontSize="12px"> CRB QUEUE</Text>  
