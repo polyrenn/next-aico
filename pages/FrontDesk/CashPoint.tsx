@@ -182,7 +182,7 @@ const {isOpen, onClose, onOpen} = useDisclosure()
             <SwitchLog branch={branchId} date={new Date().toISOString()}></SwitchLog>
         </Center>
         <Center className='stats'>
-          <DayStats margin={true} date={currentDate} branch={branchId}></DayStats>
+        { /*  <DayStats margin={true} date={currentDate} branch={branchId}></DayStats> */ }
         </Center>
 
         <Box className="Utils">
