@@ -59,7 +59,6 @@ import { withSessionSsr } from "../lib/withSession";
 import AdminNav from "../components/Navigation/Admin";
 
 //SST
-import { Config } from "sst/node/config";
 
 export const BranchContext = createContext<
   { address: string; branchId: number }[]
@@ -372,7 +371,6 @@ export const getServerSideProps = withSessionSsr(
       }
     });
 
-    console.log(Config.STRIPE_KEY);
     
     
   
