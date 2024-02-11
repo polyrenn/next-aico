@@ -28,7 +28,7 @@ const CrbNumber:FC<any> = (props) => {
       props.error(false)
       return res.json()
     }
-     const { data, error } = useSWR(`/api/dummycrb?id=${branch}`, fetcher, { refreshInterval: 1000 });
+     const { data, error } = useSWR(`/api/dummycrb?id=${branch}`, fetcher);
 
    
    // if(!data) return <Center><Spinner></Spinner></Center>

@@ -118,7 +118,7 @@ const SaleForm:FC<SaleFormProps> = (props) => {
       console.log(data)
     }
 
-    const { data:crbData, error: crbError } = useSWR(`/api/dummycrb?id=${branch}`, fetcher, { refreshInterval: 1000 });
+    const { data:crbData, error: crbError } = useSWR(`/api/dummycrb?id=${branch}`, fetcher);
 
   //Should be async
   
