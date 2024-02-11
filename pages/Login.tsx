@@ -58,6 +58,9 @@ import { withSessionSsr } from "../lib/withSession";
 
 import AdminNav from "../components/Navigation/Admin";
 
+//SST
+import { Config } from "sst/node/config";
+
 export const BranchContext = createContext<
   { address: string; branchId: number }[]
 >([]);
@@ -345,12 +348,7 @@ export const getServerSideProps = withSessionSsr(
       }
 
    */
-    const post = await prisma.customer.findMany({
-      select: {
-        name: true,
-        branchId: true
-      },
-    });
+    
   
     const branch = await prisma.branch.findFirst({
       where: {
@@ -373,11 +371,13 @@ export const getServerSideProps = withSessionSsr(
         availableKgs: true
       }
     });
+
+    console.log(Config.STRIPE_KEY);
     
     
   
     return {
-      props: { post, branch, prices},
+      props: { branch, prices},
     };
   
   },
