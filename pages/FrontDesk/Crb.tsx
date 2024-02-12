@@ -276,12 +276,6 @@ export const getServerSideProps = withSessionSsr(
     }
   }
 
-  const post = await prisma.customer.findMany({
-    select: {
-      name: true,
-      branchId: true
-    },
-  });
 
   const branch = await prisma.branch.findFirst({
     where: {
@@ -313,7 +307,7 @@ export const getServerSideProps = withSessionSsr(
   
 
   return {
-    props: { post, branch, prices, user },
+    props: { branch, prices, user },
   };
 
 },
