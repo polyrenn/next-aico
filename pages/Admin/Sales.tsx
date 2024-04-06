@@ -176,6 +176,15 @@ export default (props: PageProps<[]>) => {
      
     }});  
 
+    const { data:modified, error:modifiedError } = useSWR(isAdmin ? `/api/Sales/SalesOCT?date=${new Date(currentDate).toISOString()}&isadmin=${isAdmin}` :
+  `/api/Sales/SalesSummaryS?date=${new Date(currentDate).toISOString()}&isadmin=${isAdmin}&branch=${user?.branch}&company=${user?.company}`,
+   fetcher, {
+    onSuccess: (data) => {
+     
+    }});  
+
+    console.log(modified);
+
   const handleChange = (event:any) => {
     setCurrentDate(event.target.value)
   }
@@ -208,7 +217,7 @@ export default (props: PageProps<[]>) => {
         </Box>
         {/*
           <Box>
-            {props.companies.map((item) =>
+            {props.companies?.map((item) =>
               <Box>
                  <Select
                   instanceId={item.id}
@@ -216,7 +225,7 @@ export default (props: PageProps<[]>) => {
                   options={options}
                 />
                 <Heading size="sm">{item.name}</Heading>
-                {item.branches.map((branch) =>
+                {item.branches?.map((branch) =>
                   <Text>{branch.address}</Text>
                 )}
                </Box> 
@@ -234,7 +243,7 @@ export default (props: PageProps<[]>) => {
         <Thead>
           <Tr>
             <Th></Th>
-            {props.branches.map((item) => 
+            {props.branches?.map((item) => 
                 <Th>
                     <Stack direction="column">
                     <Heading size="sm">{item.company.name}</Heading>  
@@ -252,7 +261,7 @@ export default (props: PageProps<[]>) => {
         <Tbody>
            <Tr>
             <Td>Opening Sales</Td>
-            {data?.openingSales.map((item:Sales) =>
+            {modified?.openingSales?.map((item:Sales) =>
                 <Td>
                 <Stack direction="column">
                     <Text>Invoice: #{item.sale_number}</Text>
@@ -268,7 +277,7 @@ export default (props: PageProps<[]>) => {
 
            <Tr>
             <Td>Closing Sales</Td>
-            {data?.closingSales.map((item:Sales) =>
+            {modified?.closingSales?.map((item:Sales) =>
                 <Td>
                 <Stack direction="column">
                     <Text>Invoice: #{item.sale_number}</Text>
@@ -284,7 +293,7 @@ export default (props: PageProps<[]>) => {
 
             <Tr>
             <Td>Total Invoice</Td>
-            {data?.totalInvoice.map((item:any) =>
+            {modified?.totals?.map((item:any) =>
                 <Td>
                 <Stack direction="column">
                     <Text>{item.sales_count}</Text>
@@ -292,12 +301,12 @@ export default (props: PageProps<[]>) => {
                 
                 </Td>
             )}
-            <Td>{data?.summation.count_invoice}</Td>
+            <Td>{data?.summation?.count_invoice}</Td>
             </Tr>
 
             <Tr>
             <Td>Total Kg</Td>
-            {data?.totalKg.map((item:any) =>
+            {modified?.totals?.map((item:any) =>
                 <Td>
                 <Stack direction="column">
                     <Text>{item.total_kg} KG</Text>
@@ -305,12 +314,12 @@ export default (props: PageProps<[]>) => {
                 
                 </Td>
             )}
-            <Td>{data?.summation.total_kg_sold} KG</Td>
+            <Td>{data?.summation?.total_kg_sold} KG</Td>
             </Tr>
 
              <Tr>
             <Td>Total Cash</Td>
-            {data?.totalCash.map((item:any) =>
+            {modified?.totals?.map((item:any) =>
                 <Td>
                 <Stack direction="column">
                     <Text>{item.total_cash_amount?.toLocaleString()} NGN</Text>
@@ -318,12 +327,12 @@ export default (props: PageProps<[]>) => {
                 
                 </Td>
             )}
-            <Td>{data?.summation.total_cash_sold?.toLocaleString()} NGN</Td>
+            <Td>{data?.summation?.total_cash_sold?.toLocaleString()} NGN</Td>
             </Tr>
 
              <Tr>
             <Td>Total POS</Td>
-            {data?.totalPos.map((item:any) =>
+            {modified?.totals?.map((item:any) =>
                 <Td>
                 <Stack direction="column">
                     <Text>{item.total_pos_amount?.toLocaleString()} NGN</Text>
@@ -331,7 +340,7 @@ export default (props: PageProps<[]>) => {
                 
                 </Td>
             )}
-            <Td>{data?.summation.total_pos_sold?.toLocaleString()} NGN</Td>
+            <Td>{data?.summation?.total_pos_sold?.toLocaleString()} NGN</Td>
             </Tr>
 
              <Tr>
@@ -340,7 +349,7 @@ export default (props: PageProps<[]>) => {
 
             <Tr fontWeight={600} backgroundColor="teal.400">
             <Td>Total Amount</Td>
-            {data?.totalAmount.map((item:any) =>
+            {modified?.totals?.map((item:any) =>
                 <Td>
                 <Stack direction="column">
                     <Text>{item.amount_sold?.toLocaleString()} NGN</Text>
@@ -348,7 +357,7 @@ export default (props: PageProps<[]>) => {
                 
                 </Td>
             )}
-            <Td>{data?.summation.total_amount_sold?.toLocaleString()} NGN</Td>
+            <Td>{data?.summation?.total_amount_sold?.toLocaleString()} NGN</Td>
             </Tr> 
 
             <Tr>
@@ -357,7 +366,7 @@ export default (props: PageProps<[]>) => {
 
             <Tr fontWeight={600}>
             <Td>Current Tank</Td>
-            {data?.currentTank.map((item:any) =>
+            {data?.currentTank?.map((item:any) =>
                 <Td>
                 <Stack direction="column">
                     <Text>{item.desig}</Text>
@@ -369,7 +378,7 @@ export default (props: PageProps<[]>) => {
 
             <Tr fontWeight={600}>
             <Td>Opening Stock</Td>
-            {data?.openingStock.map((item:any) =>
+            {data?.openingStock?.map((item:any) =>
                 <Td>
                 <Stack direction="column">
                     <Text>{item.opening_stock} KG</Text>
@@ -381,7 +390,7 @@ export default (props: PageProps<[]>) => {
             
             <Tr fontWeight={600}>
             <Td>Balance Stock</Td>
-            {data?.closingStock.map((item:any) =>
+            {data?.closingStock?.map((item:any) =>
                 <Td>
                 <Stack direction="column">
                     <Text>{item.closing_stock} KG</Text>
@@ -393,7 +402,7 @@ export default (props: PageProps<[]>) => {
 
              <Tr fontWeight={600}>   
             <Td>Closing Stock</Td>
-            {data?.closingStock.map((item:any) =>
+            {data?.closingStock?.map((item:any) =>
                 <Td>
                 <Stack direction="column">
                     <Text>{item.closing_stock} KG</Text>
@@ -410,7 +419,7 @@ export default (props: PageProps<[]>) => {
         <Tfoot>
         <Tr>
             <Th></Th>
-            {props.branches.map((item) => 
+            {props.branches?.map((item) => 
                 <Th>{item.name}</Th>
             )}
           </Tr>
@@ -493,82 +502,6 @@ export const getServerSideProps = withSessionSsr(
 const today = new Date().toISOString()
 const formattedDate = today.split('T')[0]
 
-let openingSales:OpeningSales[] = await prisma.$queryRaw`SELECT DISTINCT b.name,
-(select ts.sale_number from sales ts where b.branch_id = ts.branch_id
-     and timestamp > '2020-10-03'::timestamp
-     order by id asc limit 1   
-),
-(select ts.total_kg from sales ts where b.branch_id = ts.branch_id
-     and timestamp > '2020-10-03'::timestamp
-     order by id asc limit 1   
-),
-(select ts.customer_id from sales ts where b.branch_id = ts.branch_id
-     and timestamp > '2020-10-03'::timestamp
-     order by id asc limit 1   
-),
-(select ts.amount from sales ts where b.branch_id = ts.branch_id
-     and timestamp > '2020-10-03'::timestamp
-     order by id asc limit 1   
-),
-(select ts.timestamp::time from sales ts where b.branch_id = ts.branch_id
-     and timestamp > '2020-10-03'::timestamp
-     order by id asc limit 1   
-),
-(select ts.change from sales ts where b.branch_id = ts.branch_id
-     and timestamp > '2020-10-03'::timestamp
-     order by id asc limit 1   
-)
-From branches b
-
-
-
-`; // Refactor to Swr
-
-openingSales = JSON.parse(JSON.stringify(openingSales))
-
-const formattedSales = openingSales.map(item => ({
-    timestampTime: new Date(item.timestamp).toLocaleTimeString("en-US", {timeZone:'UTC',hour12:true,hour:'numeric',minute:'numeric'}),
-    ...item
-}))
-
-let closingSales:OpeningSales[] = await prisma.$queryRaw`SELECT DISTINCT b.name,
-(select ts.sale_number from sales ts where b.branch_id = ts.branch_id
-     and timestamp > '2020-10-03'::timestamp
-     order by id desc limit 1   
-),
-(select ts.total_kg from sales ts where b.branch_id = ts.branch_id
-     and timestamp > '2020-10-03'::timestamp
-     order by id desc limit 1   
-),
-(select ts.customer_id from sales ts where b.branch_id = ts.branch_id
-     and timestamp > '2020-10-03'::timestamp
-     order by id desc limit 1   
-),
-(select ts.amount from sales ts where b.branch_id = ts.branch_id
-     and timestamp > '2020-10-03'::timestamp
-     order by id desc limit 1   
-),
-(select ts.timestamp::time from sales ts where b.branch_id = ts.branch_id
-     and timestamp > '2020-10-03'::timestamp
-     order by id desc limit 1   
-),
-(select ts.change from sales ts where b.branch_id = ts.branch_id
-     and timestamp > '2020-10-03'::timestamp
-     order by id desc limit 1   
-)
-From branches b
-
-
-
-`; // Refactor to Swr
-
-closingSales = JSON.parse(JSON.stringify(closingSales))
-
-const formattedClosingSales = closingSales.map(item => ({
-    timestampTime: new Date(item.timestamp).toLocaleTimeString("en-US", {timeZone:'UTC',hour12:true,hour:'numeric',minute:'numeric'}),
-    ...item
-}))
-
     
     let branches
   
@@ -614,7 +547,7 @@ const formattedClosingSales = closingSales.map(item => ({
     return {
       props: {
         user: req.session.user,
-        branch, company, companies, branches, openingSales, formattedSales, formattedClosingSales
+        branch, company, companies, branches
       },
     };
   },
