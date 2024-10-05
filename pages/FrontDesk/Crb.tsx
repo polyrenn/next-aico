@@ -26,7 +26,7 @@ import { PhoneIcon, AddIcon, WarningIcon } from '@chakra-ui/icons'
 import SaleForm from '../../components/FrontDesk/Crb/SaleForm';
 
 //React Imports
-import { useState, createContext } from 'react';
+import { useState, createContext, useEffect } from 'react';
 
 //Utilities 
 import { useRadioGroup } from '@chakra-ui/react';
@@ -38,6 +38,8 @@ import { useDisclosure } from '@chakra-ui/react';
 import Report from '../../components/FrontDesk/Crb/Report';
 import DayStats from '../../components/Common/DayStats';
 import SwitchLog from '../../components/Common/SwitchLog';
+import { redirect } from 'next/navigation';
+import { useRouter } from 'next/router';
 const fetcher = (url:string) => fetch(url).then((res) => res.json())
 export const BranchContext = createContext<{ address: string, branchId: number } | undefined>(undefined);
 
@@ -49,6 +51,9 @@ export default (props:any) => {
     onSuccess: (data) => {
      
 }});
+
+
+
 
   const branchId = props.branch.branchId
   const user = props.user
