@@ -4,7 +4,7 @@
   "description": "",
   "main": "main.html",
   "scripts": {
-    "dev": "sst bind next dev",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "postinstall": "prisma generate"
