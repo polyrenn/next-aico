@@ -1,3 +1,4 @@
+'use client'
 //Layout Imports
 import {
   Box,

@@ -8,6 +8,7 @@ import { FC } from "react";
 import { useState } from "react";
 //Utility Imports
 import { useRadio } from "@chakra-ui/react";
+import { useCheckbox } from "@chakra-ui/react";
 import { colorCode } from "../Admin/Prices/Category";
 import { useColorModeValue } from "@chakra-ui/react";
 
@@ -19,7 +20,7 @@ interface CategoryProps {
 }
 
 const BranchRadios:FC<any> = (props:any) => {
-  const { state, getInputProps, getCheckboxProps } = useRadio(props)
+  const { state, getInputProps, getCheckboxProps } = useCheckbox(props)
 
   const input = getInputProps()
   const checkbox = getCheckboxProps()
