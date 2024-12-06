@@ -2,6 +2,7 @@
 import { ChakraProvider } from '@chakra-ui/react'
 import { useToast } from '@chakra-ui/react';
 import '../styles.css';
+import '../globals.css'
 function MyApp({ Component, pageProps }) {
   const toast = useToast();
   return (

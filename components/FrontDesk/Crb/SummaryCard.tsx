@@ -25,8 +25,9 @@ import {
 
 import useSWR from "swr";
 import ReactToPrint from "react-to-print";
+import { useReactToPrint } from "react-to-print";
 
-import React, { FC, useEffect, useRef, Ref, useState } from "react";
+import React, { FC, useEffect, useRef, Ref, useState, ReactInstance } from "react";
 
 type Summary = {
   kg: string;
@@ -52,6 +53,7 @@ import { useColorModeValue } from "@chakra-ui/react";
 import CrbTable from "../Common/CrbTable";
 import CrbNumber from "./CrbNumber";
 import { useRouter } from "next/router";
+import checkNetworkAndInternet from "../../../utils/network";
 
 const SummaryCard: FC<SummaryProps> = React.forwardRef((props, ref) => {
   const router = useRouter();
@@ -130,6 +132,34 @@ const SummaryCard: FC<SummaryProps> = React.forwardRef((props, ref) => {
   };
 
   console.log(summary.length == 0 || customer == "");
+
+  const printRef = useRef(null);
+
+  // We store the resolve Promise being used in `onBeforePrint` here
+  const promiseResolveRef = useRef(null);
+
+  const handlePrint = useReactToPrint({
+    content: () => printRef.current,
+    onBeforePrint: async () => {
+      console.log("Before Print: Checking network and internet...");
+      const isConnected = await checkNetworkAndInternet();
+
+      return new Promise((resolve, reject) => {
+          if (isConnected) {
+              console.log("Network and internet OK. Proceeding with print.");
+              resolve(true);
+          } else {
+              console.log("No network or internet connection. Cancelling print.");
+              reject(new Error("No network or internet connection"));
+              // Optionally: Show a user-friendly message about the connection issue
+              alert("Please check your network connection and try again.");
+          }
+      });
+    },
+    onAfterPrint: () => {
+    }
+  });
+
 
   const Print: FC<any> = React.forwardRef((props, ref) => {
     return (
@@ -254,6 +284,21 @@ const SummaryCard: FC<SummaryProps> = React.forwardRef((props, ref) => {
       >
         Cancel
       </Button>
+
+      <div ref={printRef}>
+        Hello
+      </div>
+
+      <Button
+        mt={4}
+        onClick={handlePrint}
+        width="full"
+        color="white"
+        bg="black"
+      >
+        Print Test
+      </Button>
+      
     </Box>
   );
 });

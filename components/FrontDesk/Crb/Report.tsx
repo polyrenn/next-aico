@@ -89,7 +89,7 @@ const Report:FC<ModalProps> = (props) => {
             
             </Center>
             <Flex justifyContent="space-between">
-             {data ? data[0]?.map((item:any) => 
+             {data ? data[0]?.map((item:any, counter:number) => 
                 <HStack key={item.category} ml={2} flex={1} color={`${textCode(item.category)}`} backgroundColor={`${colorCode(item.category)}`}>
                 <Box fontWeight={500} p={4}>
                     <Heading size="sm">
@@ -119,8 +119,8 @@ const Report:FC<ModalProps> = (props) => {
 
             <Box my={4}>
                 <Heading fontWeight={500} color="gray.600" size="md">Total Stats</Heading>
-            {data ? data[1]?.map((item:any) =>
-                <Box fontWeight={500} fontSize={18}>
+            {data ? data[1]?.map((item:any, counter:number) =>
+                <Box key={`${counter} sales-count`} fontWeight={500} fontSize={18}>
                     <Box my={4}>
                         <Text>Sales Count</Text>
                         <Text>{item.count_invoice} Sales Today</Text>

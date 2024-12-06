@@ -40,6 +40,13 @@ import DayStats from '../../components/Common/DayStats';
 import SwitchLog from '../../components/Common/SwitchLog';
 import { redirect } from 'next/navigation';
 import { useRouter } from 'next/router';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query'
 const fetcher = (url:string) => fetch(url).then((res) => res.json())
 export const BranchContext = createContext<{ address: string, branchId: number } | undefined>(undefined);
 
@@ -162,8 +169,11 @@ console.log(prices[0][1])
   //Report Helpers
   const {isOpen, onClose, onOpen} = useDisclosure()  
 
+  const queryClient = new QueryClient()
+
     return (
         <div>
+          <QueryClientProvider client={queryClient}>
         <WithSubnavigation user={user} branch={props.branch}></WithSubnavigation>
         <Head title="Crb Desk" />
         <Box className='main-content' mx={8}>
@@ -212,10 +222,10 @@ console.log(prices[0][1])
                   visibility: 'visible'
                 }} my={2} color={'grey.500'} fontSize='xl'>Category - {category}</Text>
                 <HStack {...group}>
-      {options.map((value) => {
+      {options.map((value, counter) => {
         const radio = getRadioProps({ value })
         return (
-          <Box>
+          <Box key={counter}>
            <CategoryRadios key={value} {...radio}>
             {value}
           </CategoryRadios>
@@ -253,6 +263,7 @@ console.log(prices[0][1])
         color: #0d0d0d !important;
        }
       `}</style>
+      </QueryClientProvider>
     </div>
     )
 }

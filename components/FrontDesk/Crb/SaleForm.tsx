@@ -9,7 +9,7 @@ import {
   Stack,
   Spacer,
   Center,
-  Radio
+  Radio,
 } from "@chakra-ui/react";
 
 //Element Imports
@@ -37,14 +37,7 @@ import {
 import { PhoneIcon, AddIcon, WarningIcon } from '@chakra-ui/icons'
 
 //Utility Imports
-import {
-    AutoComplete,
-    AutoCompleteInput,
-    AutoCompleteItem,
-    AutoCompleteList,
-    AutoCompleteCreatable,
-    AutoCompleteGroup
-} from "@choc-ui/chakra-autocomplete";
+import { AutoComplete } from "@/components/autocomplete";
 
 import {
     useFormik,
@@ -71,6 +64,7 @@ import {
 
 import * as Yup from 'yup';
 import useSWR from "swr";
+import { useQuery } from "@tanstack/react-query";
 
 import { useDisclosure } from "@chakra-ui/react";  
 import { useToast } from '@chakra-ui/react';
@@ -87,6 +81,12 @@ import styles from "./SaleTable.module.css"
 
 //Customer Type
 import { Customer } from "@prisma/client";
+
+type TransformedCustomer = {
+  value: string;
+  label: string;
+  customerType?: string | null;
+};
 
 type ResetToDefault = () => void;
 interface SaleFormProps {
@@ -105,19 +105,47 @@ const fetcher = (url:string) => fetch(url).then((res) => res.json())
 
 const SaleForm:FC<SaleFormProps> = (props) => {
 
+  const [searchValue, setSearchValue] = useState<string>("");
+  const [selectedValue, setSelectedValue] = useState<string>("");
+
+  const [ isLoading, setIsLoading ] = useState<boolean>(false)
+
     const availableKgs = props.availableKgs
 
     const { branchId: branch } = useContext(BranchContext) as any
-    const [returned, setReturned] = useState<Customer[]>([]);
-    const { data, error } = useSWR(`/api/Customer/GetCustomers?branch=${branch}`, fetcher, {
+    const [returned, setReturned] = useState([]);
+    const { data, error, } = useSWR(`/api/Customer/GetCustomers?branch=${branch}`, fetcher, {
       onSuccess: (data) => {
-          setReturned(data)
+          const transformed = data.map((customer:any) => ({
+            value: customer.customerId,
+            label: customer.customerName
+          }));
+
+          setReturned(transformed)
+          
       }
     });
   
     const returnData = () => {
       console.log(data)
     }
+
+    const { data: customerData, isLoading: isLoadingCustomerData, isSuccess } = useQuery<TransformedCustomer[]>({
+      queryKey: ["customer-data", searchValue],
+      queryFn: async () => {
+        const response = await fetch(`/api/Customer/GetCustomers?branch=${branch}`);
+        const data: Customer[] = await response.json(); // Typed parsing
+    
+        // Transform the data
+        return data.map((customer) => ({
+          value: customer.uniqueId,
+          label: customer.name,
+          customerType: customer.customerType
+        }));
+      },
+    });
+
+
 
     const { data:crbData, error: crbError } = useSWR(`/api/dummycrb?id=${branch}`, fetcher);
 
@@ -182,18 +210,6 @@ const SaleForm:FC<SaleFormProps> = (props) => {
   }))
 
 
-const customerComplete = transformedCustomer?.map((person:Customer, oid:number) => (
-    <AutoCompleteItem
-      onClick={() => console.log("Clicked")}
-      key={`option-${oid}`}
-      value={person}
-      textTransform="capitalize"
-      align="center"
-    >
-      <Avatar size="sm" name={person.name}/>
-      <Text ml="4">{person.name} , {person.uniqueId}, {person.phone}</Text>
-    </AutoCompleteItem>
-))
 
 
 const { isOpen, onOpen, onClose } = useDisclosure()
@@ -512,6 +528,8 @@ const convertToLocaleString = (number: number) => {
 const pricePerKg = props.pricePerKg 
 let total:number
 
+
+
  
    
   return (
@@ -543,53 +561,20 @@ let total:number
               <HStack align='flex-end'>
               <Box w='100%'>
               <FormLabel color={'gray.500'} htmlFor="renn">Customer</FormLabel>
-              <AutoComplete
-                creatable
-                openOnFocus
-                onChange={(e, value:any) => {
-                setCustomer(value?.value)
-                setCustomerId(value.originalValue?.uniqueId || value.value /* == undefined ? value.value : value.originalValue?.uniqueId */)
-                setCustomerType(value.originalValue?.customerType)
-                console.log(value)
-                returnData()
-                }}
-                
-               >
-                <AutoCompleteInput placeholder="Customer Search" autoComplete="off" width="full" h="56px" variant="filled" />
-                    <AutoCompleteList>
-                      <AutoCompleteGroup showDivider>
-                        {transformedCustomer?.map((person:Customer, oid:number) => (
-                            <AutoCompleteItem
-                              onClick={() => {
-                                setCustomer(person.name)
-                                setCustomerType(person.customerType)
-                                setCustomerId(person.uniqueId)
-                              }}
-                              key={`option-${oid}`}
-                              value={person}
-                              textTransform="capitalize"
-                              align="center"
-                            >
-                              <Avatar size="sm" name={person.name}/>
-                              <Text ml="4">{person.name} , {person.uniqueId}, {person.phone}</Text>
-                            </AutoCompleteItem>
-                      ))}
-                      </AutoCompleteGroup>
 
-                      <AutoCompleteCreatable>
-                        {({ value }) => <Text width="100%" height="100%" onClick={
-                          () => {
-                            setCustomer(value)
-                            console.log(`${value} hhhhhhhhhhhhhhhh`)
-                          }
-                          }>
-                          Add {value} to List
-                          </Text>}
-                      </AutoCompleteCreatable>
-                       
-                    </AutoCompleteList>
-                      
-                </AutoComplete>
+              <AutoComplete
+                selectedValue={selectedValue}
+                onSelectedValueChange={setSelectedValue}
+                searchValue={searchValue}
+                onSearchValueChange={setSearchValue}
+                onSelectedCustomerChange={setCustomer}
+                items={customerData ?? []}
+                // Optional props
+                isLoading={isLoading}
+                emptyMessage="No items found."
+                placeholder="Search customer..."
+                />
+            
                 <FormHelperText>Customer Search. </FormHelperText>
                 <Text
                 rounded="sm"
