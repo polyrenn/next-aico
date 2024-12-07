@@ -35,7 +35,6 @@ import { GetServerSideProps } from 'next';
 import { withSessionSsr } from '../../lib/withSession';
 import useSWR from 'swr';
 import { useDisclosure } from '@chakra-ui/react';
-import Report from '../../components/FrontDesk/Crb/Report';
 import DayStats from '../../components/Common/DayStats';
 import SwitchLog from '../../components/Common/SwitchLog';
 import { redirect } from 'next/navigation';
@@ -244,8 +243,6 @@ console.log(prices[0][1])
                  category={category} branch={props.branch} post={props.post} pricePerKg={pricePerKg}></SaleForm>
             </BranchContext.Provider>    
             </Box>
-            
-            <Report branch={props.branch} branchId={branchId} isOpen={isOpen} onClose={onClose}></Report>
         </Box>
 
         <Box my={4} className='sales-form'>

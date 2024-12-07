@@ -37,7 +37,6 @@ import useSWR from "swr";
 import { withSessionSsr } from "../../lib/withSession";
 
 import summary from '../../data/data'
-import Report from "../../components/FrontDesk/CashPoint/Report";
 import SwitchLog from "../../components/Common/SwitchLog";
 import DayStats from "../../components/Common/DayStats";
 
@@ -211,8 +210,6 @@ const {isOpen, onClose, onOpen} = useDisclosure()
         </BranchContext.Provider>
           
         </Box>
-
-        <Report branch={props.branch} branchId={branchId} isOpen={isOpen} onClose={onClose}></Report>
       </Box>
       <style jsx global>{`
        .css-1zts0j {

@@ -27,7 +27,14 @@ import useSWR from "swr";
 import ReactToPrint from "react-to-print";
 import { useReactToPrint } from "react-to-print";
 
-import React, { FC, useEffect, useRef, Ref, useState, ReactInstance } from "react";
+import React, {
+  FC,
+  useEffect,
+  useRef,
+  Ref,
+  useState,
+  ReactInstance,
+} from "react";
 
 type Summary = {
   kg: string;
@@ -58,26 +65,6 @@ import checkNetworkAndInternet from "../../../utils/network";
 const SummaryCard: FC<SummaryProps> = React.forwardRef((props, ref) => {
   const router = useRouter();
 
-  const isTrue = false
-
-  async function isOnline() {
-    if (!window.navigator.onLine) return false;
-
-    // avoid CORS errors with a request to your own origin
-    const url = new URL(window.location.origin);
-
-    // random value to prevent cached responses
-    url.searchParams.set("rand", Date.now().toString());
-
-    try {
-      const response = await fetch(url.toString(), { method: "HEAD" });
-
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
   useEffect(() => {
     window.addEventListener("online", () => console.log("online"));
     /*
@@ -89,6 +76,7 @@ const SummaryCard: FC<SummaryProps> = React.forwardRef((props, ref) => {
 
   const [error, setError] = useState(false);
   const [currentTime, setCurrentTime] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   let componentRef = useRef<null | HTMLDivElement>(null);
 
   const summary = props.summary;
@@ -141,25 +129,27 @@ const SummaryCard: FC<SummaryProps> = React.forwardRef((props, ref) => {
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
     onBeforePrint: async () => {
+      setIsSubmitting(true)
       console.log("Before Print: Checking network and internet...");
       const isConnected = await checkNetworkAndInternet();
 
       return new Promise((resolve, reject) => {
-          if (isConnected) {
-              console.log("Network and internet OK. Proceeding with print.");
-              resolve(true);
-          } else {
-              console.log("No network or internet connection. Cancelling print.");
-              reject(new Error("No network or internet connection"));
-              // Optionally: Show a user-friendly message about the connection issue
-              alert("Please check your network connection and try again.");
-          }
+        if (isConnected) {
+          console.log("Network and internet OK. Proceeding with print.");
+          resolve(true);
+          setIsSubmitting(false)
+          form.current.submitForm()
+        } else {
+          console.log("No network or internet connection. Cancelling print.");
+          reject(new Error("No network or internet connection"));
+          // Optionally: Show a user-friendly message about the connection issue
+          alert("Please check your network connection and try again.");
+          setIsSubmitting(false)
+        }
       });
     },
-    onAfterPrint: () => {
-    }
+    onAfterPrint: () => {},
   });
-
 
   const Print: FC<any> = React.forwardRef((props, ref) => {
     return (
@@ -249,32 +239,21 @@ const SummaryCard: FC<SummaryProps> = React.forwardRef((props, ref) => {
       <Print
         customer={props.customer}
         category={props.category}
-        ref={(el: any) => (componentRef = el)}
+        ref={printRef}
       ></Print>
-      <ReactToPrint
-        trigger={() => (
-          <Button
+
+        <Button
             type="submit"
-            isLoading={error}
-            loadingText="Crb number unable to update - Check Network"
+            isLoading={isSubmitting}
+            loadingText="Processing"
             isDisabled={customer == "" || summary.length == 0 ? true : false}
             width="full"
-            onClick={ async () => {
-              if (isTrue) {
-                form.current.submitForm();
-              } else {
-                router.push("/Login");
-              }
-            }}
+            onClick={handlePrint}
             colorScheme="purple"
           >
             Complete
           </Button>
-        )}
-        onBeforePrint={() => {if(!isTrue) {componentRef.current = <div>Hey</div>} }}
-        onAfterPrint={() => form.current.submitForm()}
-        content={() => componentRef}
-      />
+
       <Button
         mt={4}
         onClick={() => props.cancelSummary([])}
@@ -284,21 +263,6 @@ const SummaryCard: FC<SummaryProps> = React.forwardRef((props, ref) => {
       >
         Cancel
       </Button>
-
-      <div ref={printRef}>
-        Hello
-      </div>
-
-      <Button
-        mt={4}
-        onClick={handlePrint}
-        width="full"
-        color="white"
-        bg="black"
-      >
-        Print Test
-      </Button>
-      
     </Box>
   );
 });

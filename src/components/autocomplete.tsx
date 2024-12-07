@@ -13,18 +13,15 @@ import { Input } from "./ui/input";
 import { Popover, PopoverAnchor, PopoverContent } from "./ui/popover";
 import { Skeleton } from "./ui/skeleton";
 
-type Customer = {
-    value: string;
-    label: string;
-};
-
 type Props<T extends string> = {
   selectedValue: T;
   onSelectedValueChange: (value: T) => void;
   searchValue: string;
   onSelectedCustomerChange: (customer: string) => void;
+  onShouldSetCustomerId: (customerId: string) => void;
+  onShouldSetCustomerType: (customerType: string) => void;
   onSearchValueChange: (value: string) => void;
-  items: { value: T; label: string }[];
+  items: { value: T; label: string; customerType: string }[];
   isLoading?: boolean;
   emptyMessage?: string;
   placeholder?: string;
@@ -35,6 +32,8 @@ export function AutoComplete<T extends string>({
   onSelectedValueChange,
   searchValue,
   onSelectedCustomerChange,
+  onShouldSetCustomerId,
+  onShouldSetCustomerType,
   onSearchValueChange,
   items,
   isLoading,
@@ -72,7 +71,6 @@ export function AutoComplete<T extends string>({
     } else {
       onSelectedValueChange(inputValue as T);
       onSearchValueChange(labels[inputValue] ?? "");
-      onSelectedCustomerChange(inputValue as T)
     }
     setOpen(false);
   };
@@ -123,7 +121,19 @@ export function AutoComplete<T extends string>({
                       key={option.value}
                       value={option.value}
                       onMouseDown={(e) => e.preventDefault()}
-                      onSelect={onSelectItem}
+                      onSelect={(value) => {
+                        onSelectedCustomerChange(option.label);
+                        onShouldSetCustomerId(option.value);
+                        onShouldSetCustomerType(option.customerType);
+                        if (value === selectedValue) {
+                          reset();
+                        } else {
+                          onSelectedValueChange(value as T);
+                          onSearchValueChange(labels[value] ?? "");
+                        }
+                        setOpen(false);
+                      }}
+                      onChange={() => onSelectedCustomerChange(option.label)}
                     >
                       <Check
                         className={cn(
@@ -136,8 +146,24 @@ export function AutoComplete<T extends string>({
                       {option.label}
                     </CommandItem>
                   ))}
-                  <CommandItem>
-                    {searchValue}
+                  <CommandItem
+                    key={searchValue}
+                    value={searchValue}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onSelect={(value) => {
+                      onSelectedCustomerChange(searchValue);
+                      onShouldSetCustomerId(searchValue);
+                      onShouldSetCustomerType("Unregistered");
+                      if (value === selectedValue) {
+                        reset();
+                      } else {
+                        onSelectedValueChange(value as T);
+                        onSearchValueChange(searchValue);
+                      }
+                      setOpen(false);
+                    }}
+                  >
+                    Add {searchValue} to list 
                   </CommandItem>
                 </CommandGroup>
               ) : null}

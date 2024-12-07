@@ -80,12 +80,22 @@ import SummaryCard from "./SummaryCard";
 import styles from "./SaleTable.module.css"
 
 //Customer Type
-import { Customer } from "@prisma/client";
+type Customer = {
+  id: number;
+    uniqueId: string;
+    name: string;
+    phone: string;
+    customerType: string;
+    date: Date;
+    branchId: number;
+    change: number;
+    purchaseCount: number;
+}
 
 type TransformedCustomer = {
   value: string;
   label: string;
-  customerType?: string | null;
+  customerType: string;
 };
 
 type ResetToDefault = () => void;
@@ -288,7 +298,7 @@ const handleSubmit = async (values: { customer: string }, actions:any) => {
             title: 'Added to Crb.',
             description: `Sale Added to Crb Successfully. At ${datetime} `,
             status: 'success',
-            duration: 10000,
+            duration: 5000,
             isClosable: true,
           }),
           actions.setSubmitting(false);
@@ -297,7 +307,7 @@ const handleSubmit = async (values: { customer: string }, actions:any) => {
             title: 'Error',
             description: "An Error Has Occured.",
             status: 'error',
-            duration: 10000,
+            duration: 5000,
             isClosable: true,
           }),
           actions.setSubmitting(false);
@@ -316,7 +326,7 @@ const handleSubmit = async (values: { customer: string }, actions:any) => {
             title: 'Added to Queue.',
             description: `Sale Added to Queue Successfully. At ${datetime} `,
             status: 'success',
-            duration: 10000,
+            duration: 5000,
             isClosable: true,
           }),
           actions.setSubmitting(false);
@@ -325,7 +335,7 @@ const handleSubmit = async (values: { customer: string }, actions:any) => {
             title: 'Error',
             description: "An Error Has Occured.",
             status: 'error',
-            duration: 10000,
+            duration: 5000,
             isClosable: true,
           }),
           actions.setSubmitting(false);
@@ -459,7 +469,7 @@ const handleSaleCompletion = async (values:any, actions:any) => {
             title: 'Added to Crb.',
             description: `Sale Added to Crb Successfully. At ${datetime} `,
             status: 'success',
-            duration: 10000,
+            duration: 5000,
             isClosable: true,
           }),
           actions.setSubmitting(false);
@@ -468,7 +478,7 @@ const handleSaleCompletion = async (values:any, actions:any) => {
             title: 'Error',
             description: "An Error Has Occured.",
             status: 'error',
-            duration: 10000,
+            duration: 5000,
             isClosable: true,
           }),
           actions.setSubmitting(false);
@@ -487,7 +497,7 @@ const handleSaleCompletion = async (values:any, actions:any) => {
             title: 'Added to Queue.',
             description: `Sale Added to Queue Successfully. At ${datetime} `,
             status: 'success',
-            duration: 10000,
+            duration: 5000,
             isClosable: true,
           }),
           actions.setSubmitting(false);
@@ -496,7 +506,7 @@ const handleSaleCompletion = async (values:any, actions:any) => {
             title: 'Error',
             description: "An Error Has Occured.",
             status: 'error',
-            duration: 10000,
+            duration: 5000,
             isClosable: true,
           }),
           actions.setSubmitting(false);
@@ -568,6 +578,8 @@ let total:number
                 searchValue={searchValue}
                 onSearchValueChange={setSearchValue}
                 onSelectedCustomerChange={setCustomer}
+                onShouldSetCustomerId={setCustomerId}
+                onShouldSetCustomerType={setCustomerType}
                 items={customerData ?? []}
                 // Optional props
                 isLoading={isLoading}

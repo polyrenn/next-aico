@@ -60,7 +60,7 @@ import useSWR from "swr";
 import { useDisclosure } from "@chakra-ui/react";
 import { useToast } from "@chakra-ui/react";
 import { useState, useEffect, MutableRefObject, useContext } from "react";
-import ReactToPrint from "react-to-print";
+import ReactToPrint, { useReactToPrint } from "react-to-print";
 import { useRef } from "react";
 import { FC } from "react";
 
@@ -71,6 +71,7 @@ import { BranchContext } from "../../../pages/FrontDesk/CashPoint";
 import CreateCustomer from "../Customer/CreateCustomer";
 import SummaryCard from "../Crb/SummaryCard";
 import ReceiptCard from "./Receipt";
+import checkNetworkAndInternet from "../../../utils/network";
 
 interface CashFormProps {
   pricePerKg: number;
@@ -83,7 +84,7 @@ const CashPointForm: FC<any> = (props) => {
   console.log(branchDetails)
   const toast = useToast();
   const formikRef = useRef<FormikProps<any>>(null);
-
+  const printRef = useRef(null);
  
 
    const isRegistered = props.isRegistered
@@ -91,6 +92,8 @@ const CashPointForm: FC<any> = (props) => {
    const [payment, setPayment] = useState('Renn');
    const [narrative, setNarrative] = useState('')
    const [amount, setAmount] = useState<number>(0)
+
+   const [ isSubmitting, setIsSubmitting ] = useState<boolean>(false)
    const customerProp = props.customer
    const currentChange = props.customer?.change
 
@@ -362,6 +365,34 @@ const handleAfterPrint = () => {
   props.setReturned([]);
 }
 
+const handlePrint = useReactToPrint({
+  content: () => printRef.current,
+  onBeforePrint: async () => {
+    setIsSubmitting(true)
+    console.log("Before Print: Checking network and internet...");
+    const isConnected = await checkNetworkAndInternet();
+
+    return new Promise((resolve, reject) => {
+      if (isConnected) {
+        console.log("Network and internet OK. Proceeding with print.");
+        resolve(true);
+        setIsSubmitting(false)
+        handleSubmit(formikRef.current?.values, formikRef.current)
+      } else {
+        console.log("No network or internet connection. Cancelling print.");
+        reject(new Error("No network or internet connection"));
+        // Optionally: Show a user-friendly message about the connection issue
+        alert("Please check your network connection and try again.");
+        setIsSubmitting(false)
+      }
+    });
+  },
+  onAfterPrint: () => {
+    handleAfterPrint()
+  },
+});
+
+
 const [destructuredSum] = props.summary
 
   return (
@@ -521,11 +552,18 @@ const [destructuredSum] = props.summary
           </HStack>
 
           
-          <ReactToPrint
-              onAfterPrint={() => handleAfterPrint()}
-              trigger={() => <Button isLoading={props.isSubmitting} isDisabled={checkIsDisabled({...props})} my={4} colorScheme="purple" type="submit" width="full">Print Receipt</Button>}
-              content={() => cashPointRef}
-          />
+
+          <Button
+            isLoading={isSubmitting}
+            loadingText="Processing"
+            isDisabled={checkIsDisabled({...props})}
+            width="full"
+            onClick={handlePrint}
+            colorScheme="purple"
+            my={4}
+          >
+            Complete
+          </Button>
           <Button w="full" color="white" onClick={() => delcineSale({...props}, props.values)} bg="red.500">Decline Sale</Button>
           <AutoSubmitToken></AutoSubmitToken>
             </Form>
@@ -540,7 +578,7 @@ const [destructuredSum] = props.summary
       narrative={narrative}
       payment={payment}
       amount={amount}
-       ref={(el:any) => (cashPointRef = el)} summary={props.summary}></ReceiptCard>
+       ref={printRef} summary={props.summary}></ReceiptCard>
     </Flex>
   );
 };
