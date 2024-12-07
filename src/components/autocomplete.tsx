@@ -114,6 +114,25 @@ export function AutoComplete<T extends string>({
                   </div>
                 </CommandPrimitive.Loading>
               )}
+              <CommandItem
+                    key={searchValue}
+                    value={searchValue}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onSelect={(value) => {
+                      onSelectedCustomerChange(searchValue);
+                      onShouldSetCustomerId(searchValue);
+                      onShouldSetCustomerType("Unregistered");
+                      if (value === selectedValue) {
+                        reset();
+                      } else {
+                        onSelectedValueChange(value as T);
+                        onSearchValueChange(searchValue);
+                      }
+                      setOpen(false);
+                    }}
+                  >
+                    Add {searchValue} to list 
+                  </CommandItem>
               {items.length > 0 && !isLoading ? (
                 <CommandGroup>
                   {items.map((option) => (
@@ -146,29 +165,15 @@ export function AutoComplete<T extends string>({
                       {option.label}
                     </CommandItem>
                   ))}
-                  <CommandItem
-                    key={searchValue}
-                    value={searchValue}
-                    onMouseDown={(e) => e.preventDefault()}
-                    onSelect={(value) => {
-                      onSelectedCustomerChange(searchValue);
-                      onShouldSetCustomerId(searchValue);
-                      onShouldSetCustomerType("Unregistered");
-                      if (value === selectedValue) {
-                        reset();
-                      } else {
-                        onSelectedValueChange(value as T);
-                        onSearchValueChange(searchValue);
-                      }
-                      setOpen(false);
-                    }}
-                  >
-                    Add {searchValue} to list 
-                  </CommandItem>
                 </CommandGroup>
               ) : null}
               {!isLoading ? (
-                <CommandEmpty>{emptyMessage ?? "No items."}</CommandEmpty>
+                <CommandEmpty>
+
+                {emptyMessage ?? "No items."}
+                
+                </CommandEmpty>
+                
               ) : null}
             </CommandList>
           </PopoverContent>
