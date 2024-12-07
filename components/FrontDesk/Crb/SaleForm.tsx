@@ -141,19 +141,24 @@ const SaleForm:FC<SaleFormProps> = (props) => {
     }
 
     const { data: customerData, isLoading: isLoadingCustomerData, isSuccess } = useQuery<TransformedCustomer[]>({
-      queryKey: ["customer-data", searchValue],
+      queryKey: ["customer-data", searchValue], // searchValue is part of the queryKey
       queryFn: async () => {
         const response = await fetch(`/api/Customer/GetCustomers?branch=${branch}`);
         const data: Customer[] = await response.json(); // Typed parsing
     
-        // Transform the data
-        return data.map((customer) => ({
-          value: customer.uniqueId,
-          label: customer.name,
-          customerType: customer.customerType
-        }));
+        // Filter and transform the data
+        return data
+          .filter((customer) =>
+            customer.name.toLowerCase().includes(searchValue.toLowerCase()) // Case-insensitive filtering
+          )
+          .map((customer) => ({
+            value: customer.uniqueId,
+            label: customer.name,
+            customerType: customer.customerType,
+          }));
       },
     });
+    
 
 
 
