@@ -80,8 +80,8 @@ b.id,
 b.name, 
 CAST(SUM(s.total_kg) AS FLOAT) AS total_kg,
 CAST(SUM(s.amount) AS FLOAT) AS amount_sold,
-CAST(SUM(CASE WHEN s.payment_method = 'cash' THEN s.amount ELSE 0 END) AS FLOAT) AS total_cash_amount,
-CAST(SUM(CASE WHEN s.payment_method = 'pos' THEN s.amount ELSE 0 END) AS FLOAT) AS total_pos_amount,
+CAST(SUM(CASE WHEN LOWER(s.payment_method) = 'cash' THEN s.amount ELSE 0 END) AS FLOAT) AS total_cash_amount,
+CAST(SUM(CASE WHEN LOWER(s.payment_method) = 'pos' THEN s.amount ELSE 0 END) AS FLOAT) AS total_pos_amount,
 CAST(COUNT(CASE WHEN s.category != 'Switch' THEN 1 END) AS integer) AS sales_count,
 c.name AS company_name
 FROM 

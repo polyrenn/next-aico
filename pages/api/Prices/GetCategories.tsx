@@ -4,7 +4,7 @@ export default async (req, res) => {
     const { branch } = req.query
       const result = await prisma.prices.findMany({
        where: {
-        branchId: parseInt(branch)
+        branchId: parseInt(branch as string)
        }
         
       });

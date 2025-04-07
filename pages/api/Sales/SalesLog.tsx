@@ -54,9 +54,9 @@ export default async (req: any, res: any) => {
     ),
     cast(sum(s.total_kg) as float) as total_kg_today,
     cast(sum(s.amount) as float) as total_amount_today,
-    cast(SUM(amount) FILTER (WHERE payment_method = 'pos') as float) AS total_pos_sold,
-    cast(SUM(amount) FILTER (WHERE payment_method = 'cash') as float) AS total_cash_sold,
-    cast(SUM(amount) FILTER (WHERE payment_method = 'transfer') as float) AS total_transfer_sold
+    cast(SUM(amount) FILTER (WHERE LOWER(payment_method) = 'pos') as float) AS total_pos_sold,
+    cast(SUM(amount) FILTER (WHERE LOWER(payment_method) = 'cash') as float) AS total_cash_sold,
+    cast(SUM(amount) FILTER (WHERE LOWER(payment_method) = 'transfer') as float) AS total_transfer_sold
     From sales s
     Where s.timestamp::date = ${formattedDate}::date
     and s.branch_id = ${parseInt(branch)}::int
@@ -97,7 +97,7 @@ export default async (req: any, res: any) => {
     b.name, 
     (select cast(sum(s.amount) as float) as total_cash_amount from sales s where b.branch_id = s.branch_id
         and s.timestamp::date = ${formattedDate}::date
-        and s.payment_method = 'cash'
+        and LOWER(s.payment_method) = 'cash'
     ),
     companies.name as company_name
     FROM branches b
@@ -110,7 +110,7 @@ export default async (req: any, res: any) => {
     b.name, 
     (select cast(sum(s.amount) as float) as total_pos_amount from sales s where b.branch_id = s.branch_id
         and s.timestamp::date = ${formattedDate}::date
-        and s.payment_method = 'pos'
+        and LOWER(s.payment_method) = 'pos'
     ),
     companies.name as company_name
     FROM branches b
