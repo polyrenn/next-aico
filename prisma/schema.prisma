@@ -89,7 +89,7 @@ model Crb {
   id Int @id @default(autoincrement())
   branch Branch @relation(fields: [branchId], references: [branchId])
   branchId Int @map(name: "branch_id")
-  crbNumber Int @map(name: "crb_number")
+  crbNumber Int @map(name: "crb_number") @default(0)
   customerId String? @map(name: "customer_id") 
   description Json
   amount Int
@@ -175,6 +175,7 @@ model Staff {
   username String @unique
   password String
   role String // Name Re Staff Creation Api
+  sessions Session[]
   @@map(name: "staffs")
 }
 
@@ -201,3 +202,12 @@ model SwitchLog {
   timestamp DateTime @db.Timestamptz()
   @@map(name: "switch_log")
 }
+
+//Support for sessions
+model Session {
+   id        String   @id
+   staffId    Int
+   expiresAt DateTime
+   user      Staff     @relation(fields: [staffId], references: [id], onDelete: Cascade)
+}
+
