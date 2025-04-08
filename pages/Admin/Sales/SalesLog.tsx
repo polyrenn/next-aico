@@ -325,9 +325,12 @@ export default (props: PageProps<[]>) => {
                     }
                </Td>
                <Td>
-                   {item.description.map((desc:any, counter:number) =>
-                       <Text key={counter} mb={2}>{desc.quantity} X {desc.kg}Kg {item.category}</Text>
-                   )}
+                   {Array.isArray(item?.description) &&
+                    item.description.map((desc: any, counter: number) => (
+                      <Text key={counter} mb={2}>
+                        {desc.quantity} X {desc.kg}Kg {item.category}
+                      </Text>
+                    ))}
                </Td>
                <Td>{item.total_kg} KG</Td>
                <Td>{item.amount?.toLocaleString()} NGN</Td>
