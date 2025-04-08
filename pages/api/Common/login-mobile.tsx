@@ -9,7 +9,6 @@ export default async function handler(
   res: NextApiResponse
 ) {
      //Check for Empty Payload
-     /*
      try {
         const { username, password } = await req.body;
   
@@ -86,9 +85,5 @@ export default async function handler(
         console.error("Login API Error:", error);
         res.status(500).json({ message: 'Login Failed' })
       }
-
-      */
-        res.status(500).json({ message: 'Login Failed' })
-
 
 }
