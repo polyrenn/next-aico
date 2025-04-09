@@ -18,6 +18,8 @@ export default async function handler(
   }
 
   const branchId = parseInt(branchQuery, 10);
+  const today = new Date().toISOString()
+  const formattedDate = today.split('T')[0]
 
   if (isNaN(branchId)) {
     return res.status(400).json({ message: "Invalid branch ID provided." });
@@ -33,6 +35,9 @@ export default async function handler(
         // Assuming the field in your prisma schema is 'branchId' and it's an Int
         // Adjust 'branchId' if your schema uses a different field name (e.g., 'branch')
         branchId: branchId,
+        timestamp: {
+          gte: new Date(`${formattedDate}`),
+        },
       },
     });
 
