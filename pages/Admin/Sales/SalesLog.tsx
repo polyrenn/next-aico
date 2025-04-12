@@ -325,7 +325,7 @@ export default (props: PageProps<[]>) => {
                     }
                </Td>
                <Td>
-                   {Array.isArray(item?.description) &&
+                   {
                     item.description.map((desc: any, counter: number) => (
                       <Text key={counter} mb={2}>
                         {desc.quantity} X {desc.kg}Kg {item.category}
