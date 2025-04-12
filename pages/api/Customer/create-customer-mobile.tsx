@@ -1,6 +1,6 @@
 import { NextApiRequest } from "next";
 import { prisma } from "../../../lib/prisma";
-
+// Bloody Hell
 export default async (req:NextApiRequest, res) => {
     const { uniqueId, name, phone, branchId, date  } = req.body;
       const result = await prisma.customer.create({
