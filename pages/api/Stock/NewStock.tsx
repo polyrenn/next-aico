@@ -6,7 +6,10 @@ export default async (req, res) => {
     data = JSON.parse(data);
       const result = await prisma.stock.create({
         data: {
-          ...data,
+          kg: data.kg,
+          value: data.value,
+          loadNumber: data.loadNumber,
+          date: data.date,
           branch: {
             connect: { branchId: parseInt(branch) },
           },
