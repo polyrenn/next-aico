@@ -1,3 +1,3 @@
 -- This is an empty migration.
 ALTER TABLE sales
-DISABLE TRIGGER reset_sale_counter;
+DISABLE TRIGGER reset_sales_counter;
