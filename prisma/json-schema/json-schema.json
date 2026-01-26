@@ -1,0 +1,634 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "Company": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "companyId": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "branches": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Branch"
+          }
+        },
+        "staff": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Staff"
+          }
+        }
+      }
+    },
+    "Branch": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "branchId": {
+          "type": "integer"
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "address": {
+          "type": "string"
+        },
+        "company": {
+          "$ref": "#/definitions/Company"
+        },
+        "currentTank": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "customers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Customer"
+          }
+        },
+        "prices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Prices"
+          }
+        },
+        "sales": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Sale"
+          }
+        },
+        "tanks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Tank"
+          }
+        },
+        "crbs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Crb"
+          }
+        },
+        "stocks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Stock"
+          }
+        },
+        "staffs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Staff"
+          }
+        },
+        "declined": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DeclinedSales"
+          }
+        },
+        "queue": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Queue"
+          }
+        },
+        "switchLog": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SwitchLog"
+          }
+        }
+      }
+    },
+    "Post": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "published": {
+          "type": "boolean",
+          "default": false
+        },
+        "author": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/User"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "posts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Post"
+          }
+        }
+      }
+    },
+    "Prices": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "branch": {
+          "$ref": "#/definitions/Branch"
+        },
+        "category": {
+          "type": "string"
+        },
+        "pricePerKg": {
+          "type": "integer"
+        },
+        "availableKgs": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "Customer": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "uniqueId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "customerType": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "branch": {
+          "$ref": "#/definitions/Branch"
+        },
+        "change": {
+          "type": "integer",
+          "default": 0
+        },
+        "purchaseCount": {
+          "type": "integer",
+          "default": 0
+        }
+      }
+    },
+    "Crb": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "branch": {
+          "$ref": "#/definitions/Branch"
+        },
+        "crbNumber": {
+          "type": "integer",
+          "default": 0
+        },
+        "customerId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "number",
+            "string",
+            "boolean",
+            "object",
+            "array",
+            "null"
+          ]
+        },
+        "amount": {
+          "type": "integer"
+        },
+        "totalKg": {
+          "type": "number",
+          "default": 0
+        },
+        "category": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "date": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      }
+    },
+    "Queue": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "branch": {
+          "$ref": "#/definitions/Branch"
+        },
+        "crbNumber": {
+          "type": "integer"
+        },
+        "customerId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "number",
+            "string",
+            "boolean",
+            "object",
+            "array",
+            "null"
+          ]
+        },
+        "amount": {
+          "type": "integer"
+        },
+        "totalKg": {
+          "type": "number",
+          "default": 0
+        },
+        "category": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "date": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      }
+    },
+    "Sale": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "branch": {
+          "$ref": "#/definitions/Branch"
+        },
+        "saleNumber": {
+          "type": "integer",
+          "default": 3
+        },
+        "totalKg": {
+          "type": "number",
+          "default": 0
+        },
+        "amount": {
+          "type": "integer"
+        },
+        "category": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "date": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "customerId": {
+          "type": "string"
+        },
+        "description": {
+          "type": [
+            "number",
+            "string",
+            "boolean",
+            "object",
+            "array",
+            "null"
+          ]
+        },
+        "narrative": {
+          "type": "string"
+        },
+        "paymentMethod": {
+          "type": "string"
+        },
+        "change": {
+          "type": "number"
+        },
+        "currentTank": {
+          "type": "string"
+        },
+        "opening": {
+          "type": "number"
+        },
+        "balance": {
+          "type": "number"
+        },
+        "closing": {
+          "type": "number"
+        }
+      }
+    },
+    "Tank": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "tankId": {
+          "type": "string"
+        },
+        "branch": {
+          "$ref": "#/definitions/Branch"
+        },
+        "designation": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "stocks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Stock"
+          }
+        }
+      }
+    },
+    "Stock": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "branch": {
+          "$ref": "#/definitions/Branch"
+        },
+        "loadNumber": {
+          "type": "integer"
+        },
+        "tank": {
+          "$ref": "#/definitions/Tank"
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "kg": {
+          "type": "number"
+        },
+        "value": {
+          "type": "number"
+        }
+      }
+    },
+    "Staff": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "company": {
+          "$ref": "#/definitions/Company"
+        },
+        "branch": {
+          "$ref": "#/definitions/Branch"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "sessions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Session"
+          }
+        }
+      }
+    },
+    "DeclinedSales": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "branch": {
+          "$ref": "#/definitions/Branch"
+        },
+        "saleNumber": {
+          "type": "integer",
+          "default": 3
+        },
+        "totalKg": {
+          "type": "integer",
+          "default": 0
+        },
+        "amount": {
+          "type": "integer"
+        },
+        "category": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "customerId": {
+          "type": "string"
+        },
+        "description": {
+          "type": [
+            "number",
+            "string",
+            "boolean",
+            "object",
+            "array",
+            "null"
+          ]
+        },
+        "declineReason": {
+          "type": "string"
+        }
+      }
+    },
+    "SwitchLog": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "branch": {
+          "$ref": "#/definitions/Branch"
+        },
+        "meta": {
+          "type": [
+            "number",
+            "string",
+            "boolean",
+            "object",
+            "array",
+            "null"
+          ]
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "Session": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "user": {
+          "$ref": "#/definitions/Staff"
+        }
+      }
+    }
+  },
+  "type": "object",
+  "properties": {
+    "company": {
+      "$ref": "#/definitions/Company"
+    },
+    "branch": {
+      "$ref": "#/definitions/Branch"
+    },
+    "post": {
+      "$ref": "#/definitions/Post"
+    },
+    "user": {
+      "$ref": "#/definitions/User"
+    },
+    "prices": {
+      "$ref": "#/definitions/Prices"
+    },
+    "customer": {
+      "$ref": "#/definitions/Customer"
+    },
+    "crb": {
+      "$ref": "#/definitions/Crb"
+    },
+    "queue": {
+      "$ref": "#/definitions/Queue"
+    },
+    "sale": {
+      "$ref": "#/definitions/Sale"
+    },
+    "tank": {
+      "$ref": "#/definitions/Tank"
+    },
+    "stock": {
+      "$ref": "#/definitions/Stock"
+    },
+    "staff": {
+      "$ref": "#/definitions/Staff"
+    },
+    "declinedSales": {
+      "$ref": "#/definitions/DeclinedSales"
+    },
+    "switchLog": {
+      "$ref": "#/definitions/SwitchLog"
+    },
+    "session": {
+      "$ref": "#/definitions/Session"
+    }
+  }
+}

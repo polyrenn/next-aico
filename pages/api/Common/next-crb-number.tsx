@@ -2,6 +2,29 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../../lib/prisma";
 // Removed unused imports: uuidv4, dayjs, Session
 
+/**
+ * @swagger
+ * /api/Common/next-crb-number:
+ *   get:
+ *     summary: Returns the next CRB number for a given branch
+ *     parameters:
+ *       - in: query
+ *         name: branch
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The ID of the branch
+ *     responses:
+ *       200:
+ *         description: The next CRB number
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 nextCrbNumber:
+ *                   type: integer
+ */
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse

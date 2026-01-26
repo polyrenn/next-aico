@@ -1,6 +1,60 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../../lib/prisma";
 
+/**
+ * @swagger
+ * /api/Common/DayStats:
+ *   get:
+ *     summary: Returns daily statistics for a given branch and date
+ *     parameters:
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *         required: true
+ *         description: The date to retrieve the statistics for
+ *       - in: query
+ *         name: branch
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The ID of the branch
+ *     responses:
+ *       200:
+ *         description: Daily statistics for the given branch and date
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   name:
+ *                     type: string
+ *                   current_tank:
+ *                     type: string
+ *                   load_number:
+ *                     type: integer
+ *                   sales_count:
+ *                     type: integer
+ *                   desig:
+ *                     type: string
+ *                   opening_stock:
+ *                     type: number
+ *                   current_desig:
+ *                     type: string
+ *                   closing_stock:
+ *                     type: number
+ *                   balance_stock:
+ *                     type: number
+ *                   total_kg:
+ *                     type: number
+ *                   company_name:
+ *                     type: string
+ */
 export default async (req: NextApiRequest, res: NextApiResponse) => {
     const { id, date, branch } = req.query
     const today = new Date().toISOString()

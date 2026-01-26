@@ -1,6 +1,43 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../../lib/prisma";
 
+/**
+ * @swagger
+ * /api/Common/BranchDetails:
+ *   get:
+ *     summary: Returns details for a given branch
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The ID of the branch
+ *     responses:
+ *       200:
+ *         description: Details for the given branch
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *                 current_tank:
+ *                   type: string
+ *                 desig:
+ *                   type: string
+ *                 balance_stock:
+ *                   type: number
+ *                 other_tank:
+ *                   type: string
+ *                 other_desig:
+ *                   type: string
+ *                 company_name:
+ *                   type: string
+ */
 export default async (req: any, res: any) => {
     const {id} = req.query
 
