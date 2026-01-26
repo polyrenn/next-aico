@@ -4,6 +4,34 @@ import { v4 as uuidv4 } from "uuid";
 import dayjs from "dayjs";
 import { Session } from "@prisma/client"; // Import Session type if needed
 
+/**
+ * @swagger
+ * /api/Common/login-mobile:
+ *   post:
+ *     summary: Logs a user in from a mobile device
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: The logged in user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Staff'
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Failed to load data
+ */
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse

@@ -1,6 +1,32 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../../lib/prisma";
 
+/**
+ * @swagger
+ * /api/Common/EditBranch:
+ *   put:
+ *     summary: Updates a branch
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The ID of the branch to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Branch'
+ *     responses:
+ *       200:
+ *         description: The updated branch
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Branch'
+ */
 export default async (req:NextApiRequest, res:NextApiResponse) => {
     let data = req.body;
     const { id } = req.query

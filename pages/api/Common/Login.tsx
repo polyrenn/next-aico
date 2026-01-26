@@ -1,6 +1,35 @@
 import { withSessionRoute } from "../../../lib/withSession";
 import { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../../lib/prisma";
+
+/**
+ * @swagger
+ * /api/Common/Login:
+ *   post:
+ *     summary: Logs a user in
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: The logged in user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Staff'
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Failed to load data
+ */
 export default withSessionRoute(loginRoute);
 
 async function loginRoute(req:any, res:any) {

@@ -1,5 +1,43 @@
 import { prisma } from "../../../lib/prisma";
 
+/**
+ * @swagger
+ * /api/Tanks/SwitchTank:
+ *   post:
+ *     summary: Switches the current tank for a branch
+ *     parameters:
+ *       - in: query
+ *         name: branch
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The ID of the branch
+ *       - in: query
+ *         name: current
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the new tank
+ *       - in: query
+ *         name: old
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the old tank
+ *       - in: query
+ *         name: newname
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The name of the new tank
+ *     responses:
+ *       200:
+ *         description: The updated branch
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Branch'
+ */
 export default async (req:any, res:any) => {
     let data = req.body;
     const today = new Date().toISOString()

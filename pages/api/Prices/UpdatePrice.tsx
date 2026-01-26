@@ -20,9 +20,32 @@ const prisma = new PrismaClient({
 ],
 });
 
-
-
-
+/**
+ * @swagger
+ * /api/Prices/UpdatePrice:
+ *   put:
+ *     summary: Updates a price
+ *     parameters:
+ *       - in: query
+ *         name: branch
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The ID of the branch
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Prices'
+ *     responses:
+ *       200:
+ *         description: The updated price
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Prices'
+ */
 export default async (req, res) => {
   let data = req.body;
   const { branch, category } = req.query;

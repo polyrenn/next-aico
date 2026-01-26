@@ -1,5 +1,25 @@
 import { prisma } from "../../../lib/prisma";
 
+/**
+ * @swagger
+ * /api/Customer/GetSingleCustomer:
+ *   get:
+ *     summary: Returns a single customer
+ *     parameters:
+ *       - in: query
+ *         name: uniqueid
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The unique ID of the customer to retrieve
+ *     responses:
+ *       200:
+ *         description: The customer
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Customer'
+ */
 export default async (req:any, res:any) => {
     const { uniqueid } = req.query
     const result = await prisma.$queryRaw`SELECT cs.name, cs.phone, cs.branch_id, cs.purchase_count,

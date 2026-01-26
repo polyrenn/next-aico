@@ -1,5 +1,49 @@
 import { prisma } from "../../../lib/prisma"; // Adjust path as needed
 
+/**
+ * @swagger
+ * /api/Customer/search-mobile:
+ *   get:
+ *     summary: Searches for customers on a mobile device
+ *     parameters:
+ *       - in: query
+ *         name: branch
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The ID of the branch
+ *       - in: query
+ *         name: searchTerm
+ *         schema:
+ *           type: string
+ *         description: The term to search for
+ *       - in: query
+ *         name: cursor
+ *         schema:
+ *           type: string
+ *         description: The cursor for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: The number of results to return
+ *     responses:
+ *       200:
+ *         description: A list of customers
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 items:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Customer'
+ *                 nextCursor:
+ *                   type: string
+ *                 hasNextPage:
+ *                   type: boolean
+ */
 export default async (req: any, res: any) => {
   const {
     branch,

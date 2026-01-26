@@ -29,3 +29,7 @@ yarn-error.log*
 
 # open-next
 .open-next
+
+# generated files
+openapi.yaml
+/prisma/json-schema
