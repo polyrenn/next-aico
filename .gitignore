@@ -29,3 +29,6 @@ yarn-error.log*
 
 # open-next
 .open-next
+
+#agents
+.agent
