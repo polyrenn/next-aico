@@ -1,23 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { SalesCategory, InvoiceItem } from '@/types';
-import { priceStructure, kgTypes } from '@/data/mock-data';
+import { kgTypes } from '@/data/mock-data';
 import { formatCurrency } from '@/utils/invoice-utils';
 import { Calculator, ShoppingCart } from 'lucide-react';
 
+// Hard code kg types, and multiply by price
+
 interface SalesFormProps {
   salesCategory: SalesCategory;
+  pricePerKg: number;
   onItemsChange: (items: InvoiceItem[]) => void;
   onTotalsChange: (totalKg: number, grandTotal: number) => void;
 }
 
 const SalesForm: React.FC<SalesFormProps> = ({
   salesCategory,
+  pricePerKg,
   onItemsChange,
   onTotalsChange,
 }) => {
   const [quantities, setQuantities] = useState<{ [key: string]: number }>({});
-  
-  const pricePerKg = priceStructure[salesCategory];
+
 
   useEffect(() => {
     const items: InvoiceItem[] = kgTypes

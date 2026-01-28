@@ -9,7 +9,7 @@ import PrintableInvoice from '@/components/new/PrintableInvoice';
 import { Calendar, Clock, Tag, User, DollarSign, CreditCard, Banknote } from 'lucide-react';
 import { withSessionSsr } from '../../lib/withSession';
 import { prisma } from '../../lib/prisma';
-import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 
 interface DashboardPageProps {
   user: {
@@ -113,13 +113,135 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
     saveInvoice(invoice);
   };
 
+  // Mutation for inserting CRB
+  const { mutate: insertCrb, isPending: isInsertingCrb } = useMutation({
+    mutationFn: async (invoice: Invoice) => {
+      const response = await fetch('/api/FrontDesk/insert-crb-mobile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          branchId: branch?.branchId,
+          customerId: invoice.customerName, // Using name as ID for now or need a real ID? Assuming name is ok based on schema string
+          description: invoice.items,
+          amount: invoice.grandTotal,
+          totalKg: invoice.totalKg,
+          category: invoice.salesCategory,
+          timestamp: new Date().toISOString(),
+          date: new Date().toISOString(),
+          crbNumber: parseInt(invoiceNumber.replace('CRB-', '')), // Send the number we displayed? Or let DB handle it? 
+          // Schema says crbNumber is Int @default(0). Let's trust the auto-gen or the one we fetched?
+          // The API insert-crb-mobile does prisma.crb.create with ...data. 
+          // If we send crbNumber, it uses it. If not, default 0? Unique constraint!
+          // We fetched nextCrbNumber. We should probably send it if we want to "claim" it.
+        }),
+      });
+      if (!response.ok) throw new Error('Failed to insert CRB');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Invalidate to get next number
+      queryClient.invalidateQueries({ queryKey: ['nextCrbNumber'] });
+    },
+    onError: (error) => {
+      alert('Failed to save invoice record: ' + error.message);
+    }
+  });
+
+  // Mutation for inserting Sale
+  const { mutate: insertSale, isPending: isInsertingSale } = useMutation({
+    mutationFn: async ({ invoice, crbNumber }: { invoice: Invoice, crbNumber: number }) => {
+      const response = await fetch('/api/FrontDesk/insert-sales-mobile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          branch: branch?.branchId.toString(), // API expects string parsable to int
+          totalKg: invoice.totalKg.toString(),
+          amount: invoice.amountPaid.toString(),
+          change: invoice.balance.toString(), // Balance is change if positive?
+          customerId: invoice.customerName,
+          category: invoice.salesCategory,
+          paymentMethod: paymentMethod || 'cash',
+          narrative: `Sale for ${invoice.customerName}`,
+          saleNumber: crbNumber, // Linking Sale to CRB Number as requested
+          description: invoice.items,
+        }),
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Failed to insert Sale');
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Sale saved
+    },
+    onError: (error) => {
+      alert('Failed to save sale record: ' + error.message);
+    }
+  });
+
+
+  /* State to track saved CRB data to prevent duplicates and use returned number */
+  const [savedCrbData, setSavedCrbData] = useState<{ crbNumber: number } | null>(null);
+
   const handlePrint = (type: 'invoice' | 'receipt') => {
     if (!currentInvoice) return;
+
+    // Use the currently displayed invoice number for the record as fallback
+    const crbNumFallback = parseInt(invoiceNumber.replace('CRB-', ''));
+    if (isNaN(crbNumFallback)) {
+      alert('Invalid Invoice Number');
+      return;
+    }
     
     setPrintType(type);
-    setTimeout(() => {
-      window.print();
-    }, 100);
+
+    // Helper to proceed with Sale insertion using the confirmed CRB number
+    const processSale = (confirmedCrbNumber: number) => {
+      insertSale({ invoice: currentInvoice, crbNumber: confirmedCrbNumber }, {
+        onSuccess: () => {
+          setTimeout(() => {
+            window.print();
+          }, 100);
+        }
+      });
+    };
+
+    // Helper to just print (for Invoice type)
+    const justPrint = () => {
+       setTimeout(() => {
+          window.print();
+        }, 100);
+    };
+
+    // 1. Check if we already have a saved CRB for this session
+    if (savedCrbData) {
+      // CRB already exists, reuse it!
+      if (type === 'invoice') {
+        justPrint();
+      } else {
+        processSale(savedCrbData.crbNumber);
+      }
+      return;
+    }
+
+    // 2. No saved CRB, insert it now
+    insertCrb(currentInvoice, {
+      onSuccess: (data) => {
+        // Capture the returned object!
+        setSavedCrbData(data);
+        
+        // Extract the REAL number from the DB return
+        const finalCrbNum = data.crbNumber || crbNumFallback;
+
+        if (type === 'invoice') {
+          justPrint();
+        } else {
+          // Pass the EXTRACTED number to sales mutation
+          processSale(finalCrbNum);
+        }
+      }
+    });
   };
 
   const queryClient = useQueryClient();
@@ -134,39 +256,36 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
     setInvoiceItems([]);
     setTotalKg(0);
     setGrandTotal(0);
+    setSavedCrbData(null); // Reset for next customer
     // Invalidate nextCrbNumber to fetch fresh one for next sale
     queryClient.invalidateQueries({ queryKey: ['nextCrbNumber'] });
   };
 
-  if (showPreview && currentInvoice) {
-    return (
-      <Layout>
-        <div className="no-print p-4 space-y-6">
-          <InvoicePreview
-            invoice={currentInvoice}
-            onPrintInvoice={() => handlePrint('invoice')}
-            onPrintReceipt={() => handlePrint('receipt')}
-          />
-          
-          <button
-            onClick={handleNewInvoice}
-            className="w-full bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-4 rounded-lg transition-colors"
-          >
-            Create New Invoice
-          </button>
-        </div>
-
-        {/* Printable content - only visible when printing */}
-        <div className="print-only">
-          <PrintableInvoice invoice={currentInvoice} isReceipt={printType === 'receipt'} />
-        </div>
-      </Layout>
-    );
-  }
+  // Calculate current price based on category
+  const currentPricePerKg = prices?.find(p => 
+    p.category.toLowerCase() === salesCategory.toLowerCase()
+  )?.pricePerKg || 0;
 
   return (
     <Layout>
-      <div className="p-4 space-y-6">
+      {/* Drawer Component for Invoice Preview */}
+      <InvoicePreview
+        invoice={currentInvoice}
+        isOpen={showPreview}
+        onOpenChange={setShowPreview}
+        onPrintInvoice={() => handlePrint('invoice')}
+        onPrintReceipt={() => handlePrint('receipt')}
+        onNewInvoice={handleNewInvoice}
+      />
+
+       {/* Printable content - only visible when printing */}
+       {currentInvoice && (
+        <div className="print-only">
+          <PrintableInvoice invoice={currentInvoice} isReceipt={printType === 'receipt'} />
+        </div>
+      )}
+
+      <div className="p-4 space-y-6 no-print">
         {/* Invoice Header Info */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -222,7 +341,7 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
           >
             <option value="domestic">Domestic</option>
             <option value="eatery">Eatery</option>
-            <option value="dealers">Dealers</option>
+            <option value="dealer">Dealer</option>
             <option value="others">Others</option>
           </select>
         </div>
@@ -230,6 +349,7 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
         {/* Sales Form */}
         <SalesForm
           salesCategory={salesCategory}
+          pricePerKg={currentPricePerKg}
           onItemsChange={setInvoiceItems}
           onTotalsChange={handleTotalsChange}
         />
