@@ -34,7 +34,7 @@ export interface Invoice {
   userId: string;
   userName: string;
   customerName: string;
-  salesCategory: 'domestic' | 'eatery' | 'dealers' | 'others';
+  salesCategory: 'domestic' | 'eatery' | 'dealer' | 'others';
   items: InvoiceItem[];
   totalKg: number;
   grandTotal: number;
@@ -42,4 +42,4 @@ export interface Invoice {
   balance: number;
 }
 
-export type SalesCategory = 'domestic' | 'eatery' | 'dealers' | 'others';
+export type SalesCategory = 'domestic' | 'eatery' | 'dealer' | 'others';
