@@ -3,26 +3,28 @@ import { User } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
+  userName?: string;
+  role?: string;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+const Layout: React.FC<LayoutProps> = ({ children, userName, role }) => {
 
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <header className="no-print bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="bg-blue-600 p-2 rounded-lg">
-                <User className="h-5 w-5 text-white" />
+    <div className="tw-min-h-screen tw-bg-gray-50 dark:tw-bg-gray-900">
+      <header className="tw-no-print tw-bg-white dark:tw-bg-gray-800 tw-shadow-sm tw-border-b tw-border-gray-200 dark:tw-border-gray-700">
+        <div className="tw-px-4 tw-py-3">
+          <div className="tw-flex tw-items-center tw-justify-between">
+            <div className="tw-flex tw-items-center tw-space-x-3">
+              <div className="tw-bg-blue-600 tw-p-2 tw-rounded-lg">
+                <User className="tw-h-5 tw-w-5 tw-text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-gray-900 dark:text-white">
+                <h1 className="tw-text-lg tw-font-bold tw-text-gray-900 dark:tw-text-white">
                   AICO GAS LIMITED
                 </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Admin
+                <p className="tw-text-sm tw-text-gray-600 dark:tw-text-gray-400">
+                  {userName || 'Guest'} ({role || 'Staff'})
                 </p>
               </div>
             </div>
@@ -30,7 +32,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         </div>
       </header>
-      <main className="pb-safe">{children}</main>
+      <main className="tw-pb-safe">{children}</main>
     </div>
   );
 };

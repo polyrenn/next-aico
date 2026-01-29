@@ -63,56 +63,56 @@ const SalesForm: React.FC<SalesFormProps> = ({
   const grandTotal = totalKg * pricePerKg;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center space-x-3">
-          <div className="bg-green-100 dark:bg-green-900/20 p-2 rounded-lg">
-            <Calculator className="h-5 w-5 text-green-600 dark:text-green-400" />
+    <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-xl tw-shadow-sm tw-border tw-border-gray-200 dark:tw-border-gray-700">
+      <div className="tw-p-4 tw-border-b tw-border-gray-200 dark:tw-border-gray-700">
+        <div className="tw-flex tw-items-center tw-space-x-3">
+          <div className="tw-bg-green-100 dark:tw-bg-green-900/20 tw-p-2 tw-rounded-lg">
+            <Calculator className="tw-h-5 tw-w-5 tw-text-green-600 dark:tw-text-green-400" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 className="tw-text-lg tw-font-semibold tw-text-gray-900 dark:tw-text-white">
               Sales Calculator
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="tw-text-sm tw-text-gray-600 dark:tw-text-gray-400">
               Price per KG: {formatCurrency(pricePerKg)}
             </p>
           </div>
         </div>
       </div>
 
-      <div className="p-4">
-        <div className="space-y-3">
+      <div className="tw-p-4">
+        <div className="tw-space-y-3">
           {kgTypes.map((kg) => (
             <div
               key={kg.type}
-              className="grid grid-cols-12 gap-3 items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
+              className="tw-grid tw-grid-cols-12 tw-gap-3 tw-items-center tw-p-3 tw-bg-gray-50 dark:tw-bg-gray-700/50 tw-rounded-lg"
             >
-              <div className="col-span-3">
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
+              <div className="tw-col-span-3">
+                <span className="tw-text-sm tw-font-medium tw-text-gray-900 dark:tw-text-white">
                   {kg.type}
                 </span>
               </div>
               
-              <div className="col-span-3">
+              <div className="tw-col-span-3">
                 <input
                   type="number"
                   min="0"
                   step="any"
                   value={quantities[kg.type] || ''}
                   onChange={(e) => handleQuantityChange(kg.type, e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="tw-w-full tw-px-3 tw-py-2 tw-text-sm tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-lg focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-border-transparent tw-bg-white dark:tw-bg-gray-700 tw-text-gray-900 dark:tw-text-white"
                   placeholder="Qty"
                 />
               </div>
 
-              <div className="col-span-3 text-right">
-                <span className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="tw-col-span-3 tw-text-right">
+                <span className="tw-text-sm tw-text-gray-600 dark:tw-text-gray-400">
                   {quantities[kg.type] ? `${quantities[kg.type] * kg.weight}kg` : '0kg'}
                 </span>
               </div>
 
-              <div className="col-span-3 text-right">
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
+              <div className="tw-col-span-3 tw-text-right">
+                <span className="tw-text-sm tw-font-medium tw-text-gray-900 dark:tw-text-white">
                   {quantities[kg.type] 
                     ? formatCurrency(quantities[kg.type] * kg.weight * pricePerKg)
                     : '₦0'
@@ -124,20 +124,20 @@ const SalesForm: React.FC<SalesFormProps> = ({
         </div>
 
         {/* Totals */}
-        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+        <div className="tw-mt-6 tw-p-4 tw-bg-blue-50 dark:tw-bg-blue-900/20 tw-rounded-lg">
+          <div className="tw-flex tw-items-center tw-justify-between tw-mb-2">
+            <span className="tw-text-sm tw-font-medium tw-text-blue-800 dark:tw-text-blue-200">
               Total KG Sold:
             </span>
-            <span className="text-lg font-bold text-blue-900 dark:text-blue-100">
+            <span className="tw-text-lg tw-font-bold tw-text-blue-900 dark:tw-text-blue-100">
               {totalKg}kg
             </span>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+          <div className="tw-flex tw-items-center tw-justify-between">
+            <span className="tw-text-sm tw-font-medium tw-text-blue-800 dark:tw-text-blue-200">
               Grand Total:
             </span>
-            <span className="text-xl font-bold text-blue-900 dark:text-blue-100">
+            <span className="tw-text-xl tw-font-bold tw-text-blue-900 dark:tw-text-blue-100">
               {formatCurrency(grandTotal)}
             </span>
           </div>

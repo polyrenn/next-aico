@@ -25,28 +25,28 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+    <div className="tw-min-h-screen tw-bg-gradient-to-br from-blue-50 to-indigo-100 dark:tw-from-gray-900 dark:tw-to-gray-800 tw-flex tw-items-center tw-justify-center tw-p-4">
+      <div className="tw-w-full tw-max-w-md">
+        <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-2xl tw-shadow-xl tw-p-8">
           {/* Logo and Title */}
-          <div className="text-center mb-8">
-            <div className="bg-blue-600 w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <LogIn className="h-8 w-8 text-white" />
+          <div className="tw-text-center tw-mb-8">
+            <div className="tw-bg-blue-600 tw-w-16 tw-h-16 tw-rounded-full tw-mx-auto tw-mb-4 tw-flex tw-items-center tw-justify-center">
+              <LogIn className="tw-h-8 tw-w-8 tw-text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            <h1 className="tw-text-2xl tw-font-bold tw-text-gray-900 dark:tw-text-white tw-mb-2">
               AICO GAS LIMITED
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="tw-text-gray-600 dark:tw-text-gray-400">
               Sales Invoice System
             </p>
           </div>
 
           {/* Demo Credentials */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-6">
-            <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">
+          <div className="tw-bg-blue-50 dark:tw-bg-blue-900/20 tw-rounded-lg tw-p-4 tw-mb-6">
+            <h3 className="tw-text-sm tw-font-medium tw-text-blue-800 dark:tw-text-blue-200 tw-mb-2">
               Demo Credentials:
             </h3>
-            <div className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
+            <div className="tw-text-xs tw-text-blue-700 dark:tw-text-blue-300 tw-space-y-1">
               <div>admin / admin123</div>
               <div>sales1 / sales123</div>
               <div>airportcrb / airport1</div>
@@ -54,26 +54,26 @@ const LoginForm: React.FC = () => {
           </div>
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="tw-space-y-6">
             {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-center space-x-3">
-                <AlertCircle className="h-5 w-5 text-red-500" />
-                <span className="text-sm text-red-700 dark:text-red-300">{error}</span>
+              <div className="tw-bg-red-50 dark:tw-bg-red-900/20 tw-border tw-border-red-200 dark:tw-border-red-800 tw-rounded-lg tw-p-4 tw-flex tw-items-center tw-space-x-3">
+                <AlertCircle className="tw-h-5 tw-w-5 tw-text-red-500" />
+                <span className="tw-text-sm tw-text-red-700 dark:tw-text-red-300">{error}</span>
               </div>
             )}
 
-            <div className="space-y-4">
+            <div className="tw-space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-mb-2">
                   Username
                 </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <div className="tw-relative">
+                  <User className="tw-absolute left-3 top-1/2 tw-transform -translate-y-1/2 tw-h-5 tw-w-5 tw-text-gray-400" />
                   <input
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="tw-w-full tw-pl-10 tw-pr-4 tw-py-3 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-lg focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-border-transparent tw-bg-white dark:tw-bg-gray-700 tw-text-gray-900 dark:tw-text-white"
                     placeholder="Enter username"
                     required
                   />
@@ -81,16 +81,16 @@ const LoginForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-mb-2">
                   Password
                 </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <div className="tw-relative">
+                  <Lock className="tw-absolute left-3 top-1/2 tw-transform -translate-y-1/2 tw-h-5 tw-w-5 tw-text-gray-400" />
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="tw-w-full tw-pl-10 tw-pr-4 tw-py-3 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-lg focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-border-transparent tw-bg-white dark:tw-bg-gray-700 tw-text-gray-900 dark:tw-text-white"
                     placeholder="Enter password"
                     required
                   />
@@ -101,13 +101,13 @@ const LoginForm: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
+              className="tw-w-full tw-bg-blue-600 hover:tw-bg-blue-700 disabled:tw-bg-blue-400 disabled:tw-cursor-not-allowed tw-text-white tw-font-medium tw-py-3 tw-px-4 tw-rounded-lg tw-transition-colors tw-flex tw-items-center tw-justify-center tw-space-x-2"
             >
               {isLoading ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                <div className="animate-spin tw-rounded-full tw-h-5 tw-w-5 tw-border-2 tw-border-white tw-border-t-transparent"></div>
               ) : (
                 <>
-                  <LogIn className="h-5 w-5" />
+                  <LogIn className="tw-h-5 tw-w-5" />
                   <span>Sign In</span>
                 </>
               )}

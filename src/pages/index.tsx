@@ -10,35 +10,35 @@ const Home = () => {
   const [isPurchaseFormOpen, setIsPurchaseFormOpen] = useState(false);
 
   const stats = [
-    { label: 'Years of Excellence', value: '10+', icon: Award, color: 'from-blue-500 to-cyan-500' },
-    { label: 'Happy Customers', value: '50K+', icon: Users, color: 'from-green-500 to-emerald-500' },
-    { label: 'Service Reliability', value: '99.9%', icon: Shield, color: 'from-purple-500 to-pink-500' },
-    { label: 'Market Growth', value: '200%', icon: TrendingUp, color: 'from-orange-500 to-red-500' },
+    { label: 'Years of Excellence', value: '10+', icon: Award, color: 'tw-from-blue-500 tw-to-cyan-500' },
+    { label: 'Happy Customers', value: '50K+', icon: Users, color: 'tw-from-green-500 tw-to-emerald-500' },
+    { label: 'Service Reliability', value: '99.9%', icon: Shield, color: 'tw-from-purple-500 tw-to-pink-500' },
+    { label: 'Market Growth', value: '200%', icon: TrendingUp, color: 'tw-from-orange-500 tw-to-red-500' },
   ];
 
   const features = [
     {
       title: 'Reliable Product Availability',
       description: 'Uninterrupted availability of gas products, even during periods of scarcity.',
-      color: 'from-blue-500 to-cyan-500',
+      color: 'tw-from-blue-500 tw-to-cyan-500',
       icon: Shield
     },
     {
       title: 'Excellence in Service',
       description: 'Prompt, customer-friendly service tailored to homes, businesses, and industries.',
-      color: 'from-green-500 to-emerald-500',
+      color: 'tw-from-green-500 tw-to-emerald-500',
       icon: Award
     },
     {
       title: 'Expert Technical Team',
       description: 'Highly trained professionals offering expert diagnosis and safety solutions.',
-      color: 'from-purple-500 to-pink-500',
+      color: 'tw-from-purple-500 tw-to-pink-500',
       icon: Users
     },
     {
       title: 'Customer-Centric Approach',
       description: 'Priority on safety and comfort with comprehensive after-sales support.',
-      color: 'from-orange-500 to-red-500',
+      color: 'tw-from-orange-500 tw-to-red-500',
       icon: Star
     }
   ];
@@ -72,54 +72,54 @@ const Home = () => {
   }, [testimonials.length]);
 
   return (
-    <div className="dark bg-gray-950 text-white min-h-screen selection:bg-blue-500/30">
+    <div className="dark tw-bg-gray-950 tw-text-white tw-min-h-screen selection:tw-bg-blue-500/30">
       {/* Hero Section */}
-      <section className="relative overflow-hidden px-4 sm:px-6 lg:px-8 py-20">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center">
-            <div className="mb-6">
-              <span className="inline-block px-4 py-2 bg-gradient-to-r from-blue-600/20 to-green-600/20 backdrop-blur-md rounded-full text-blue-300 text-sm font-medium border border-blue-500/30">
+      <section className="tw-relative tw-overflow-hidden tw-px-4 sm:tw-px-6 lg:tw-px-8 tw-py-20">
+        <div className="tw-max-w-7xl tw-mx-auto">
+          <div className="tw-text-center">
+            <div className="tw-mb-6">
+              <span className="tw-inline-block tw-px-4 tw-py-2 tw-bg-gradient-to-r tw-from-blue-600/20 tw-to-green-600/20 tw-backdrop-blur-md tw-rounded-full tw-text-blue-300 tw-text-sm tw-font-medium tw-border tw-border-blue-500/30">
                 🔥 Nigeria&apos;s Leading LPG Company
               </span>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
-              <span className="bg-gradient-to-r from-blue-400 to-green-400 bg-clip-text text-transparent">
+            <h1 className="tw-text-4xl md:tw-text-6xl tw-font-bold tw-text-white tw-mb-6 tw-leading-tight">
+              <span className="tw-bg-gradient-to-r tw-from-blue-400 tw-to-green-400 tw-bg-clip-text tw-text-transparent">
                 Fueling Homes,
               </span>
               <br />
-              <span className="text-white">Empowering Communities</span>
+              <span className="tw-text-white">Empowering Communities</span>
             </h1>
-            <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
+            <p className="tw-text-xl tw-text-gray-300 tw-mb-8 tw-max-w-3xl tw-mx-auto tw-leading-relaxed">
               Nigeria&apos;s leading LPG company with over a decade of excellence. We provide safe,
               accessible, and affordable cooking gas solutions across South-South Nigeria.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="tw-flex tw-flex-col sm:tw-flex-row tw-gap-4 tw-justify-center tw-items-center">
               <button
                 onClick={() => setIsPurchaseFormOpen(true)}
-                className="px-8 py-4 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-300 flex items-center space-x-2 group"
+                className="tw-px-8 tw-py-4 tw-bg-gradient-to-r tw-from-orange-600 tw-to-red-600 tw-text-white tw-rounded-xl tw-font-semibold hover:tw-shadow-lg hover:tw-shadow-orange-500/30 tw-transition-all tw-duration-300 tw-flex tw-items-center tw-space-x-2 tw-group"
               >
-                <ShoppingCart className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                <ShoppingCart className="tw-h-5 tw-w-5 group-hover:tw-scale-110 tw-transition-transform" />
                 <span>Buy Gas</span>
               </button>
               <button
                 onClick={() => setIsRegistrationOpen(true)}
-                className="px-8 py-4 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-green-500/30 transition-all duration-300 flex items-center space-x-2 group"
+                className="tw-px-8 tw-py-4 tw-bg-gradient-to-r tw-from-green-600 tw-to-blue-600 tw-text-white tw-rounded-xl tw-font-semibold hover:tw-shadow-lg hover:tw-shadow-green-500/30 tw-transition-all tw-duration-300 tw-flex tw-items-center tw-space-x-2 tw-group"
               >
-                <UserPlus className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                <UserPlus className="tw-h-5 tw-w-5 group-hover:tw-scale-110 tw-transition-transform" />
                 <span>Register as Customer</span>
               </button>
               <Link
                 href="/services"
-                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300 flex items-center space-x-2 group"
+                className="tw-px-8 tw-py-4 tw-bg-gradient-to-r tw-from-blue-600 tw-to-green-600 tw-text-white tw-rounded-xl tw-font-semibold hover:tw-shadow-lg hover:tw-shadow-blue-500/30 tw-transition-all tw-duration-300 tw-flex tw-items-center tw-space-x-2 tw-group"
               >
                 <span>Explore Services</span>
-                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="tw-h-5 tw-w-5 group-hover:tw-translate-x-1 tw-transition-transform" />
               </Link>
               <a
                 href="tel:+2348085379134"
-                className="px-8 py-4 bg-gray-800/50 backdrop-blur-md text-white rounded-xl font-semibold hover:bg-gray-700/50 transition-all duration-300 flex items-center space-x-2 border border-gray-600 group"
+                className="tw-px-8 tw-py-4 tw-bg-gray-800/50 tw-backdrop-blur-md tw-text-white tw-rounded-xl tw-font-semibold hover:tw-bg-gray-700/50 tw-transition-all tw-duration-300 tw-flex tw-items-center tw-space-x-2 tw-border tw-border-gray-600 tw-group"
               >
-                <Phone className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                <Phone className="tw-h-5 tw-w-5 group-hover:tw-scale-110 tw-transition-transform" />
                 <span>Call Now</span>
               </a>
             </div>
@@ -127,55 +127,55 @@ const Home = () => {
         </div>
         
         {/* Animated Background Elements */}
-        <div className="absolute top-20 left-10 w-20 h-20 bg-blue-500/20 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-32 h-32 bg-green-500/20 rounded-full blur-xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-red-500/20 rounded-full blur-xl animate-pulse delay-500"></div>
+        <div className="tw-absolute tw-top-20 tw-left-10 tw-w-20 tw-h-20 tw-bg-blue-500/20 tw-rounded-full tw-blur-xl tw-animate-pulse"></div>
+        <div className="tw-absolute tw-bottom-20 tw-right-10 tw-w-32 tw-h-32 tw-bg-green-500/20 tw-rounded-full tw-blur-xl tw-animate-pulse tw-delay-1000"></div>
+        <div className="tw-absolute tw-top-1/2 tw-left-1/4 tw-w-16 tw-h-16 tw-bg-red-500/20 tw-rounded-full tw-blur-xl tw-animate-pulse tw-delay-500"></div>
       </section>
 
       {/* Quick Action Banners */}
-      <section className="py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-6">
+      <section className="tw-py-8 tw-px-4 sm:tw-px-6 lg:tw-px-8">
+        <div className="tw-max-w-6xl tw-mx-auto tw-grid md:tw-grid-cols-2 tw-gap-6">
           {/* Buy Gas CTA */}
-          <div className="bg-gradient-to-r from-orange-600/20 to-red-600/20 backdrop-blur-md rounded-2xl p-6 border border-gray-700/50 relative overflow-hidden group hover:scale-105 transition-transform duration-300">
-            <div className="absolute inset-0 bg-gradient-to-r from-orange-600/10 to-red-600/10"></div>
-            <div className="relative flex items-center justify-between">
+          <div className="tw-bg-gradient-to-r tw-from-orange-600/20 tw-to-red-600/20 tw-backdrop-blur-md tw-rounded-2xl tw-p-6 tw-border tw-border-gray-700/50 tw-relative tw-overflow-hidden tw-group hover:tw-scale-105 tw-transition-transform tw-duration-300">
+            <div className="tw-absolute tw-inset-0 tw-bg-gradient-to-r tw-from-orange-600/10 tw-to-red-600/10"></div>
+            <div className="tw-relative tw-flex tw-items-center tw-justify-between">
               <div>
-                <h3 className="text-xl font-bold text-white mb-2 flex items-center space-x-2">
-                  <ShoppingCart className="h-6 w-6 text-orange-400" />
+                <h3 className="tw-text-xl tw-font-bold tw-text-white tw-mb-2 tw-flex tw-items-center tw-space-x-2">
+                  <ShoppingCart className="tw-h-6 tw-w-6 tw-text-orange-400" />
                   <span>Order Gas Online</span>
                 </h3>
-                <p className="text-gray-300 text-sm">
+                <p className="tw-text-gray-300 tw-text-sm">
                   Quick and easy gas ordering with instant confirmation
                 </p>
               </div>
               <button
                 onClick={() => setIsPurchaseFormOpen(true)}
-                className="px-6 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-300 flex items-center space-x-2 group whitespace-nowrap"
+                className="tw-px-6 tw-py-3 tw-bg-gradient-to-r tw-from-orange-600 tw-to-red-600 tw-text-white tw-rounded-xl tw-font-semibold hover:tw-shadow-lg hover:tw-shadow-orange-500/30 tw-transition-all tw-duration-300 tw-flex tw-items-center tw-space-x-2 tw-group tw-whitespace-nowrap"
               >
-                <ShoppingCart className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                <ShoppingCart className="tw-h-5 tw-w-5 group-hover:tw-scale-110 tw-transition-transform" />
                 <span>Buy Now</span>
               </button>
             </div>
           </div>
 
           {/* Customer Registration CTA */}
-          <div className="bg-gradient-to-r from-green-600/20 to-blue-600/20 backdrop-blur-md rounded-2xl p-6 border border-gray-700/50 relative overflow-hidden group hover:scale-105 transition-transform duration-300">
-            <div className="absolute inset-0 bg-gradient-to-r from-green-600/10 to-blue-600/10"></div>
-            <div className="relative flex items-center justify-between">
+          <div className="tw-bg-gradient-to-r tw-from-green-600/20 tw-to-blue-600/20 tw-backdrop-blur-md tw-rounded-2xl tw-p-6 tw-border tw-border-gray-700/50 tw-relative tw-overflow-hidden tw-group hover:tw-scale-105 tw-transition-transform tw-duration-300">
+            <div className="tw-absolute tw-inset-0 tw-bg-gradient-to-r tw-from-green-600/10 tw-to-blue-600/10"></div>
+            <div className="tw-relative tw-flex tw-items-center tw-justify-between">
               <div>
-                <h3 className="text-xl font-bold text-white mb-2 flex items-center space-x-2">
-                  <UserPlus className="h-6 w-6 text-green-400" />
+                <h3 className="tw-text-xl tw-font-bold tw-text-white tw-mb-2 tw-flex tw-items-center tw-space-x-2">
+                  <UserPlus className="tw-h-6 tw-w-6 tw-text-green-400" />
                   <span>Join Our Family</span>
                 </h3>
-                <p className="text-gray-300 text-sm">
+                <p className="tw-text-gray-300 tw-text-sm">
                   Get your unique customer ID for faster service and exclusive benefits
                 </p>
               </div>
               <button
                 onClick={() => setIsRegistrationOpen(true)}
-                className="px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-green-500/30 transition-all duration-300 flex items-center space-x-2 group whitespace-nowrap"
+                className="tw-px-6 tw-py-3 tw-bg-gradient-to-r tw-from-green-600 tw-to-blue-600 tw-text-white tw-rounded-xl tw-font-semibold hover:tw-shadow-lg hover:tw-shadow-green-500/30 tw-transition-all tw-duration-300 tw-flex tw-items-center tw-space-x-2 tw-group tw-whitespace-nowrap"
               >
-                <UserPlus className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                <UserPlus className="tw-h-5 tw-w-5 group-hover:tw-scale-110 tw-transition-transform" />
                 <span>Register</span>
               </button>
             </div>
@@ -184,19 +184,19 @@ const Home = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+      <section className="tw-py-16 tw-px-4 sm:tw-px-6 lg:tw-px-8">
+        <div className="tw-max-w-7xl tw-mx-auto">
+          <div className="tw-grid tw-grid-cols-2 lg:tw-grid-cols-4 tw-gap-6">
             {stats.map((stat, index) => (
               <div
                 key={stat.label}
-                className="bg-gray-800/40 backdrop-blur-md rounded-xl p-6 border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300 group hover:scale-105"
+                className="tw-bg-gray-800/40 tw-backdrop-blur-md tw-rounded-xl tw-p-6 tw-border tw-border-gray-700/50 hover:tw-border-blue-500/50 tw-transition-all tw-duration-300 tw-group hover:tw-scale-105"
               >
-                <div className={`flex items-center justify-center w-12 h-12 bg-gradient-to-r ${stat.color} rounded-lg mb-4 group-hover:scale-110 transition-transform`}>
-                  <stat.icon className="h-6 w-6 text-white" />
+                <div className={`tw-flex tw-items-center tw-justify-center tw-w-12 tw-h-12 tw-bg-gradient-to-r ${stat.color} tw-rounded-lg tw-mb-4 group-hover:tw-scale-110 tw-transition-transform`}>
+                  <stat.icon className="tw-h-6 tw-w-6 tw-text-white" />
                 </div>
-                <div className="text-2xl font-bold text-white mb-1">{stat.value}</div>
-                <div className="text-gray-400 text-sm">{stat.label}</div>
+                <div className="tw-text-2xl tw-font-bold tw-text-white tw-mb-1">{stat.value}</div>
+                <div className="tw-text-gray-400 tw-text-sm">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -204,31 +204,31 @@ const Home = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+      <section className="tw-py-20 tw-px-4 sm:tw-px-6 lg:tw-px-8">
+        <div className="tw-max-w-7xl tw-mx-auto">
+          <div className="tw-text-center tw-mb-16">
+            <h2 className="tw-text-3xl md:tw-text-4xl tw-font-bold tw-text-white tw-mb-4">
               What Sets Us Apart
             </h2>
-            <p className="text-gray-300 text-lg max-w-2xl mx-auto">
+            <p className="tw-text-gray-300 tw-text-lg tw-max-w-2xl tw-mx-auto">
               Discover why AICO GAS is the most trusted LPG provider in South-South Nigeria
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="tw-grid md:tw-grid-cols-2 tw-gap-8">
             {features.map((feature, index) => (
               <div
                 key={feature.title}
-                className="group relative overflow-hidden bg-gray-800/40 backdrop-blur-md rounded-2xl p-8 border border-gray-700/50 hover:border-gray-600 transition-all duration-500 hover:scale-105"
+                className="tw-group tw-relative tw-overflow-hidden tw-bg-gray-800/40 tw-backdrop-blur-md tw-rounded-2xl tw-p-8 tw-border tw-border-gray-700/50 hover:tw-border-gray-600 tw-transition-all tw-duration-500 hover:tw-scale-105"
               >
-                <div className={`absolute inset-0 bg-gradient-to-r ${feature.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`}></div>
-                <div className="relative flex items-start space-x-4">
-                  <div className={`flex-shrink-0 p-3 bg-gradient-to-r ${feature.color} rounded-lg group-hover:scale-110 transition-transform`}>
-                    <feature.icon className="h-6 w-6 text-white" />
+                <div className={`tw-absolute tw-inset-0 tw-bg-gradient-to-r ${feature.color} tw-opacity-0 group-hover:tw-opacity-10 tw-transition-opacity tw-duration-500`}></div>
+                <div className="tw-relative tw-flex tw-items-start tw-space-x-4">
+                  <div className={`tw-flex-shrink-0 tw-p-3 tw-bg-gradient-to-r ${feature.color} tw-rounded-lg group-hover:tw-scale-110 tw-transition-transform`}>
+                    <feature.icon className="tw-h-6 tw-w-6 tw-text-white" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-white mb-3">{feature.title}</h3>
-                    <p className="text-gray-300 leading-relaxed">{feature.description}</p>
+                    <h3 className="tw-text-xl tw-font-semibold tw-text-white tw-mb-3">{feature.title}</h3>
+                    <p className="tw-text-gray-300 tw-leading-relaxed">{feature.description}</p>
                   </div>
                 </div>
               </div>
@@ -238,41 +238,41 @@ const Home = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+      <section className="tw-py-20 tw-px-4 sm:tw-px-6 lg:tw-px-8">
+        <div className="tw-max-w-4xl tw-mx-auto">
+          <div className="tw-text-center tw-mb-16">
+            <h2 className="tw-text-3xl md:tw-text-4xl tw-font-bold tw-text-white tw-mb-4">
               What Our Customers Say
             </h2>
-            <p className="text-gray-300 text-lg">
+            <p className="tw-text-gray-300 tw-text-lg">
               Real experiences from satisfied customers across Nigeria
             </p>
           </div>
 
-          <div className="relative">
-            <div className="bg-gray-800/40 backdrop-blur-md rounded-2xl p-8 border border-gray-700/50 text-center">
-              <div className="flex justify-center mb-4">
+          <div className="tw-relative">
+            <div className="tw-bg-gray-800/40 tw-backdrop-blur-md tw-rounded-2xl tw-p-8 tw-border tw-border-gray-700/50 tw-text-center">
+              <div className="tw-flex tw-justify-center tw-mb-4">
                 {[...Array(testimonials[currentSlide].rating)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                  <Star key={i} className="tw-h-5 tw-w-5 tw-text-yellow-400 tw-fill-current" />
                 ))}
               </div>
-              <blockquote className="text-xl text-gray-300 mb-6 leading-relaxed">
+              <blockquote className="tw-text-xl tw-text-gray-300 tw-mb-6 tw-leading-relaxed">
                 &quot;{testimonials[currentSlide].text}&quot;
               </blockquote>
               <div>
-                <div className="text-white font-semibold">{testimonials[currentSlide].name}</div>
-                <div className="text-gray-400 text-sm">{testimonials[currentSlide].location}</div>
+                <div className="tw-text-white tw-font-semibold">{testimonials[currentSlide].name}</div>
+                <div className="tw-text-gray-400 tw-text-sm">{testimonials[currentSlide].location}</div>
               </div>
             </div>
 
             {/* Testimonial Dots */}
-            <div className="flex justify-center mt-6 space-x-2">
+            <div className="tw-flex tw-justify-center tw-mt-6 tw-space-x-2">
               {testimonials.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentSlide(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    index === currentSlide ? 'bg-blue-500' : 'bg-gray-600'
+                  className={`tw-w-3 tw-h-3 tw-rounded-full tw-transition-all tw-duration-300 ${
+                    index === currentSlide ? 'tw-bg-blue-500' : 'tw-bg-gray-600'
                   }`}
                 />
               ))}
@@ -282,32 +282,32 @@ const Home = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="bg-gradient-to-r from-blue-600/20 to-green-600/20 backdrop-blur-md rounded-2xl p-12 border border-gray-700/50 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-green-600/10"></div>
-            <div className="relative">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+      <section className="tw-py-20 tw-px-4 sm:tw-px-6 lg:tw-px-8">
+        <div className="tw-max-w-4xl tw-mx-auto tw-text-center">
+          <div className="tw-bg-gradient-to-r tw-from-blue-600/20 tw-to-green-600/20 tw-backdrop-blur-md tw-rounded-2xl tw-p-12 tw-border tw-border-gray-700/50 tw-relative tw-overflow-hidden">
+            <div className="tw-absolute tw-inset-0 tw-bg-gradient-to-r tw-from-blue-600/10 tw-to-green-600/10"></div>
+            <div className="tw-relative">
+              <h2 className="tw-text-3xl md:tw-text-4xl tw-font-bold tw-text-white tw-mb-4">
                 Ready to Experience Excellence?
               </h2>
-              <p className="text-gray-300 text-lg mb-8">
+              <p className="tw-text-gray-300 tw-text-lg tw-mb-8">
                 Join thousands of satisfied customers who trust AICO GAS for their LPG needs
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="tw-flex tw-flex-col sm:tw-flex-row tw-gap-4 tw-justify-center">
                 <Link
                   href="/contact"
-                  className="px-8 py-4 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300 flex items-center justify-center space-x-2 group"
+                  className="tw-px-8 tw-py-4 tw-bg-gradient-to-r tw-from-blue-600 tw-to-green-600 tw-text-white tw-rounded-xl tw-font-semibold hover:tw-shadow-lg hover:tw-shadow-blue-500/30 tw-transition-all tw-duration-300 tw-flex tw-items-center tw-justify-center tw-space-x-2 tw-group"
                 >
                   <span>Get Started Today</span>
-                  <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  <ChevronRight className="tw-h-5 tw-w-5 group-hover:tw-translate-x-1 tw-transition-transform" />
                 </Link>
                 <a
                   href="https://wa.me/2347013218705"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-8 py-4 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-all duration-300 flex items-center justify-center space-x-2 group"
+                  className="tw-px-8 tw-py-4 tw-bg-green-600 tw-text-white tw-rounded-xl tw-font-semibold hover:tw-bg-green-700 tw-transition-all tw-duration-300 tw-flex tw-items-center tw-justify-center tw-space-x-2 tw-group"
                 >
-                  <MessageCircle className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                  <MessageCircle className="tw-h-5 tw-w-5 group-hover:tw-scale-110 tw-transition-transform" />
                   <span>WhatsApp Price Updates</span>
                 </a>
               </div>

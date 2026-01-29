@@ -6,6 +6,7 @@ import Layout from '@/components/new/Layout';
 import SalesForm from '@/components/new/SalesForm';
 import InvoicePreview from '@/components/new/InvoicePreview';
 import PrintableInvoice from '@/components/new/PrintableInvoice';
+import TestDrawer from '@/components/new/TestDrawer';
 import { Calendar, Clock, Tag, User, DollarSign, CreditCard, Banknote } from 'lucide-react';
 import { withSessionSsr } from '../../lib/withSession';
 import { prisma } from '../../lib/prisma';
@@ -44,6 +45,8 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
   const [currentInvoice, setCurrentInvoice] = useState<Invoice | null>(null);
   const [printType, setPrintType] = useState<'invoice' | 'receipt'>('invoice');
   const [invoiceNumber, setInvoiceNumber] = useState('CRB-...');
+  const [hasPrintedInvoice, setHasPrintedInvoice] = useState(false);
+  const [hasPrintedReceipt, setHasPrintedReceipt] = useState(false);
 
   // Fetch next CRB number from API
   const { data: crbData } = useQuery({
@@ -92,13 +95,23 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
       return;
     }
 
+    if (!paymentMethod) {
+      alert('Please select a payment method (POS or CASH)');
+      return;
+    }
+
+    if (amountPaid < grandTotal) {
+      const confirmCredit = window.confirm(`Amount paid (${formatCurrency(amountPaid)}) is less than total (${formatCurrency(grandTotal)}). Proceed with credit sale?`);
+      if (!confirmCredit) return;
+    }
+
     const invoice: Invoice = {
       id: Date.now().toString(),
       invoiceNumber,
       date: currentDate.toISOString(),
       time: formatTime(currentDate),
-      userId: 'admin',
-      userName: 'Admin',
+      userId: user.id.toString(),
+      userName: user.username,
       customerName: customerName.trim(),
       salesCategory,
       items: invoiceItems,
@@ -111,6 +124,19 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
     setCurrentInvoice(invoice);
     setShowPreview(true);
     saveInvoice(invoice);
+    
+    // Automatically trigger CRB insertion to get a valid number/record before printing
+    if (!savedCrbData && !isInsertingCrb) {
+      insertCrb(invoice, {
+        onSuccess: (data) => {
+          setSavedCrbData(data);
+          // Update the invoice number if the DB returned a real one
+          if (data.crbNumber) {
+            setInvoiceNumber(`CRB-${data.crbNumber}`);
+          }
+        }
+      });
+    }
   };
 
   // Mutation for inserting CRB
@@ -185,63 +211,32 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
   const [savedCrbData, setSavedCrbData] = useState<{ crbNumber: number } | null>(null);
 
   const handlePrint = (type: 'invoice' | 'receipt') => {
-    if (!currentInvoice) return;
-
-    // Use the currently displayed invoice number for the record as fallback
-    const crbNumFallback = parseInt(invoiceNumber.replace('CRB-', ''));
-    if (isNaN(crbNumFallback)) {
-      alert('Invalid Invoice Number');
-      return;
-    }
+    if (!currentInvoice || !savedCrbData) return;
+    if (type === 'invoice' && hasPrintedInvoice) return;
+    if (type === 'receipt' && hasPrintedReceipt) return;
     
     setPrintType(type);
 
-    // Helper to proceed with Sale insertion using the confirmed CRB number
-    const processSale = (confirmedCrbNumber: number) => {
-      insertSale({ invoice: currentInvoice, crbNumber: confirmedCrbNumber }, {
-        onSuccess: () => {
-          setTimeout(() => {
-            window.print();
-          }, 100);
-        }
-      });
-    };
-
-    // Helper to just print (for Invoice type)
-    const justPrint = () => {
+    if (type === 'invoice') {
+       setHasPrintedInvoice(true);
        setTimeout(() => {
           window.print();
         }, 100);
-    };
-
-    // 1. Check if we already have a saved CRB for this session
-    if (savedCrbData) {
-      // CRB already exists, reuse it!
-      if (type === 'invoice') {
-        justPrint();
-      } else {
-        processSale(savedCrbData.crbNumber);
-      }
-      return;
-    }
-
-    // 2. No saved CRB, insert it now
-    insertCrb(currentInvoice, {
-      onSuccess: (data) => {
-        // Capture the returned object!
-        setSavedCrbData(data);
-        
-        // Extract the REAL number from the DB return
-        const finalCrbNum = data.crbNumber || crbNumFallback;
-
-        if (type === 'invoice') {
-          justPrint();
-        } else {
-          // Pass the EXTRACTED number to sales mutation
-          processSale(finalCrbNum);
+    } else {
+      // Process Sale (which depends on CRB already being saved)
+      insertSale({ invoice: currentInvoice, crbNumber: savedCrbData.crbNumber }, {
+        onSuccess: () => {
+          setHasPrintedReceipt(true);
+          setTimeout(() => {
+            window.print();
+            // After print, wait a bit then reset to main page
+            setTimeout(() => {
+                handleNewInvoice();
+            }, 1000);
+          }, 100);
         }
-      }
-    });
+      });
+    }
   };
 
   const queryClient = useQueryClient();
@@ -257,6 +252,8 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
     setTotalKg(0);
     setGrandTotal(0);
     setSavedCrbData(null); // Reset for next customer
+    setHasPrintedInvoice(false);
+    setHasPrintedReceipt(false);
     // Invalidate nextCrbNumber to fetch fresh one for next sale
     queryClient.invalidateQueries({ queryKey: ['nextCrbNumber'] });
   };
@@ -267,7 +264,7 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
   )?.pricePerKg || 0;
 
   return (
-    <Layout>
+    <Layout userName={user.username} role={user.role}>
       {/* Drawer Component for Invoice Preview */}
       <InvoicePreview
         invoice={currentInvoice}
@@ -276,59 +273,68 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
         onPrintInvoice={() => handlePrint('invoice')}
         onPrintReceipt={() => handlePrint('receipt')}
         onNewInvoice={handleNewInvoice}
+        hasPrintedInvoice={hasPrintedInvoice}
+        hasPrintedReceipt={hasPrintedReceipt}
+        isSavingCrb={isInsertingCrb}
+        isCrbSaved={!!savedCrbData}
       />
+      
+      {/* Test Drawer for debugging */}
+      <div className="tw-fixed tw-bottom-4 tw-right-4 tw-z-50 tw-no-print">
+        <TestDrawer />
+      </div>
 
        {/* Printable content - only visible when printing */}
        {currentInvoice && (
-        <div className="print-only">
+        <div className="tw-print-only">
           <PrintableInvoice invoice={currentInvoice} isReceipt={printType === 'receipt'} />
         </div>
       )}
 
-      <div className="p-4 space-y-6 no-print">
+      <div className="tw-p-4 tw-space-y-6 tw-no-print">
         {/* Invoice Header Info */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="flex items-center space-x-3">
-              <Calendar className="h-5 w-5 text-blue-600" />
+        <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-xl tw-shadow-sm tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-p-4">
+          <div className="tw-grid tw-grid-cols-2 tw-gap-4 tw-text-sm">
+            <div className="tw-flex tw-items-center tw-space-x-3">
+              <Calendar className="tw-h-5 tw-w-5 tw-text-blue-600" />
               <div>
-                <p className="text-gray-600 dark:text-gray-400">Date</p>
-                <p className="font-medium text-gray-900 dark:text-white">
+                <p className="tw-text-gray-600 dark:tw-text-gray-400">Date</p>
+                <p className="tw-font-medium tw-text-gray-900 dark:tw-text-white">
                   {formatDate(currentDate)}
                 </p>
               </div>
             </div>
             
-            <div className="flex items-center space-x-3">
-              <Clock className="h-5 w-5 text-green-600" />
+            <div className="tw-flex tw-items-center tw-space-x-3">
+              <Clock className="tw-h-5 tw-w-5 tw-text-green-600" />
               <div>
-                <p className="text-gray-600 dark:text-gray-400">Time</p>
-                <p className="font-medium text-gray-900 dark:text-white">
+                <p className="tw-text-gray-600 dark:tw-text-gray-400">Time</p>
+                <p className="tw-font-medium tw-text-gray-900 dark:tw-text-white">
                   {formatTime(currentDate)}
                 </p>
               </div>
             </div>
           </div>
           
-          <div className="mt-4 text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400">Invoice Number</p>
-            <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
+          <div className="tw-mt-4 tw-text-center">
+            <p className="tw-text-sm tw-text-gray-600 dark:tw-text-gray-400">Invoice Number</p>
+            <p className="tw-text-xl tw-font-bold tw-text-blue-600 dark:tw-text-blue-400">
               {invoiceNumber}
             </p>
           </div>
         </div>
 
         {/* Sales Category Selection */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="bg-purple-100 dark:bg-purple-900/20 p-2 rounded-lg">
-              <Tag className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+        <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-xl tw-shadow-sm tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-p-4">
+          <div className="tw-flex tw-items-center tw-space-x-3 tw-mb-4">
+            <div className="tw-bg-purple-100 dark:tw-bg-purple-900/20 tw-p-2 tw-rounded-lg">
+              <Tag className="tw-h-5 tw-w-5 tw-text-purple-600 dark:tw-text-purple-400" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h3 className="tw-text-lg tw-font-semibold tw-text-gray-900 dark:tw-text-white">
                 Sales Category
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="tw-text-sm tw-text-gray-600 dark:tw-text-gray-400">
                 Select customer type
               </p>
             </div>
@@ -337,7 +343,7 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
           <select
             value={salesCategory}
             onChange={(e) => setSalesCategory(e.target.value as SalesCategory)}
-            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            className="tw-w-full tw-px-4 tw-py-3 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-lg focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-border-transparent tw-bg-white dark:tw-bg-gray-700 tw-text-gray-900 dark:tw-text-white"
           >
             <option value="domestic">Domestic</option>
             <option value="eatery">Eatery</option>
@@ -355,16 +361,16 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
         />
 
         {/* Customer Information */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="bg-indigo-100 dark:bg-indigo-900/20 p-2 rounded-lg">
-              <User className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+        <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-xl tw-shadow-sm tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-p-4">
+          <div className="tw-flex tw-items-center tw-space-x-3 tw-mb-4">
+            <div className="tw-bg-indigo-100 dark:tw-bg-indigo-900/20 tw-p-2 tw-rounded-lg">
+              <User className="tw-h-5 tw-w-5 tw-text-indigo-600 dark:tw-text-indigo-400" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h3 className="tw-text-lg tw-font-semibold tw-text-gray-900 dark:tw-text-white">
                 Customer Information
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="tw-text-sm tw-text-gray-600 dark:tw-text-gray-400">
                 Enter customer details
               </p>
             </div>
@@ -375,65 +381,65 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
             value={customerName}
             onChange={(e) => setCustomerName(e.target.value)}
             placeholder="Enter customer name"
-            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            className="tw-w-full tw-px-4 tw-py-3 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-lg focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-border-transparent tw-bg-white dark:tw-bg-gray-700 tw-text-gray-900 dark:tw-text-white"
             required
           />
         </div>
 
         {/* Payment Information */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="bg-emerald-100 dark:bg-emerald-900/20 p-2 rounded-lg">
-              <DollarSign className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+        <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-xl tw-shadow-sm tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-p-4">
+          <div className="tw-flex tw-items-center tw-space-x-3 tw-mb-4">
+            <div className="tw-bg-emerald-100 dark:tw-bg-emerald-900/20 tw-p-2 tw-rounded-lg">
+              <DollarSign className="tw-h-5 tw-w-5 tw-text-emerald-600 dark:tw-text-emerald-400" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h3 className="tw-text-lg tw-font-semibold tw-text-gray-900 dark:tw-text-white">
                 Payment Information
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="tw-text-sm tw-text-gray-600 dark:tw-text-gray-400">
                 Payment details and balance
               </p>
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="tw-space-y-4">
             {/* Balance Display */}
-            <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <div className="tw-p-4 tw-bg-gray-50 dark:tw-bg-gray-700/50 tw-rounded-lg">
+              <div className="tw-flex tw-items-center tw-justify-between tw-mb-2">
+                <span className="tw-text-sm tw-font-medium tw-text-gray-700 dark:tw-text-gray-300">
                   Total Amount:
                 </span>
-                <span className="text-lg font-bold text-gray-900 dark:text-white">
+                <span className="tw-text-lg tw-font-bold tw-text-gray-900 dark:tw-text-white">
                   {formatCurrency(grandTotal)}
                 </span>
               </div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <div className="tw-flex tw-items-center tw-justify-between tw-mb-2">
+                <span className="tw-text-sm tw-font-medium tw-text-gray-700 dark:tw-text-gray-300">
                   Amount Paid:
                 </span>
-                <span className="text-lg font-bold text-gray-900 dark:text-white">
+                <span className="tw-text-lg tw-font-bold tw-text-gray-900 dark:tw-text-white">
                   {formatCurrency(amountPaid)}
                 </span>
               </div>
-              <div className="flex items-center justify-between border-t border-gray-200 dark:border-gray-600 pt-2">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <div className="tw-flex tw-items-center tw-justify-between tw-border-t tw-border-gray-200 dark:tw-border-gray-600 tw-pt-2">
+                <span className="tw-text-sm tw-font-medium tw-text-gray-700 dark:tw-text-gray-300">
                   Balance:
                 </span>
-                <span className={`text-xl font-bold ${
+                <span className={`tw-text-xl tw-font-bold ${
                   balance >= 0 
-                    ? 'text-green-600 dark:text-green-400' 
-                    : 'text-red-600 dark:text-red-400'
+                    ? 'tw-text-green-600 dark:tw-text-green-400' 
+                    : 'tw-text-red-600 dark:tw-text-red-400'
                 }`}>
                   {formatCurrency(balance)}
                 </span>
               </div>
               {balance < 0 && (
-                <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                <p className="tw-text-xs tw-text-red-600 dark:tw-text-red-400 tw-mt-1">
                   Customer owes {formatCurrency(Math.abs(balance))}
                 </p>
               )}
               {balance > 0 && (
-                <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                <p className="tw-text-xs tw-text-green-600 dark:tw-text-green-400 tw-mt-1">
                   Change to give: {formatCurrency(balance)}
                 </p>
               )}
@@ -441,7 +447,7 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
 
             {/* Amount Paid Entry - Now positioned after Balance */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="tw-block tw-text-sm tw-font-medium tw-text-gray-700 dark:tw-text-gray-300 tw-mb-2">
                 Amount Paid
               </label>
               <input
@@ -454,60 +460,60 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
                   setPaymentMethod(null); // Clear payment method when manually entering amount
                 }}
                 placeholder="Enter amount paid"
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="tw-w-full tw-px-4 tw-py-3 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-lg focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-border-transparent tw-bg-white dark:tw-bg-gray-700 tw-text-gray-900 dark:tw-text-white"
               />
             </div>
           </div>
         </div>
 
         {/* Payment Method Buttons */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="bg-yellow-100 dark:bg-yellow-900/20 p-2 rounded-lg">
-              <CreditCard className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+        <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-xl tw-shadow-sm tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-p-4">
+          <div className="tw-flex tw-items-center tw-space-x-3 tw-mb-4">
+            <div className="tw-bg-yellow-100 dark:tw-bg-yellow-900/20 tw-p-2 tw-rounded-lg">
+              <CreditCard className="tw-h-5 tw-w-5 tw-text-yellow-600 dark:tw-text-yellow-400" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h3 className="tw-text-lg tw-font-semibold tw-text-gray-900 dark:tw-text-white">
                 Payment Method
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="tw-text-sm tw-text-gray-600 dark:tw-text-gray-400">
                 Quick payment options
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="tw-grid tw-grid-cols-2 tw-gap-4">
             <button
               onClick={() => handlePaymentMethodClick('pos')}
               disabled={grandTotal === 0}
-              className={`flex items-center justify-center space-x-3 py-4 px-4 rounded-lg font-medium transition-all duration-200 ${
+              className={`tw-flex tw-items-center tw-justify-center tw-space-x-3 tw-py-4 tw-px-4 tw-rounded-lg tw-font-medium tw-transition-all tw-duration-200 ${
                 paymentMethod === 'pos'
-                  ? 'bg-blue-600 text-white shadow-lg transform scale-105'
-                  : 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 disabled:opacity-50 disabled:cursor-not-allowed'
+                  ? 'tw-bg-blue-600 tw-text-white tw-shadow-lg tw-transform tw-scale-105'
+                  : 'tw-bg-blue-50 dark:tw-bg-blue-900/20 tw-text-blue-700 dark:tw-text-blue-300 hover:tw-bg-blue-100 dark:hover:tw-bg-blue-900/30 disabled:tw-opacity-50 disabled:tw-cursor-not-allowed'
               }`}
             >
-              <CreditCard className="h-6 w-6" />
-              <span className="text-lg">POS</span>
+              <CreditCard className="tw-h-6 tw-w-6" />
+              <span className="tw-text-lg">POS</span>
             </button>
 
             <button
               onClick={() => handlePaymentMethodClick('cash')}
               disabled={grandTotal === 0}
-              className={`flex items-center justify-center space-x-3 py-4 px-4 rounded-lg font-medium transition-all duration-200 ${
+              className={`tw-flex tw-items-center tw-justify-center tw-space-x-3 tw-py-4 tw-px-4 tw-rounded-lg tw-font-medium tw-transition-all tw-duration-200 ${
                 paymentMethod === 'cash'
-                  ? 'bg-green-600 text-white shadow-lg transform scale-105'
-                  : 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/30 disabled:opacity-50 disabled:cursor-not-allowed'
+                  ? 'tw-bg-green-600 tw-text-white tw-shadow-lg tw-transform tw-scale-105'
+                  : 'tw-bg-green-50 dark:tw-bg-green-900/20 tw-text-green-700 dark:tw-text-green-300 hover:tw-bg-green-100 dark:hover:tw-bg-green-900/30 disabled:tw-opacity-50 disabled:tw-cursor-not-allowed'
               }`}
             >
-              <Banknote className="h-6 w-6" />
-              <span className="text-lg">CASH</span>
+              <Banknote className="tw-h-6 tw-w-6" />
+              <span className="tw-text-lg">CASH</span>
             </button>
           </div>
 
           {paymentMethod && (
-            <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-              <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
-                Payment method: <span className="font-medium text-gray-900 dark:text-white uppercase">{paymentMethod}</span>
+            <div className="tw-mt-4 tw-p-3 tw-bg-gray-50 dark:tw-bg-gray-700/50 tw-rounded-lg">
+              <p className="tw-text-sm tw-text-gray-600 dark:tw-text-gray-400 tw-text-center">
+                Payment method: <span className="tw-font-medium tw-text-gray-900 dark:tw-text-white tw-uppercase">{paymentMethod}</span>
               </p>
             </div>
           )}
@@ -517,10 +523,26 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
         <button
           onClick={handleGenerateInvoice}
           disabled={!customerName.trim() || invoiceItems.length === 0}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-4 px-4 rounded-lg transition-colors text-lg"
+          className="tw-w-full tw-bg-blue-600 hover:tw-bg-blue-700 disabled:tw-bg-gray-400 disabled:tw-cursor-not-allowed tw-text-white tw-font-medium tw-py-4 tw-px-4 tw-rounded-lg tw-transition-colors tw-text-lg"
         >
           Generate Invoice
         </button>
+        
+        {/* Test Drawer for debugging - Inline */}
+        <div className="tw-mt-4 tw-no-print">
+          <TestDrawer 
+            invoice={currentInvoice}
+            isOpen={showPreview && !!currentInvoice} 
+            onOpenChange={setShowPreview}
+            onPrintInvoice={() => handlePrint('invoice')}
+            onPrintReceipt={() => handlePrint('receipt')}
+            onNewInvoice={handleNewInvoice}
+            hasPrintedInvoice={hasPrintedInvoice}
+            hasPrintedReceipt={hasPrintedReceipt}
+            isSavingCrb={isInsertingCrb}
+            isCrbSaved={!!savedCrbData}
+          />
+        </div>
       </div>
     </Layout>
   );
