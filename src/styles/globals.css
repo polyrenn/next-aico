@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Gradient CSS variable defaults (normally in @tailwind base, added manually for Chakra compatibility) */
+*, ::before, ::after {
+  --tw-gradient-from-position: ;
+  --tw-gradient-via-position: ;
+  --tw-gradient-to-position: ;
+  --tw-gradient-from: transparent;
+  --tw-gradient-to: transparent;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
 /* CSS custom properties for Tailwind (not in @layer to avoid errors) */
 :root {
   --background: 0 0% 100%;

@@ -47,6 +47,8 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
   const [invoiceNumber, setInvoiceNumber] = useState('CRB-...');
   const [hasPrintedInvoice, setHasPrintedInvoice] = useState(false);
   const [hasPrintedReceipt, setHasPrintedReceipt] = useState(false);
+  const [formKey, setFormKey] = useState(0);
+
 
   // Fetch next CRB number from API
   const { data: crbData } = useQuery({
@@ -254,7 +256,9 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
     setSavedCrbData(null); // Reset for next customer
     setHasPrintedInvoice(false);
     setHasPrintedReceipt(false);
+    setFormKey(prev => prev + 1);
     // Invalidate nextCrbNumber to fetch fresh one for next sale
+
     queryClient.invalidateQueries({ queryKey: ['nextCrbNumber'] });
   };
 
@@ -354,11 +358,13 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
 
         {/* Sales Form */}
         <SalesForm
+          key={formKey}
           salesCategory={salesCategory}
           pricePerKg={currentPricePerKg}
           onItemsChange={setInvoiceItems}
           onTotalsChange={handleTotalsChange}
         />
+
 
         {/* Customer Information */}
         <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-xl tw-shadow-sm tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-p-4">

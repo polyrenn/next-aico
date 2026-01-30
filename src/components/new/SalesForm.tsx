@@ -64,7 +64,7 @@ const SalesForm: React.FC<SalesFormProps> = ({
 
   return (
     <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-xl tw-shadow-sm tw-border tw-border-gray-200 dark:tw-border-gray-700">
-      <div className="tw-p-4 tw-border-b tw-border-gray-200 dark:tw-border-gray-700">
+      <div className="tw-p-4 tw-border-b tw-border-gray-200 dark:tw-border-gray-700 tw-flex tw-items-center tw-justify-between">
         <div className="tw-flex tw-items-center tw-space-x-3">
           <div className="tw-bg-green-100 dark:tw-bg-green-900/20 tw-p-2 tw-rounded-lg">
             <Calculator className="tw-h-5 tw-w-5 tw-text-green-600 dark:tw-text-green-400" />
@@ -78,6 +78,13 @@ const SalesForm: React.FC<SalesFormProps> = ({
             </p>
           </div>
         </div>
+        
+        <button
+          onClick={() => setQuantities({})}
+          className="tw-text-xs tw-text-gray-500 hover:tw-text-red-500 tw-transition-colors tw-font-medium tw-uppercase tw-tracking-wider"
+        >
+          Clear All
+        </button>
       </div>
 
       <div className="tw-p-4">
