@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useReducer } from 'react';
+import { flushSync } from 'react-dom';
 import { GetServerSideProps } from 'next';
 import { SalesCategory, InvoiceItem, Invoice } from '@/types';
 import { formatDate, formatTime, saveInvoice, formatCurrency } from '@/utils/invoice-utils';
@@ -266,22 +267,28 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
        if (!state.savedCrbData) {
          insertCrb(state.currentInvoice, {
            onSuccess: () => {
-             dispatch({ type: 'PRINT_INVOICE' });
-             setTimeout(() => {
-                window.print();
-              }, 100);
+             // flushSync ensures DOM is updated before print (critical for slow devices)
+             flushSync(() => {
+               dispatch({ type: 'PRINT_INVOICE' });
+             });
+             window.print();
            }
          });
        } else {
-         dispatch({ type: 'PRINT_INVOICE' });
-         setTimeout(() => {
-            window.print();
-          }, 100);
+         flushSync(() => {
+           dispatch({ type: 'PRINT_INVOICE' });
+         });
+         window.print();
        }
     } else {
       // Process Sale (which depends on CRB already being saved)
       if (!state.savedCrbData) return;
-      dispatch({ type: 'PRINT_RECEIPT' });
+      
+      // Set print type first, then save sale
+      flushSync(() => {
+        dispatch({ type: 'PRINT_RECEIPT' });
+      });
+      
       insertSale({ invoice: state.currentInvoice, crbNumber: state.savedCrbData.crbNumber }, {
         onSuccess: () => {
           // Use onafterprint to reset only after print dialog closes
@@ -292,9 +299,7 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
           };
           window.addEventListener('afterprint', cleanup);
           
-          setTimeout(() => {
-            window.print();
-          }, 100);
+          window.print();
         }
       });
     }

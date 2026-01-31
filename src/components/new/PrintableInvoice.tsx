@@ -15,8 +15,8 @@ const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({ invoice, isReceipt 
       maxWidth: '100%',
       margin: '0 auto',
       padding: '2mm',
-      fontSize: '9px',
-      lineHeight: '1.2',
+      fontSize: '10px',
+      lineHeight: '1.3',
       color: '#000',
       background: '#fff'
     }}>
