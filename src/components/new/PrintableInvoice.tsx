@@ -11,11 +11,12 @@ const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({ invoice, isReceipt 
   return (
     <div className="printable-content" style={{
       fontFamily: "'Courier New', monospace",
-      width: '57mm',
+      width: '77mm', // Content width for 81mm paper (minus padding)
+      maxWidth: '100%',
       margin: '0 auto',
-      padding: '5mm',
-      fontSize: '10px',
-      lineHeight: '1.3',
+      padding: '2mm',
+      fontSize: '9px',
+      lineHeight: '1.2',
       color: '#000',
       background: '#fff'
     }}>

@@ -284,12 +284,16 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
       dispatch({ type: 'PRINT_RECEIPT' });
       insertSale({ invoice: state.currentInvoice, crbNumber: state.savedCrbData.crbNumber }, {
         onSuccess: () => {
+          // Use onafterprint to reset only after print dialog closes
+          // This prevents race conditions on slow devices (Android POS)
+          const cleanup = () => {
+            window.removeEventListener('afterprint', cleanup);
+            handleNewInvoice();
+          };
+          window.addEventListener('afterprint', cleanup);
+          
           setTimeout(() => {
             window.print();
-            // After print, wait a bit then reset to main page
-            setTimeout(() => {
-                handleNewInvoice();
-            }, 1000);
           }, 100);
         }
       });
