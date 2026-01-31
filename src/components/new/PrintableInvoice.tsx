@@ -55,7 +55,7 @@ const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({ invoice, isReceipt 
           </div>
           {invoice.items.map((item, index) => (
             <div key={index} style={{ display: 'flex', fontSize: '10px', marginBottom: '3px' }}>
-              <div style={{ flex: '2', wordWrap: 'break-word' }}>{item.kgType}</div>
+              <div style={{ flex: '2', wordWrap: 'break-word' }}>{item.kg}</div>
               <div style={{ flex: '1', textAlign: 'center' }}>{item.quantity}</div>
               <div style={{ flex: '1', textAlign: 'right' }}>{item.totalKg}</div>
               <div style={{ flex: '1.5', textAlign: 'right' }}>

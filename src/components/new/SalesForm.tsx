@@ -31,7 +31,7 @@ const SalesForm: React.FC<SalesFormProps> = ({
         const totalAmount = totalKg * pricePerKg;
         
         return {
-          kgType: kg.type,
+          kg: kg.type,
           weight: kg.weight,
           quantity,
           pricePerKg,
@@ -47,17 +47,17 @@ const SalesForm: React.FC<SalesFormProps> = ({
     onTotalsChange(totalKg, grandTotal);
   }, [quantities, pricePerKg, onItemsChange, onTotalsChange]);
 
-  const handleQuantityChange = (kgType: string, value: string) => {
+  const handleQuantityChange = (kg: string, value: string) => {
     const quantity = parseFloat(value) || 0;
     setQuantities(prev => ({
       ...prev,
-      [kgType]: quantity,
+      [kg]: quantity,
     }));
   };
 
-  const totalKg = Object.entries(quantities).reduce((sum, [kgType, qty]) => {
-    const kg = kgTypes.find(k => k.type === kgType);
-    return sum + (qty * (kg?.weight || 0));
+  const totalKg = Object.entries(quantities).reduce((sum, [kg, qty]) => {
+    const kgData = kgTypes.find(k => k.type === kg);
+    return sum + (qty * (kgData?.weight || 0));
   }, 0);
 
   const grandTotal = totalKg * pricePerKg;

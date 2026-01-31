@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useReducer } from 'react';
 import { GetServerSideProps } from 'next';
 import { SalesCategory, InvoiceItem, Invoice } from '@/types';
 import { formatDate, formatTime, saveInvoice, formatCurrency } from '@/utils/invoice-utils';
@@ -11,6 +11,7 @@ import { Calendar, Clock, Tag, User, DollarSign, CreditCard, Banknote } from 'lu
 import { withSessionSsr } from '../../lib/withSession';
 import { prisma } from '../../lib/prisma';
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
+import { salesReducer, initialSalesState } from '@/reducers/salesReducer';
 
 interface DashboardPageProps {
   user: {
@@ -33,22 +34,8 @@ interface DashboardPageProps {
 }
 
 const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }) => {
-  const [salesCategory, setSalesCategory] = useState<SalesCategory>('domestic');
-  const [customerName, setCustomerName] = useState('');
-  const [amountPaid, setAmountPaid] = useState<number>(0);
-  const [balance, setBalance] = useState<number>(0);
-  const [paymentMethod, setPaymentMethod] = useState<'pos' | 'cash' | null>(null);
-  const [invoiceItems, setInvoiceItems] = useState<InvoiceItem[]>([]);
-  const [totalKg, setTotalKg] = useState(0);
-  const [grandTotal, setGrandTotal] = useState(0);
-  const [showPreview, setShowPreview] = useState(false);
-  const [currentInvoice, setCurrentInvoice] = useState<Invoice | null>(null);
-  const [printType, setPrintType] = useState<'invoice' | 'receipt'>('invoice');
-  const [invoiceNumber, setInvoiceNumber] = useState('CRB-...');
-  const [hasPrintedInvoice, setHasPrintedInvoice] = useState(false);
-  const [hasPrintedReceipt, setHasPrintedReceipt] = useState(false);
-  const [formKey, setFormKey] = useState(0);
-
+  const [state, dispatch] = useReducer(salesReducer, initialSalesState);
+  const queryClient = useQueryClient();
 
   // Fetch next CRB number from API
   const { data: crbData } = useQuery({
@@ -62,83 +49,87 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
     enabled: !!branch?.branchId,
   });
 
-  // Update invoice number when CRB data is fetched
+  // Update invoice number when CRB data is fetched or when resetting
   useEffect(() => {
-    if (crbData?.nextCrbNumber) {
-      setInvoiceNumber(`CRB-${crbData.nextCrbNumber}`);
+    if (crbData?.nextCrbNumber && state.status === 'IDLE') {
+      dispatch({ type: 'SET_INVOICE_NUMBER', payload: `CRB-${crbData.nextCrbNumber}` });
     }
-  }, [crbData]);
+  }, [crbData, state.status]);
+
+  // Browser lock: prevent refresh/close when in active transaction
+  useEffect(() => {
+    const shouldLock = state.status !== 'IDLE' && state.status !== 'FINISHED';
+    
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (shouldLock) {
+        e.preventDefault();
+        e.returnValue = ''; // Chrome requires returnValue to be set
+        return ''; // Some browsers require a return value
+      }
+    };
+
+    if (shouldLock) {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+    }
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [state.status]);
 
   const currentDate = new Date();
 
-  // Calculate balance whenever amountPaid or grandTotal changes
-  useEffect(() => {
-    setBalance(amountPaid - grandTotal);
-  }, [amountPaid, grandTotal]);
-
   const handleTotalsChange = useCallback((kg: number, total: number) => {
-    setTotalKg(kg);
-    setGrandTotal(total);
+    dispatch({ type: 'SET_TOTALS', payload: { kg, total } });
+  }, []);
+
+  const handleItemsChange = useCallback((items: InvoiceItem[]) => {
+    dispatch({ type: 'SET_ITEMS', payload: items });
   }, []);
 
   const handlePaymentMethodClick = (method: 'pos' | 'cash') => {
-    setPaymentMethod(method);
-    setAmountPaid(grandTotal);
+    dispatch({ type: 'SET_PAYMENT_METHOD', payload: method });
   };
 
   const handleGenerateInvoice = () => {
-    if (!customerName.trim()) {
+    if (!state.customerName.trim()) {
       alert('Please enter customer name');
       return;
     }
 
-    if (invoiceItems.length === 0) {
+    if (state.invoiceItems.length === 0) {
       alert('Please add items to the invoice');
       return;
     }
 
-    if (!paymentMethod) {
+    if (!state.paymentMethod) {
       alert('Please select a payment method (POS or CASH)');
       return;
     }
 
-    if (amountPaid < grandTotal) {
-      const confirmCredit = window.confirm(`Amount paid (${formatCurrency(amountPaid)}) is less than total (${formatCurrency(grandTotal)}). Proceed with credit sale?`);
+    if (state.amountPaid < state.grandTotal) {
+      const confirmCredit = window.confirm(`Amount paid (${formatCurrency(state.amountPaid)}) is less than total (${formatCurrency(state.grandTotal)}). Proceed with credit sale?`);
       if (!confirmCredit) return;
     }
 
     const invoice: Invoice = {
       id: Date.now().toString(),
-      invoiceNumber,
+      invoiceNumber: state.invoiceNumber,
       date: currentDate.toISOString(),
       time: formatTime(currentDate),
       userId: user.id.toString(),
       userName: user.username,
-      customerName: customerName.trim(),
-      salesCategory,
-      items: invoiceItems,
-      totalKg,
-      grandTotal,
-      amountPaid,
-      balance,
+      customerName: state.customerName.trim(),
+      salesCategory: state.salesCategory,
+      items: state.invoiceItems,
+      totalKg: state.totalKg,
+      grandTotal: state.grandTotal,
+      amountPaid: state.amountPaid,
+      balance: state.balance,
     };
 
-    setCurrentInvoice(invoice);
-    setShowPreview(true);
+    dispatch({ type: 'GENERATE_INVOICE', payload: invoice });
     saveInvoice(invoice);
-    
-    // Automatically trigger CRB insertion to get a valid number/record before printing
-    if (!savedCrbData && !isInsertingCrb) {
-      insertCrb(invoice, {
-        onSuccess: (data) => {
-          setSavedCrbData(data);
-          // Update the invoice number if the DB returned a real one
-          if (data.crbNumber) {
-            setInvoiceNumber(`CRB-${data.crbNumber}`);
-          }
-        }
-      });
-    }
   };
 
   // Mutation for inserting CRB
@@ -149,25 +140,21 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           branchId: branch?.branchId,
-          customerId: invoice.customerName, // Using name as ID for now or need a real ID? Assuming name is ok based on schema string
+          customerId: invoice.customerName,
           description: invoice.items,
           amount: invoice.grandTotal,
           totalKg: invoice.totalKg,
           category: invoice.salesCategory,
           timestamp: new Date().toISOString(),
           date: new Date().toISOString(),
-          crbNumber: parseInt(invoiceNumber.replace('CRB-', '')), // Send the number we displayed? Or let DB handle it? 
-          // Schema says crbNumber is Int @default(0). Let's trust the auto-gen or the one we fetched?
-          // The API insert-crb-mobile does prisma.crb.create with ...data. 
-          // If we send crbNumber, it uses it. If not, default 0? Unique constraint!
-          // We fetched nextCrbNumber. We should probably send it if we want to "claim" it.
+          crbNumber: parseInt(state.invoiceNumber.replace('CRB-', '')),
         }),
       });
       if (!response.ok) throw new Error('Failed to insert CRB');
       return response.json();
     },
     onSuccess: (data) => {
-      // Invalidate to get next number
+      dispatch({ type: 'CRB_SAVED', payload: { crbNumber: data.crbNumber } });
       queryClient.invalidateQueries({ queryKey: ['nextCrbNumber'] });
     },
     onError: (error) => {
@@ -182,15 +169,15 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          branch: branch?.branchId.toString(), // API expects string parsable to int
+          branch: branch?.branchId.toString(),
           totalKg: invoice.totalKg.toString(),
           amount: invoice.amountPaid.toString(),
-          change: invoice.balance.toString(), // Balance is change if positive?
+          change: invoice.balance.toString(),
           customerId: invoice.customerName,
           category: invoice.salesCategory,
-          paymentMethod: paymentMethod || 'cash',
+          paymentMethod: state.paymentMethod || 'cash',
           narrative: `Sale for ${invoice.customerName}`,
-          saleNumber: crbNumber, // Linking Sale to CRB Number as requested
+          saleNumber: crbNumber,
           description: invoice.items,
         }),
       });
@@ -201,7 +188,7 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
       return response.json();
     },
     onSuccess: (data) => {
-      // Sale saved
+      dispatch({ type: 'SALE_COMPLETED' });
     },
     onError: (error) => {
       alert('Failed to save sale record: ' + error.message);
@@ -209,26 +196,35 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
   });
 
 
-  /* State to track saved CRB data to prevent duplicates and use returned number */
-  const [savedCrbData, setSavedCrbData] = useState<{ crbNumber: number } | null>(null);
+
 
   const handlePrint = (type: 'invoice' | 'receipt') => {
-    if (!currentInvoice || !savedCrbData) return;
-    if (type === 'invoice' && hasPrintedInvoice) return;
-    if (type === 'receipt' && hasPrintedReceipt) return;
-    
-    setPrintType(type);
+    if (!state.currentInvoice) return;
+    if (type === 'invoice' && state.hasPrintedInvoice) return;
+    if (type === 'receipt' && (state.hasPrintedReceipt || !state.savedCrbData)) return;
 
     if (type === 'invoice') {
-       setHasPrintedInvoice(true);
-       setTimeout(() => {
-          window.print();
-        }, 100);
+       if (!state.savedCrbData) {
+         insertCrb(state.currentInvoice, {
+           onSuccess: () => {
+             dispatch({ type: 'PRINT_INVOICE' });
+             setTimeout(() => {
+                window.print();
+              }, 100);
+           }
+         });
+       } else {
+         dispatch({ type: 'PRINT_INVOICE' });
+         setTimeout(() => {
+            window.print();
+          }, 100);
+       }
     } else {
       // Process Sale (which depends on CRB already being saved)
-      insertSale({ invoice: currentInvoice, crbNumber: savedCrbData.crbNumber }, {
+      if (!state.savedCrbData) return;
+      dispatch({ type: 'PRINT_RECEIPT' });
+      insertSale({ invoice: state.currentInvoice, crbNumber: state.savedCrbData.crbNumber }, {
         onSuccess: () => {
-          setHasPrintedReceipt(true);
           setTimeout(() => {
             window.print();
             // After print, wait a bit then reset to main page
@@ -241,57 +237,43 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
     }
   };
 
-  const queryClient = useQueryClient();
+
 
   const handleNewInvoice = () => {
-    setShowPreview(false);
-    setCurrentInvoice(null);
-    setCustomerName('');
-    setAmountPaid(0);
-    setBalance(0);
-    setPaymentMethod(null);
-    setInvoiceItems([]);
-    setTotalKg(0);
-    setGrandTotal(0);
-    setSavedCrbData(null); // Reset for next customer
-    setHasPrintedInvoice(false);
-    setHasPrintedReceipt(false);
-    setFormKey(prev => prev + 1);
-    // Invalidate nextCrbNumber to fetch fresh one for next sale
-
+    dispatch({ type: 'RESET_FOR_NEW_INVOICE' });
     queryClient.invalidateQueries({ queryKey: ['nextCrbNumber'] });
   };
 
   // Calculate current price based on category
   const currentPricePerKg = prices?.find(p => 
-    p.category.toLowerCase() === salesCategory.toLowerCase()
+    p.category.toLowerCase() === state.salesCategory.toLowerCase()
   )?.pricePerKg || 0;
 
   return (
     <Layout userName={user.username} role={user.role}>
       {/* Drawer Component for Invoice Preview */}
       <InvoicePreview
-        invoice={currentInvoice}
-        isOpen={showPreview}
-        onOpenChange={setShowPreview}
+        invoice={state.currentInvoice}
+        isOpen={state.showPreview}
+        onOpenChange={(open) => !open && handleNewInvoice()}
         onPrintInvoice={() => handlePrint('invoice')}
         onPrintReceipt={() => handlePrint('receipt')}
         onNewInvoice={handleNewInvoice}
-        hasPrintedInvoice={hasPrintedInvoice}
-        hasPrintedReceipt={hasPrintedReceipt}
+        hasPrintedInvoice={state.hasPrintedInvoice}
+        hasPrintedReceipt={state.hasPrintedReceipt}
         isSavingCrb={isInsertingCrb}
-        isCrbSaved={!!savedCrbData}
+        isCrbSaved={!!state.savedCrbData}
       />
       
-      {/* Test Drawer for debugging */}
-      <div className="tw-fixed tw-bottom-4 tw-right-4 tw-z-50 tw-no-print">
+      {/* Test Drawer for debugging - DISABLED */}
+      {/* <div className="tw-fixed tw-bottom-4 tw-right-4 tw-z-50 tw-no-print">
         <TestDrawer />
-      </div>
+      </div> */}
 
        {/* Printable content - only visible when printing */}
-       {currentInvoice && (
+       {state.currentInvoice && (
         <div className="tw-print-only">
-          <PrintableInvoice invoice={currentInvoice} isReceipt={printType === 'receipt'} />
+          <PrintableInvoice invoice={state.currentInvoice} isReceipt={state.printType === 'receipt'} />
         </div>
       )}
 
@@ -323,7 +305,7 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
           <div className="tw-mt-4 tw-text-center">
             <p className="tw-text-sm tw-text-gray-600 dark:tw-text-gray-400">Invoice Number</p>
             <p className="tw-text-xl tw-font-bold tw-text-blue-600 dark:tw-text-blue-400">
-              {invoiceNumber}
+              {state.invoiceNumber}
             </p>
           </div>
         </div>
@@ -345,9 +327,10 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
           </div>
 
           <select
-            value={salesCategory}
-            onChange={(e) => setSalesCategory(e.target.value as SalesCategory)}
-            className="tw-w-full tw-px-4 tw-py-3 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-lg focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-border-transparent tw-bg-white dark:tw-bg-gray-700 tw-text-gray-900 dark:tw-text-white"
+            value={state.salesCategory}
+            onChange={(e) => dispatch({ type: 'SET_CATEGORY', payload: e.target.value as SalesCategory })}
+            disabled={state.status !== 'IDLE'}
+            className="tw-w-full tw-px-4 tw-py-3 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-lg focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-border-transparent tw-bg-white dark:tw-bg-gray-700 tw-text-gray-900 dark:tw-text-white disabled:tw-opacity-50 disabled:tw-cursor-not-allowed"
           >
             <option value="domestic">Domestic</option>
             <option value="eatery">Eatery</option>
@@ -358,10 +341,10 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
 
         {/* Sales Form */}
         <SalesForm
-          key={formKey}
-          salesCategory={salesCategory}
+          key={state.formKey}
+          salesCategory={state.salesCategory}
           pricePerKg={currentPricePerKg}
-          onItemsChange={setInvoiceItems}
+          onItemsChange={handleItemsChange}
           onTotalsChange={handleTotalsChange}
         />
 
@@ -384,10 +367,11 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
 
           <input
             type="text"
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
+            value={state.customerName}
+            onChange={(e) => dispatch({ type: 'SET_CUSTOMER_NAME', payload: e.target.value })}
+            disabled={state.status !== 'IDLE'}
             placeholder="Enter customer name"
-            className="tw-w-full tw-px-4 tw-py-3 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-lg focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-border-transparent tw-bg-white dark:tw-bg-gray-700 tw-text-gray-900 dark:tw-text-white"
+            className="tw-w-full tw-px-4 tw-py-3 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-lg focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-border-transparent tw-bg-white dark:tw-bg-gray-700 tw-text-gray-900 dark:tw-text-white disabled:tw-opacity-50 disabled:tw-cursor-not-allowed"
             required
           />
         </div>
@@ -416,7 +400,7 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
                   Total Amount:
                 </span>
                 <span className="tw-text-lg tw-font-bold tw-text-gray-900 dark:tw-text-white">
-                  {formatCurrency(grandTotal)}
+                  {formatCurrency(state.grandTotal)}
                 </span>
               </div>
               <div className="tw-flex tw-items-center tw-justify-between tw-mb-2">
@@ -424,7 +408,7 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
                   Amount Paid:
                 </span>
                 <span className="tw-text-lg tw-font-bold tw-text-gray-900 dark:tw-text-white">
-                  {formatCurrency(amountPaid)}
+                  {formatCurrency(state.amountPaid)}
                 </span>
               </div>
               <div className="tw-flex tw-items-center tw-justify-between tw-border-t tw-border-gray-200 dark:tw-border-gray-600 tw-pt-2">
@@ -432,21 +416,21 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
                   Balance:
                 </span>
                 <span className={`tw-text-xl tw-font-bold ${
-                  balance >= 0 
+                  state.balance >= 0 
                     ? 'tw-text-green-600 dark:tw-text-green-400' 
                     : 'tw-text-red-600 dark:tw-text-red-400'
                 }`}>
-                  {formatCurrency(balance)}
+                  {formatCurrency(state.balance)}
                 </span>
               </div>
-              {balance < 0 && (
+              {state.balance < 0 && (
                 <p className="tw-text-xs tw-text-red-600 dark:tw-text-red-400 tw-mt-1">
-                  Customer owes {formatCurrency(Math.abs(balance))}
+                  Customer owes {formatCurrency(Math.abs(state.balance))}
                 </p>
               )}
-              {balance > 0 && (
+              {state.balance > 0 && (
                 <p className="tw-text-xs tw-text-green-600 dark:tw-text-green-400 tw-mt-1">
-                  Change to give: {formatCurrency(balance)}
+                  Change to give: {formatCurrency(state.balance)}
                 </p>
               )}
             </div>
@@ -460,13 +444,14 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
                 type="number"
                 min="0"
                 step="any"
-                value={amountPaid || ''}
+                value={state.amountPaid || ''}
                 onChange={(e) => {
-                  setAmountPaid(parseFloat(e.target.value) || 0);
-                  setPaymentMethod(null); // Clear payment method when manually entering amount
+                  dispatch({ type: 'SET_AMOUNT_PAID', payload: parseFloat(e.target.value) || 0 });
+                  dispatch({ type: 'SET_PAYMENT_METHOD', payload: null });
                 }}
+                disabled={state.status !== 'IDLE'}
                 placeholder="Enter amount paid"
-                className="tw-w-full tw-px-4 tw-py-3 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-lg focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-border-transparent tw-bg-white dark:tw-bg-gray-700 tw-text-gray-900 dark:tw-text-white"
+                className="tw-w-full tw-px-4 tw-py-3 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-lg focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-border-transparent tw-bg-white dark:tw-bg-gray-700 tw-text-gray-900 dark:tw-text-white disabled:tw-opacity-50 disabled:tw-cursor-not-allowed"
               />
             </div>
           </div>
@@ -491,9 +476,9 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
           <div className="tw-grid tw-grid-cols-2 tw-gap-4">
             <button
               onClick={() => handlePaymentMethodClick('pos')}
-              disabled={grandTotal === 0}
+              disabled={state.grandTotal === 0 || state.status !== 'IDLE'}
               className={`tw-flex tw-items-center tw-justify-center tw-space-x-3 tw-py-4 tw-px-4 tw-rounded-lg tw-font-medium tw-transition-all tw-duration-200 ${
-                paymentMethod === 'pos'
+                state.paymentMethod === 'pos'
                   ? 'tw-bg-blue-600 tw-text-white tw-shadow-lg tw-transform tw-scale-105'
                   : 'tw-bg-blue-50 dark:tw-bg-blue-900/20 tw-text-blue-700 dark:tw-text-blue-300 hover:tw-bg-blue-100 dark:hover:tw-bg-blue-900/30 disabled:tw-opacity-50 disabled:tw-cursor-not-allowed'
               }`}
@@ -504,9 +489,9 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
 
             <button
               onClick={() => handlePaymentMethodClick('cash')}
-              disabled={grandTotal === 0}
+              disabled={state.grandTotal === 0 || state.status !== 'IDLE'}
               className={`tw-flex tw-items-center tw-justify-center tw-space-x-3 tw-py-4 tw-px-4 tw-rounded-lg tw-font-medium tw-transition-all tw-duration-200 ${
-                paymentMethod === 'cash'
+                state.paymentMethod === 'cash'
                   ? 'tw-bg-green-600 tw-text-white tw-shadow-lg tw-transform tw-scale-105'
                   : 'tw-bg-green-50 dark:tw-bg-green-900/20 tw-text-green-700 dark:tw-text-green-300 hover:tw-bg-green-100 dark:hover:tw-bg-green-900/30 disabled:tw-opacity-50 disabled:tw-cursor-not-allowed'
               }`}
@@ -516,10 +501,10 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
             </button>
           </div>
 
-          {paymentMethod && (
+          {state.paymentMethod && (
             <div className="tw-mt-4 tw-p-3 tw-bg-gray-50 dark:tw-bg-gray-700/50 tw-rounded-lg">
               <p className="tw-text-sm tw-text-gray-600 dark:tw-text-gray-400 tw-text-center">
-                Payment method: <span className="tw-font-medium tw-text-gray-900 dark:tw-text-white tw-uppercase">{paymentMethod}</span>
+                Payment method: <span className="tw-font-medium tw-text-gray-900 dark:tw-text-white tw-uppercase">{state.paymentMethod}</span>
               </p>
             </div>
           )}
@@ -528,27 +513,27 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
         {/* Generate Invoice Button */}
         <button
           onClick={handleGenerateInvoice}
-          disabled={!customerName.trim() || invoiceItems.length === 0}
+          disabled={!state.customerName.trim() || state.invoiceItems.length === 0 || state.status !== 'IDLE'}
           className="tw-w-full tw-bg-blue-600 hover:tw-bg-blue-700 disabled:tw-bg-gray-400 disabled:tw-cursor-not-allowed tw-text-white tw-font-medium tw-py-4 tw-px-4 tw-rounded-lg tw-transition-colors tw-text-lg"
         >
           Generate Invoice
         </button>
         
-        {/* Test Drawer for debugging - Inline */}
-        <div className="tw-mt-4 tw-no-print">
+        {/* Test Drawer for debugging - Inline - DISABLED */}
+        {/* <div className="tw-mt-4 tw-no-print">
           <TestDrawer 
-            invoice={currentInvoice}
-            isOpen={showPreview && !!currentInvoice} 
-            onOpenChange={setShowPreview}
+            invoice={state.currentInvoice}
+            isOpen={state.showPreview && !!state.currentInvoice} 
+            onOpenChange={(open) => !open && handleNewInvoice()}
             onPrintInvoice={() => handlePrint('invoice')}
             onPrintReceipt={() => handlePrint('receipt')}
             onNewInvoice={handleNewInvoice}
-            hasPrintedInvoice={hasPrintedInvoice}
-            hasPrintedReceipt={hasPrintedReceipt}
+            hasPrintedInvoice={state.hasPrintedInvoice}
+            hasPrintedReceipt={state.hasPrintedReceipt}
             isSavingCrb={isInsertingCrb}
-            isCrbSaved={!!savedCrbData}
+            isCrbSaved={!!state.savedCrbData}
           />
-        </div>
+        </div> */}
       </div>
     </Layout>
   );

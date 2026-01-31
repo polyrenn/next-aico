@@ -18,7 +18,7 @@ export interface KGType {
 }
 
 export interface InvoiceItem {
-  kgType: string;
+  kg: string;
   weight: number;
   quantity: number;
   pricePerKg: number;

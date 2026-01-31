@@ -15,13 +15,13 @@ const mockInvoice: Invoice = {
   salesCategory: 'domestic',
   customerName: 'Mock Customer',
   items: [
-    { kgType: '6kg', quantity: 2, totalAmount: 5000, weight: 6, pricePerKg: 416.67, totalKg: 12 },
-    { kgType: '12.5kg', quantity: 1, totalAmount: 8000, weight: 12.5, pricePerKg: 640, totalKg: 12.5 },
-    { kgType: '50kg', quantity: 4, totalAmount: 120000, weight: 50, pricePerKg: 600, totalKg: 200 }, // Added more items to force scroll
-    { kgType: '6kg', quantity: 2, totalAmount: 5000, weight: 6, pricePerKg: 416.67, totalKg: 12 },
-    { kgType: '12.5kg', quantity: 1, totalAmount: 8000, weight: 12.5, pricePerKg: 640, totalKg: 12.5 },
-    { kgType: '6kg', quantity: 2, totalAmount: 5000, weight: 6, pricePerKg: 416.67, totalKg: 12 },
-    { kgType: '12.5kg', quantity: 1, totalAmount: 8000, weight: 12.5, pricePerKg: 640, totalKg: 12.5 },
+    { kg: '6kg', quantity: 2, totalAmount: 5000, weight: 6, pricePerKg: 416.67, totalKg: 12 },
+    { kg: '12.5kg', quantity: 1, totalAmount: 8000, weight: 12.5, pricePerKg: 640, totalKg: 12.5 },
+    { kg: '50kg', quantity: 4, totalAmount: 120000, weight: 50, pricePerKg: 600, totalKg: 200 }, // Added more items to force scroll
+    { kg: '6kg', quantity: 2, totalAmount: 5000, weight: 6, pricePerKg: 416.67, totalKg: 12 },
+    { kg: '12.5kg', quantity: 1, totalAmount: 8000, weight: 12.5, pricePerKg: 640, totalKg: 12.5 },
+    { kg: '6kg', quantity: 2, totalAmount: 5000, weight: 6, pricePerKg: 416.67, totalKg: 12 },
+    { kg: '12.5kg', quantity: 1, totalAmount: 8000, weight: 12.5, pricePerKg: 640, totalKg: 12.5 },
   ],
   totalKg: 24.5,
   grandTotal: 13000,
@@ -159,7 +159,7 @@ export default function TestDrawer({
                           {displayInvoice.items.map((item, index) => (
                             <tr key={index}>
                               <td className="tw-py-2 tw-px-3 tw-text-gray-900 dark:tw-text-white tw-font-medium">
-                                {item.kgType}
+                                {item.kg}
                               </td>
                               <td className="tw-py-2 tw-px-3 tw-text-center tw-text-gray-600 dark:tw-text-gray-400">
                                 {item.quantity}

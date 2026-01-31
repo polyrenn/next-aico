@@ -48,14 +48,14 @@ const InvoicePreview: React.FC<InvoicePreviewProps> = ({
               <div className="tw-flex tw-justify-between tw-items-start tw-mb-6">
                 <div>
                   <Drawer.Title className="tw-font-bold tw-text-2xl tw-text-gray-900 dark:tw-text-white tw-mb-2">
-                    Invoice Preview
+                    Invoice
                   </Drawer.Title>
                   <Drawer.Description className="tw-text-gray-500 dark:tw-text-gray-400">
-                    {isSavingCrb 
-                      ? "Generating official record in database..." 
-                      : isCrbSaved 
-                        ? "Review the details below before printing." 
-                        : "Error generating record. Please check connection and try again."}
+                  {isSavingCrb 
+                    ? "Generating official record in database..." 
+                    : isCrbSaved 
+                      ? "Review the details below before printing." 
+                      : "Record will be created when you print the invoice."}
                   </Drawer.Description>
                 </div>
                 {/* Close Button acting as Dismiss / Back */}
@@ -94,7 +94,7 @@ const InvoicePreview: React.FC<InvoicePreviewProps> = ({
                     </div>
                      <div>
                         <span className="tw-block tw-text-gray-400 tw-mb-0.5">Category</span>
-                        <span className="tw-font-medium tw-text-gray-900 dark:tw-text-white badge tw-bg-blue-100 tw-text-blue-800 tw-px-1.5 tw-py-0.5 tw-rounded">{invoice.salesCategory.toUpperCase()}</span>
+                        <span className="tw-font-medium badge tw-bg-blue-100 tw-text-blue-800 tw-px-1.5 tw-py-0.5 tw-rounded">{invoice.salesCategory.toUpperCase()}</span>
                     </div>
                   </div>
                 </div>
@@ -127,7 +127,7 @@ const InvoicePreview: React.FC<InvoicePreviewProps> = ({
                           {invoice.items.map((item, index) => (
                             <tr key={index}>
                               <td className="tw-py-2 tw-px-3 tw-text-gray-900 dark:tw-text-white tw-font-medium">
-                                {item.kgType}
+                                {item.kg}
                               </td>
                               <td className="tw-py-2 tw-px-3 tw-text-center tw-text-gray-600 dark:tw-text-gray-400">
                                 {item.quantity}
@@ -177,17 +177,17 @@ const InvoicePreview: React.FC<InvoicePreviewProps> = ({
               <div className="tw-grid tw-grid-cols-2 tw-gap-3 tw-mb-4">
                    <button
                     onClick={onPrintInvoice}
-                    disabled={hasPrintedInvoice || !isCrbSaved || isSavingCrb}
+                    disabled={hasPrintedInvoice || isSavingCrb}
                     className={`tw-flex tw-flex-col tw-items-center tw-justify-center tw-p-4 tw-bg-white dark:tw-bg-gray-800 tw-border-2 tw-rounded-xl tw-transition-all tw-group ${
-                        (hasPrintedInvoice || !isCrbSaved || isSavingCrb)
+                        (hasPrintedInvoice || isSavingCrb)
                         ? 'tw-opacity-50 tw-cursor-not-allowed tw-border-gray-200 dark:tw-border-gray-700' 
                         : 'tw-border-blue-100 dark:tw-border-blue-900/30 hover:tw-border-blue-500 hover:tw-bg-blue-50 dark:hover:tw-bg-blue-900/20'
                     }`}
                   >
-                    <Printer className={`tw-h-6 tw-w-6 tw-mb-2 tw-transition-transform ${(hasPrintedInvoice || !isCrbSaved || isSavingCrb) ? 'tw-text-gray-400' : 'tw-text-blue-600 group-hover:tw-scale-110'}`} />
-                    <span className={`tw-font-medium ${(hasPrintedInvoice || !isCrbSaved || isSavingCrb) ? 'tw-text-gray-400' : 'tw-text-blue-900 dark:tw-text-blue-100'}`}>Print Invoice</span>
-                    <span className={`tw-text-xs ${(hasPrintedInvoice || !isCrbSaved || isSavingCrb) ? 'tw-text-gray-300' : 'tw-text-blue-500'}`}>
-                        {isSavingCrb ? 'Saving...' : !isCrbSaved ? 'No Record' : hasPrintedInvoice ? 'Already Printed' : 'For Customer'}
+                    <Printer className={`tw-h-6 tw-w-6 tw-mb-2 tw-transition-transform ${(hasPrintedInvoice || isSavingCrb) ? 'tw-text-gray-400' : 'tw-text-blue-600 group-hover:tw-scale-110'}`} />
+                    <span className={`tw-font-medium ${(hasPrintedInvoice || isSavingCrb) ? 'tw-text-gray-400' : 'tw-text-blue-900 dark:tw-text-blue-100'}`}>Print Invoice</span>
+                    <span className={`tw-text-xs ${(hasPrintedInvoice || isSavingCrb) ? 'tw-text-gray-300' : 'tw-text-blue-500'}`}>
+                        {isSavingCrb ? 'Saving...' : hasPrintedInvoice ? 'Already Printed' : 'Creates DB Record'}
                     </span>
                   </button>
                   
@@ -203,7 +203,7 @@ const InvoicePreview: React.FC<InvoicePreviewProps> = ({
                     <Receipt className={`tw-h-6 tw-w-6 tw-mb-2 tw-transition-transform ${(hasPrintedReceipt || !isCrbSaved || isSavingCrb) ? 'tw-text-gray-400' : 'tw-text-green-600 group-hover:tw-scale-110'}`} />
                     <span className={`tw-font-medium ${(hasPrintedReceipt || !isCrbSaved || isSavingCrb) ? 'tw-text-gray-400' : 'tw-text-green-900 dark:tw-text-green-100'}`}>Print Receipt</span>
                      <span className={`tw-text-xs ${(hasPrintedReceipt || !isCrbSaved || isSavingCrb) ? 'tw-text-gray-300' : 'tw-text-green-500'}`}>
-                        {isSavingCrb ? 'Saving...' : !isCrbSaved ? 'No Record' : hasPrintedReceipt ? 'Already Printed' : 'For Records'}
+                        {isSavingCrb ? 'Saving CRB...' : !isCrbSaved ? 'Print Invoice First' : hasPrintedReceipt ? 'Already Printed' : 'Completes Sale'}
                      </span>
                   </button>
               </div>
