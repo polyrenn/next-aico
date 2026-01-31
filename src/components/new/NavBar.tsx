@@ -9,10 +9,10 @@ const Navbar = () => {
 
   const navigation = [
     { name: 'Home', path: '/' },
-    { name: 'About', path: '/about' },
-    { name: 'Services', path: '/services' },
-    { name: 'Prices', path: '/prices' },
-    { name: 'Contact', path: '/contact' },
+    { name: 'About', path: '/new/about' },
+    { name: 'Services', path: '/new/services' },
+    { name: 'Prices', path: '/new/prices' },
+    { name: 'Contact', path: '/new/contact' },
   ];
 
   const isActive = (path: string) => router.pathname === path;

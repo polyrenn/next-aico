@@ -12,6 +12,7 @@ import { withSessionSsr } from '../../lib/withSession';
 import { prisma } from '../../lib/prisma';
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { salesReducer, initialSalesState } from '@/reducers/salesReducer';
+import { ShoppingCart as CartIcon, RefreshCcw, User as UserIcon, ListOrdered } from 'lucide-react';
 
 interface DashboardPageProps {
   user: {
@@ -47,6 +48,19 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
       return res.json();
     },
     enabled: !!branch?.branchId,
+  });
+
+  // Fetch Queue data
+  const { data: queueItems, refetch: refetchQueue, isFetching: isFetchingQueue } = useQuery({
+    queryKey: ['branchQueue', branch?.branchId],
+    queryFn: async () => {
+      if (!branch?.branchId) return [];
+      const res = await fetch(`/api/FrontDesk/FetchQueue?id=${branch.branchId}`);
+      if (!res.ok) throw new Error('Failed to fetch queue');
+      return res.json();
+    },
+    enabled: !!branch?.branchId,
+    refetchInterval: 5000, // Auto refresh every 5 seconds
   });
 
   // Update invoice number when CRB data is fetched or when resetting
@@ -242,6 +256,11 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
   const handleNewInvoice = () => {
     dispatch({ type: 'RESET_FOR_NEW_INVOICE' });
     queryClient.invalidateQueries({ queryKey: ['nextCrbNumber'] });
+    queryClient.invalidateQueries({ queryKey: ['branchQueue'] });
+  };
+
+  const handleLoadQueueItem = (item: any) => {
+    dispatch({ type: 'LOAD_QUEUE_ITEM', payload: item });
   };
 
   // Calculate current price based on category
@@ -277,7 +296,80 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
         </div>
       )}
 
-      <div className="tw-p-4 tw-space-y-6 tw-no-print">
+      <div className="tw-grid lg:tw-grid-cols-3 tw-gap-6 tw-p-4 tw-no-print">
+        {/* Left Column: Queue List (1 col on large screens) */}
+        <div className="lg:tw-col-span-1 tw-space-y-6">
+          <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-xl tw-shadow-sm tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-overflow-hidden">
+            <div className="tw-p-4 tw-border-b tw-border-gray-200 dark:tw-border-gray-700 tw-flex tw-items-center tw-justify-between tw-bg-gray-50 dark:tw-bg-gray-800/50">
+              <div className="tw-flex tw-items-center tw-space-x-3">
+                <div className="tw-bg-blue-100 dark:tw-bg-blue-900/20 tw-p-2 tw-rounded-lg">
+                  <ListOrdered className="tw-h-5 tw-w-5 tw-text-blue-600 dark:tw-text-blue-400" />
+                </div>
+                <div>
+                  <h3 className="tw-text-lg tw-font-semibold tw-text-gray-900 dark:tw-text-white">
+                    Order Queue
+                  </h3>
+                  <p className="tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">
+                    Pending gas orders
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => refetchQueue()}
+                disabled={isFetchingQueue}
+                className="tw-p-2 tw-text-gray-500 hover:tw-bg-gray-100 dark:hover:tw-bg-gray-700 tw-rounded-lg tw-transition-colors"
+                title="Refresh Queue"
+              >
+                <RefreshCcw className={`tw-h-4 tw-w-4 ${isFetchingQueue ? 'tw-animate-spin' : ''}`} />
+              </button>
+            </div>
+
+            <div className="tw-divide-y tw-divide-gray-100 dark:tw-divide-gray-700 tw-max-h-[calc(100vh-250px)] tw-overflow-y-auto">
+              {!queueItems || queueItems.length === 0 ? (
+                <div className="tw-p-8 tw-text-center">
+                  <p className="tw-text-gray-500 dark:tw-text-gray-400 tw-text-sm">Queue is empty</p>
+                </div>
+              ) : (
+                queueItems.map((item: any) => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleLoadQueueItem(item)}
+                    className="tw-w-full tw-p-4 tw-text-left hover:tw-bg-blue-50 dark:hover:tw-bg-blue-900/10 tw-transition-colors tw-group"
+                  >
+                    <div className="tw-flex tw-justify-between tw-items-start tw-mb-2">
+                      <span className="tw-text-xs tw-font-mono tw-text-blue-600 dark:tw-text-blue-400 tw-bg-blue-50 dark:tw-bg-blue-900/30 tw-px-2 tw-py-0.5 tw-rounded">
+                        CRB-{item.crbNumber}
+                      </span>
+                      <span className="tw-text-xs tw-text-gray-400">
+                        {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    <div className="tw-flex tw-items-center tw-space-x-2 tw-mb-2">
+                      <UserIcon className="tw-h-4 tw-w-4 tw-text-gray-400" />
+                      <span className="tw-font-semibold tw-text-gray-900 dark:tw-text-white tw-truncate">
+                        {item.customerId || 'Unknown'}
+                      </span>
+                    </div>
+                    <div className="tw-flex tw-items-center tw-justify-between">
+                      <div className="tw-flex tw-items-center tw-space-x-2">
+                        <CartIcon className="tw-h-3 tw-w-3 tw-text-gray-400" />
+                        <span className="tw-text-xs tw-text-gray-600 dark:tw-text-gray-400">
+                          {item.totalKg}kg Total
+                        </span>
+                      </div>
+                      <span className="tw-text-sm tw-font-bold tw-text-blue-600 dark:tw-text-blue-400">
+                        {formatCurrency(item.amount)}
+                      </span>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Columns: Main Form (2 cols on large screens) */}
+        <div className="lg:tw-col-span-2 tw-space-y-6">
         {/* Invoice Header Info */}
         <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-xl tw-shadow-sm tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-p-4">
           <div className="tw-grid tw-grid-cols-2 tw-gap-4 tw-text-sm">
@@ -346,6 +438,7 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
           pricePerKg={currentPricePerKg}
           onItemsChange={handleItemsChange}
           onTotalsChange={handleTotalsChange}
+          initialItems={state.invoiceItems}
         />
 
 
@@ -519,23 +612,9 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
           Generate Invoice
         </button>
         
-        {/* Test Drawer for debugging - Inline - DISABLED */}
-        {/* <div className="tw-mt-4 tw-no-print">
-          <TestDrawer 
-            invoice={state.currentInvoice}
-            isOpen={state.showPreview && !!state.currentInvoice} 
-            onOpenChange={(open) => !open && handleNewInvoice()}
-            onPrintInvoice={() => handlePrint('invoice')}
-            onPrintReceipt={() => handlePrint('receipt')}
-            onNewInvoice={handleNewInvoice}
-            hasPrintedInvoice={state.hasPrintedInvoice}
-            hasPrintedReceipt={state.hasPrintedReceipt}
-            isSavingCrb={isInsertingCrb}
-            isCrbSaved={!!state.savedCrbData}
-          />
-        </div> */}
       </div>
-    </Layout>
+    </div>
+</Layout>
   );
 };
 

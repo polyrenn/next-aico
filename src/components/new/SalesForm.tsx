@@ -11,6 +11,7 @@ interface SalesFormProps {
   pricePerKg: number;
   onItemsChange: (items: InvoiceItem[]) => void;
   onTotalsChange: (totalKg: number, grandTotal: number) => void;
+  initialItems?: InvoiceItem[];
 }
 
 const SalesForm: React.FC<SalesFormProps> = ({
@@ -18,8 +19,20 @@ const SalesForm: React.FC<SalesFormProps> = ({
   pricePerKg,
   onItemsChange,
   onTotalsChange,
+  initialItems,
 }) => {
   const [quantities, setQuantities] = useState<{ [key: string]: number }>({});
+
+  // Populate quantities from initialItems when loaded from queue
+  useEffect(() => {
+    if (initialItems && initialItems.length > 0) {
+      const newQuantities: { [key: string]: number } = {};
+      initialItems.forEach(item => {
+        newQuantities[item.kg] = item.quantity;
+      });
+      setQuantities(newQuantities);
+    }
+  }, [initialItems]);
 
 
   useEffect(() => {

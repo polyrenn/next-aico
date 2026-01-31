@@ -51,7 +51,8 @@ export type SalesAction =
   | { type: 'PRINT_INVOICE' }
   | { type: 'PRINT_RECEIPT' }
   | { type: 'SALE_COMPLETED' }
-  | { type: 'RESET_FOR_NEW_INVOICE' };
+  | { type: 'RESET_FOR_NEW_INVOICE' }
+  | { type: 'LOAD_QUEUE_ITEM'; payload: any };
 
 // Initial state
 export const initialSalesState: SalesState = {
@@ -153,6 +154,37 @@ export function salesReducer(state: SalesState, action: SalesAction): SalesState
       return {
         ...initialSalesState,
         formKey: state.formKey + 1,
+        // Keep the invoice number if it was already fetched, it'll be updated by the next fetch anyway
+        invoiceNumber: state.invoiceNumber,
+      };
+      
+    case 'LOAD_QUEUE_ITEM':
+      const queueItem = action.payload;
+      // Map queue description (InvoiceItems from GasPurchaseForm) to our internal InvoiceItem structure if needed
+      // GasPurchaseForm uses: { kg: "12.5KG", quantity: 1, unitPrice: 1000, total: 1000 }
+      // Our internal uses: { kg: "12.5KG", weight: 12.5, quantity: 1, pricePerKg: 1000, totalKg: 12.5, totalAmount: 1000 }
+      
+      const mappedItems: InvoiceItem[] = (queueItem.description as any[]).map(item => {
+        const weight = parseFloat(item.kg.replace('KG', ''));
+        return {
+          kg: item.kg,
+          weight: weight,
+          quantity: item.quantity,
+          pricePerKg: item.unitPrice / weight,
+          totalKg: weight * item.quantity,
+          totalAmount: item.total
+        };
+      });
+
+      return {
+        ...state,
+        customerName: queueItem.customerId || '',
+        invoiceItems: mappedItems,
+        totalKg: queueItem.totalKg,
+        grandTotal: queueItem.amount,
+        balance: state.amountPaid - queueItem.amount,
+        invoiceNumber: `CRB-${queueItem.crbNumber}`,
+        formKey: state.formKey + 1, // Reset form component to reflect new items
       };
       
     default:

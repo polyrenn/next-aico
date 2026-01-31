@@ -3,12 +3,10 @@ const path = require('path');
 
 // Files to update
 const files = [
-  'src/pages/new/index.tsx',
-  'src/components/new/LoginForm.tsx',
-  'src/components/new/PrintableInvoice.tsx',
-  'src/components/new/SalesForm.tsx',
-  'src/components/new/InvoicePreview.tsx',
-  'src/components/new/Layout.tsx',
+  'src/pages/new/about.tsx',
+  'src/pages/new/contact.tsx',
+  'src/pages/new/prices.tsx',
+  'src/pages/new/services.tsx',
 ];
 
 // Common Tailwind class patterns to prefix
