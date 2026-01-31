@@ -69,9 +69,7 @@
 }
 
 @media print {
-  /* ISO C7 paper size: 81mm × 114mm (common for thermal POS printers) */
   @page {
-    size: 81mm 114mm;
     margin: 0;
   }
   
@@ -99,24 +97,10 @@
     background: white !important;
     margin: 0 !important;
     padding: 0 !important;
-    width: 81mm !important;
-    min-height: auto !important;
-    overflow: visible !important;
   }
   
   /* Ensure printable content fits on one page */
   .printable-content {
-    width: 100% !important;
-    max-width: 81mm !important;
-    margin: 0 !important;
-    padding: 2mm !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-    overflow: visible !important;
-  }
-  
-  /* Prevent page breaks within sections */
-  .printable-content > div {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }

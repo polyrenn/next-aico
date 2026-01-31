@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback, useReducer } from 'react';
+import React, { useState, useEffect, useCallback, useReducer, useRef } from 'react';
 import { flushSync } from 'react-dom';
+import { useReactToPrint } from 'react-to-print';
 import { GetServerSideProps } from 'next';
 import { SalesCategory, InvoiceItem, Invoice } from '@/types';
 import { formatDate, formatTime, saveInvoice, formatCurrency } from '@/utils/invoice-utils';
@@ -38,6 +39,9 @@ interface DashboardPageProps {
 const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }) => {
   const [state, dispatch] = useReducer(salesReducer, initialSalesState);
   const queryClient = useQueryClient();
+  
+  // Ref for react-to-print
+  const printRef = useRef<HTMLDivElement>(null);
 
   // Fetch next CRB number from API
   const { data: crbData } = useQuery({
@@ -208,6 +212,8 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
       if (state.currentQueueItemId) {
         deleteQueueMutation.mutate(state.currentQueueItemId);
       }
+      // Reset form after sale is complete
+      handleNewInvoice();
     },
     onError: (error) => {
       alert('Failed to save sale record: ' + error.message);
@@ -258,50 +264,62 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
 
 
 
-  const handlePrint = (type: 'invoice' | 'receipt') => {
-    if (!state.currentInvoice) return;
-    if (type === 'invoice' && state.hasPrintedInvoice) return;
-    if (type === 'receipt' && (state.hasPrintedReceipt || !state.savedCrbData)) return;
-
-    if (type === 'invoice') {
-       if (!state.savedCrbData) {
-         insertCrb(state.currentInvoice, {
-           onSuccess: () => {
-             // flushSync ensures DOM is updated before print (critical for slow devices)
-             flushSync(() => {
-               dispatch({ type: 'PRINT_INVOICE' });
-             });
-             window.print();
-           }
-         });
-       } else {
-         flushSync(() => {
-           dispatch({ type: 'PRINT_INVOICE' });
-         });
-         window.print();
-       }
-    } else {
-      // Process Sale (which depends on CRB already being saved)
-      if (!state.savedCrbData) return;
+  // react-to-print handler for Invoice
+  const handlePrintInvoice = useReactToPrint({
+    content: () => printRef.current,
+    onBeforePrint: async () => {
+      if (!state.currentInvoice) return Promise.reject();
+      if (state.hasPrintedInvoice) return Promise.reject();
       
-      // Set print type first, then save sale
+      // Save to CRB if not already saved
+      if (!state.savedCrbData) {
+        return new Promise<void>((resolve, reject) => {
+          insertCrb(state.currentInvoice!, {
+            onSuccess: () => {
+              flushSync(() => {
+                dispatch({ type: 'PRINT_INVOICE' });
+              });
+              resolve();
+            },
+            onError: () => reject()
+          });
+        });
+      } else {
+        flushSync(() => {
+          dispatch({ type: 'PRINT_INVOICE' });
+        });
+        return Promise.resolve();
+      }
+    },
+  });
+
+  // react-to-print handler for Receipt
+  const handlePrintReceipt = useReactToPrint({
+    content: () => printRef.current,
+    onBeforePrint: async () => {
+      if (!state.currentInvoice) return Promise.reject();
+      if (state.hasPrintedReceipt || !state.savedCrbData) return Promise.reject();
+      
       flushSync(() => {
         dispatch({ type: 'PRINT_RECEIPT' });
       });
-      
-      insertSale({ invoice: state.currentInvoice, crbNumber: state.savedCrbData.crbNumber }, {
-        onSuccess: () => {
-          // Use onafterprint to reset only after print dialog closes
-          // This prevents race conditions on slow devices (Android POS)
-          const cleanup = () => {
-            window.removeEventListener('afterprint', cleanup);
-            handleNewInvoice();
-          };
-          window.addEventListener('afterprint', cleanup);
-          
-          window.print();
-        }
-      });
+      return Promise.resolve();
+    },
+    onAfterPrint: () => {
+      // Save sale after print completes
+      // Note: handleNewInvoice is called in insertSale's onSuccess to avoid race condition
+      if (state.currentInvoice && state.savedCrbData) {
+        insertSale({ invoice: state.currentInvoice, crbNumber: state.savedCrbData.crbNumber });
+      }
+    },
+  });
+
+  // Wrapper to handle print type selection
+  const handlePrint = (type: 'invoice' | 'receipt') => {
+    if (type === 'invoice') {
+      handlePrintInvoice();
+    } else {
+      handlePrintReceipt();
     }
   };
 
@@ -369,9 +387,9 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
         <TestDrawer />
       </div> */}
 
-       {/* Printable content - only visible when printing */}
+       {/* Printable content - ref for react-to-print */}
        {state.currentInvoice && (
-        <div className="tw-print-only">
+        <div ref={printRef} className="tw-print-only">
           <PrintableInvoice invoice={state.currentInvoice} isReceipt={state.printType === 'receipt'} />
         </div>
       )}
