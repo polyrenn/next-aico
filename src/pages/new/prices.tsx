@@ -23,7 +23,7 @@ const PriceUpdatesContent = ({ initialData }: PricesPageProps) => {
   const { data: dbPriceData, refetch, isFetching } = useQuery({
     queryKey: ['publicPrices'],
     queryFn: async () => {
-      const res = await fetch('/api/Prices/GetPriceList?branch=111111');
+      const res = await fetch('/api/Prices/GetPriceList?branch=131313');
       const data = await res.json();
       return data.find((p: any) => p.category.toLowerCase() === 'domestic');
     },

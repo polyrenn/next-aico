@@ -153,7 +153,7 @@ export default (props: PageProps<[]>) => {
                 break;    
 
             case 'Crb Attendant':
-                router.push('/FrontDesk/Crb')
+                router.push('/new')
                 break;    
             case 'CashPoint Attendant':
                 router.push('/FrontDesk/CashPoint')
