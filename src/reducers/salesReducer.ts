@@ -27,6 +27,10 @@ export interface SalesState {
   // CRB/Sale tracking
   savedCrbData: { crbNumber: number } | null;
   
+  // Queue tracking (for completion/decline)
+  currentQueueItemId: number | null;
+  currentQueueItem: any | null;
+  
   // Print tracking
   hasPrintedInvoice: boolean;
   hasPrintedReceipt: boolean;
@@ -68,6 +72,8 @@ export const initialSalesState: SalesState = {
   currentInvoice: null,
   invoiceNumber: 'CRB-...',
   savedCrbData: null,
+  currentQueueItemId: null,
+  currentQueueItem: null,
   hasPrintedInvoice: false,
   hasPrintedReceipt: false,
   printType: 'invoice',
@@ -156,6 +162,9 @@ export function salesReducer(state: SalesState, action: SalesAction): SalesState
         formKey: state.formKey + 1,
         // Keep the invoice number if it was already fetched, it'll be updated by the next fetch anyway
         invoiceNumber: state.invoiceNumber,
+        // Clear queue tracking
+        currentQueueItemId: null,
+        currentQueueItem: null,
       };
       
     case 'LOAD_QUEUE_ITEM':
@@ -185,6 +194,9 @@ export function salesReducer(state: SalesState, action: SalesAction): SalesState
         balance: state.amountPaid - queueItem.amount,
         invoiceNumber: `CRB-${queueItem.crbNumber}`,
         formKey: state.formKey + 1, // Reset form component to reflect new items
+        // Store queue item for completion/decline tracking
+        currentQueueItemId: queueItem.id,
+        currentQueueItem: queueItem,
       };
       
     default:

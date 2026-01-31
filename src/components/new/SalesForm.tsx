@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { SalesCategory, InvoiceItem } from '@/types';
 import { kgTypes } from '@/data/mock-data';
 import { formatCurrency } from '@/utils/invoice-utils';
@@ -21,18 +21,19 @@ const SalesForm: React.FC<SalesFormProps> = ({
   onTotalsChange,
   initialItems,
 }) => {
-  const [quantities, setQuantities] = useState<{ [key: string]: number }>({});
-
-  // Populate quantities from initialItems when loaded from queue
-  useEffect(() => {
+  // Initialize quantities from initialItems on mount only
+  const getInitialQuantities = () => {
     if (initialItems && initialItems.length > 0) {
-      const newQuantities: { [key: string]: number } = {};
+      const initQty: { [key: string]: number } = {};
       initialItems.forEach(item => {
-        newQuantities[item.kg] = item.quantity;
+        initQty[item.kg] = item.quantity;
       });
-      setQuantities(newQuantities);
+      return initQty;
     }
-  }, [initialItems]);
+    return {};
+  };
+
+  const [quantities, setQuantities] = useState<{ [key: string]: number }>(getInitialQuantities);
 
 
   useEffect(() => {

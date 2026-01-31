@@ -203,10 +203,55 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
     },
     onSuccess: (data) => {
       dispatch({ type: 'SALE_COMPLETED' });
+      // Delete from queue if this was a queue-based sale
+      if (state.currentQueueItemId) {
+        deleteQueueMutation.mutate(state.currentQueueItemId);
+      }
     },
     onError: (error) => {
       alert('Failed to save sale record: ' + error.message);
     }
+  });
+
+  // Delete from queue mutation
+  const deleteQueueMutation = useMutation({
+    mutationFn: async (queueId: number) => {
+      const res = await fetch(`/api/FrontDesk/DeleteQueue?id=${queueId}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) throw new Error('Failed to delete from queue');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['branchQueue'] });
+    },
+    onError: (error) => {
+      console.error('Failed to delete from queue:', error);
+      // Still refresh queue in case of error
+      queryClient.invalidateQueries({ queryKey: ['branchQueue'] });
+    }
+  });
+
+  // Decline sale mutation - logs to DeclinedSales for admin visibility
+  const declineSaleMutation = useMutation({
+    mutationFn: async (data: { queueItem: any; reason: string; salesCategory: string }) => {
+      const res = await fetch('/api/FrontDesk/DeclineSale', {
+        method: 'POST',
+        body: JSON.stringify({
+          branchId: data.queueItem.branchId,
+          saleNumber: data.queueItem.crbNumber,
+          totalKg: data.queueItem.totalKg,
+          amount: data.queueItem.amount,
+          category: data.salesCategory, // Use sales category (domestic, dealer, etc.)
+          timestamp: new Date().toISOString(),
+          customerId: data.queueItem.customerId,
+          description: data.queueItem.description,
+          declineReason: data.reason,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to log declined sale');
+      return res.json();
+    },
   });
 
 
@@ -261,6 +306,32 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
 
   const handleLoadQueueItem = (item: any) => {
     dispatch({ type: 'LOAD_QUEUE_ITEM', payload: item });
+  };
+
+  const handleDeclineSale = (queueItem: any, reason: string = 'Customer declined') => {
+    // 1. Log to DeclinedSales for admin visibility
+    declineSaleMutation.mutate(
+      { 
+        queueItem, 
+        reason, 
+        salesCategory: state.salesCategory // Use current form category
+      }, 
+      {
+        onSuccess: () => {
+          // 2. Delete from queue
+          deleteQueueMutation.mutate(queueItem.id);
+        },
+        onError: (error) => {
+          console.error('Failed to log declined sale:', error);
+          // Still try to delete from queue
+          deleteQueueMutation.mutate(queueItem.id);
+        }
+      }
+    );
+    // 3. Reset form if this was the loaded item
+    if (state.currentQueueItemId === queueItem.id) {
+      dispatch({ type: 'RESET_FOR_NEW_INVOICE' });
+    }
   };
 
   // Calculate current price based on category
@@ -331,10 +402,10 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
                 </div>
               ) : (
                 queueItems.map((item: any) => (
-                  <button
+                  <div
                     key={item.id}
                     onClick={() => handleLoadQueueItem(item)}
-                    className="tw-w-full tw-p-4 tw-text-left hover:tw-bg-blue-50 dark:hover:tw-bg-blue-900/10 tw-transition-colors tw-group"
+                    className="tw-w-full tw-p-4 tw-text-left hover:tw-bg-blue-50 dark:hover:tw-bg-blue-900/10 tw-transition-colors tw-group tw-cursor-pointer"
                   >
                     <div className="tw-flex tw-justify-between tw-items-start tw-mb-2">
                       <span className="tw-text-xs tw-font-mono tw-text-blue-600 dark:tw-text-blue-400 tw-bg-blue-50 dark:tw-bg-blue-900/30 tw-px-2 tw-py-0.5 tw-rounded">
@@ -350,7 +421,7 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
                         {item.customerId || 'Unknown'}
                       </span>
                     </div>
-                    <div className="tw-flex tw-items-center tw-justify-between">
+                    <div className="tw-flex tw-items-center tw-justify-between tw-mb-2">
                       <div className="tw-flex tw-items-center tw-space-x-2">
                         <CartIcon className="tw-h-3 tw-w-3 tw-text-gray-400" />
                         <span className="tw-text-xs tw-text-gray-600 dark:tw-text-gray-400">
@@ -361,7 +432,18 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
                         {formatCurrency(item.amount)}
                       </span>
                     </div>
-                  </button>
+                    <div className="tw-flex tw-justify-end">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeclineSale(item);
+                        }}
+                        className="tw-text-xs tw-font-medium tw-text-red-500 hover:tw-text-red-700 dark:tw-text-red-400 dark:hover:tw-text-red-300 tw-transition-colors"
+                      >
+                        Decline
+                      </button>
+                    </div>
+                  </div>
                 ))
               )}
             </div>
