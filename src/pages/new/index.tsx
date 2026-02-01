@@ -28,6 +28,10 @@ interface DashboardPageProps {
     address: string;
     branchId: number;
     name: string;
+    company: {
+      name: string;
+      companyId: number;
+    };
   };
   prices: {
     category: string;
@@ -390,7 +394,7 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
        {/* Printable content - ref for react-to-print */}
        {state.currentInvoice && (
         <div ref={printRef} className="tw-print-only">
-          <PrintableInvoice invoice={state.currentInvoice} isReceipt={state.printType === 'receipt'} />
+          <PrintableInvoice invoice={state.currentInvoice} isReceipt={state.printType === 'receipt'} companyName={branch.company.name} />
         </div>
       )}
 
@@ -772,6 +776,12 @@ export const getServerSideProps = withSessionSsr(
         address: true,
         branchId: true,
         name: true,
+        company: {
+          select: {
+            name: true,
+            companyId: true,
+          },
+        },
       },
     });
 

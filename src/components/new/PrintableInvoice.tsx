@@ -5,9 +5,10 @@ import { formatAmount, formatDate } from '@/utils/invoice-utils';
 interface PrintableInvoiceProps {
   invoice: Invoice;
   isReceipt?: boolean;
+  companyName: string;
 }
 
-const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({ invoice, isReceipt = false }) => {
+const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({ invoice, isReceipt = false, companyName }) => {
   return (
     <div className="printable-content" style={{
       fontFamily: "'Courier New', monospace",
@@ -22,7 +23,7 @@ const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({ invoice, isReceipt 
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: '13px' }}>
         <h1 style={{ fontSize: '13px', fontWeight: 'bold', margin: '0 0 8px 0', letterSpacing: '0.5px' }}>
-          AICO GAS LIMITED
+          {companyName.toUpperCase()}
         </h1>
         <div style={{ fontSize: '10px', lineHeight: '1.2' }}>
           <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>
