@@ -115,7 +115,7 @@ const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({ invoice, isReceipt 
         <div>Mon-Sat: 7am-6:30pm</div>
         <div>Sunday: 9am-4:30pm</div>
         <div style={{ marginTop: '2px', fontWeight: 'bold' }}>
-          WhatsApp: +234 701 321 8705
+          WhatsApp: 0701 321 8705
         </div>
         <div style={{ marginTop: '3px', fontStyle: 'italic' }}>
           Thank you for your patronage!
