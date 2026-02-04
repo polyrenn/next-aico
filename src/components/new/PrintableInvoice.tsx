@@ -38,7 +38,7 @@ const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({ invoice, isReceipt 
 
       {/* Customer */}
       <div style={{ marginBottom: '9px', borderTop: '1px dashed #000', paddingTop: '6px' }}>
-        <div style={{ fontWeight: 'bold', fontSize: '9px', wordWrap: 'break-word' }}>
+        <div style={{ fontWeight: '600', fontSize: '13px', wordWrap: 'break-word' }}>
           Customer: {invoice.customerName}
         </div>
       </div>
@@ -77,36 +77,16 @@ const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({ invoice, isReceipt 
         </div>
       )}
 
-      {/* Totals and Payment Info */}
+      {/* Totals */}
       <div style={{ borderTop: '1px dashed #000', paddingTop: '8px', marginBottom: '12px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px', fontSize: '11px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px', fontSize: '11px', fontWeight: 'bold' }}>
           <span>Total KG:</span>
-          <span style={{ fontWeight: 'bold' }}>{invoice.totalKg}kg</span>
+          <span>{invoice.totalKg}kg</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 'bold', marginBottom: '3px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 'bold' }}>
           <span>TOTAL:</span>
           <span>{formatAmount(invoice.grandTotal)}</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '3px' }}>
-          <span>Paid:</span>
-          <span style={{ fontWeight: 'bold' }}>{formatAmount(invoice.amountPaid)}</span>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 'bold', borderTop: '1px dashed #000', paddingTop: '3px' }}>
-          <span>Balance:</span>
-          <span style={{ color: invoice.balance >= 0 ? '#059669' : '#dc2626' }}>
-            {formatAmount(invoice.balance)}
-          </span>
-        </div>
-        {invoice.balance < 0 && (
-          <div style={{ fontSize: '9px', textAlign: 'center', marginTop: '3px', color: '#dc2626' }}>
-            Customer owes: {formatAmount(Math.abs(invoice.balance))}
-          </div>
-        )}
-        {invoice.balance > 0 && (
-          <div style={{ fontSize: '9px', textAlign: 'center', marginTop: '3px', color: '#059669' }}>
-            Change: {formatAmount(invoice.balance)}
-          </div>
-        )}
       </div>
 
       {/* Footer */}

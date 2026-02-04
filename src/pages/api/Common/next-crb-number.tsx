@@ -26,24 +26,43 @@ export default async function handler(
   }
 
   try {
-    // Find the maximum crbNumber for the given branch
-    const maxCrbResult = await prisma.crb.aggregate({
-      _max: {
-        crbNumber: true,
-      },
-      where: {
-        // Assuming the field in your prisma schema is 'branchId' and it's an Int
-        // Adjust 'branchId' if your schema uses a different field name (e.g., 'branch')
-        branchId: branchId,
-        timestamp: {
-          gte: new Date(`${formattedDate}`),
+    // Query MAX across all three tables in parallel for accurate next number
+    const todayStart = new Date(`${formattedDate}T00:00:00.000Z`);
+    
+    const [queueMax, crbMax, saleMax] = await Promise.all([
+      // Check Queue table (pending online orders)
+      prisma.queue.aggregate({
+        _max: { crbNumber: true },
+        where: {
+          branchId: branchId,
+          timestamp: { gte: todayStart },
         },
-      },
-    });
+      }),
+      // Check CRB table (active invoices)
+      prisma.crb.aggregate({
+        _max: { crbNumber: true },
+        where: {
+          branchId: branchId,
+          timestamp: { gte: todayStart },
+        },
+      }),
+      // Check Sale table (completed sales)
+      prisma.sale.aggregate({
+        _max: { saleNumber: true },
+        where: {
+          branchId: branchId,
+          timestamp: { gte: todayStart },
+        },
+      }),
+    ]);
 
-    // Determine the next CRB number
-    const maxCrb = maxCrbResult._max.crbNumber;
-    const nextCrbNumber = maxCrb ? maxCrb + 1 : 1; // Start from 1 if no CRBs exist for the branch
+    // Get the highest number across all tables
+    const maxQueue = queueMax._max.crbNumber || 0;
+    const maxCrb = crbMax._max.crbNumber || 0;
+    const maxSale = saleMax._max.saleNumber || 0;
+    
+    const highestNumber = Math.max(maxQueue, maxCrb, maxSale);
+    const nextCrbNumber = highestNumber + 1;
 
     // Return the next number
     res.status(200).json({ nextCrbNumber });

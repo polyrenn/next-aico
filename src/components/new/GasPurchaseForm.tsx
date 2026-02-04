@@ -186,12 +186,7 @@ const GasPurchaseForm: React.FC<GasPurchaseFormProps> = ({ isOpen, onClose }) =>
     setIsSubmitting(true);
 
     try {
-      // 1. Get next CRB number
-      const crbRes = await fetch(`/api/Common/next-crb-number?branch=${customerData.branchId}`);
-      if (!crbRes.ok) throw new Error('Failed to fetch order number');
-      const { nextCrbNumber } = await crbRes.json();
-
-      // 2. Format items for description
+      // Format items for description
       const description = gasItems
         .filter(item => item.quantity > 0)
         .map(item => ({
@@ -201,10 +196,10 @@ const GasPurchaseForm: React.FC<GasPurchaseFormProps> = ({ isOpen, onClose }) =>
           total: item.totalPrice
         }));
 
-      // 3. Inject to queue
+      // Inject to queue - API will generate CRB number server-side
       const queueData = {
         branchId: parseInt(customerData.branchId),
-        crbNumber: nextCrbNumber,
+        // crbNumber is now generated server-side, not pre-fetched
         customerId: customerData.uniqueCode,
         description: description,
         amount: getTotalAmount(),
@@ -214,11 +209,12 @@ const GasPurchaseForm: React.FC<GasPurchaseFormProps> = ({ isOpen, onClose }) =>
         date: new Date().toISOString().split('T')[0]
       };
 
-      await queueMutation.mutateAsync(queueData);
+      const result = await queueMutation.mutateAsync(queueData);
       
+      // Read the assigned CRB number from the API response
       setOrderResult({
         success: true,
-        orderNumber: `CRB-${nextCrbNumber}`,
+        orderNumber: `CRB-${result.crbNumber}`,
         message: 'Your gas order has been successfully placed in the queue!'
       });
       

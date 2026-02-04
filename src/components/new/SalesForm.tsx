@@ -103,45 +103,73 @@ const SalesForm: React.FC<SalesFormProps> = ({
 
       <div className="tw-p-4">
         <div className="tw-space-y-3">
-          {kgTypes.map((kg) => (
-            <div
-              key={kg.type}
-              className="tw-grid tw-grid-cols-12 tw-gap-3 tw-items-center tw-p-3 tw-bg-gray-50 dark:tw-bg-gray-700/50 tw-rounded-lg"
-            >
-              <div className="tw-col-span-3">
-                <span className="tw-text-sm tw-font-medium tw-text-gray-900 dark:tw-text-white">
-                  {kg.type}
-                </span>
-              </div>
-              
-              <div className="tw-col-span-3">
-                <input
-                  type="number"
-                  min="0"
-                  step="any"
-                  value={quantities[kg.type] || ''}
-                  onChange={(e) => handleQuantityChange(kg.type, e.target.value)}
-                  className="tw-w-full tw-px-3 tw-py-2 tw-text-sm tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-lg focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-border-transparent tw-bg-white dark:tw-bg-gray-700 tw-text-gray-900 dark:tw-text-white"
-                  placeholder="Qty"
-                />
-              </div>
+          {kgTypes.map((kg) => {
+            const isActive = quantities[kg.type] > 0;
+            
+            const handlePillClick = () => {
+              if (isActive) {
+                // If already has quantity, clear it
+                setQuantities(prev => ({
+                  ...prev,
+                  [kg.type]: 0,
+                }));
+              } else {
+                // Set to 1 for quick single-item purchase
+                setQuantities(prev => ({
+                  ...prev,
+                  [kg.type]: 1,
+                }));
+              }
+            };
+            
+            return (
+              <div
+                key={kg.type}
+                className="tw-grid tw-grid-cols-12 tw-gap-3 tw-items-center tw-p-3 tw-bg-gray-50 dark:tw-bg-gray-700/50 tw-rounded-lg"
+              >
+                <div className="tw-col-span-3">
+                  <button
+                    type="button"
+                    onClick={handlePillClick}
+                    className={`tw-px-4 tw-py-2 tw-rounded-full tw-text-sm tw-font-medium tw-transition-all tw-duration-200 tw-border-2 ${
+                      isActive
+                        ? 'tw-bg-blue-500 tw-text-white tw-border-blue-500 tw-shadow-md'
+                        : 'tw-bg-white dark:tw-bg-gray-700 tw-text-gray-700 dark:tw-text-gray-200 tw-border-gray-300 dark:tw-border-gray-500 hover:tw-border-blue-400 hover:tw-text-blue-600'
+                    }`}
+                  >
+                    {kg.type}
+                  </button>
+                </div>
+                
+                <div className="tw-col-span-3">
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    value={quantities[kg.type] || ''}
+                    onChange={(e) => handleQuantityChange(kg.type, e.target.value)}
+                    className="tw-w-full tw-px-3 tw-py-2 tw-text-sm tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-lg focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-border-transparent tw-bg-white dark:tw-bg-gray-700 tw-text-gray-900 dark:tw-text-white"
+                    placeholder="Qty"
+                  />
+                </div>
 
-              <div className="tw-col-span-3 tw-text-right">
-                <span className="tw-text-sm tw-text-gray-600 dark:tw-text-gray-400">
-                  {quantities[kg.type] ? `${quantities[kg.type] * kg.weight}kg` : '0kg'}
-                </span>
-              </div>
+                <div className="tw-col-span-3 tw-text-right">
+                  <span className="tw-text-sm tw-text-gray-600 dark:tw-text-gray-400">
+                    {quantities[kg.type] ? `${quantities[kg.type] * kg.weight}kg` : '0kg'}
+                  </span>
+                </div>
 
-              <div className="tw-col-span-3 tw-text-right">
-                <span className="tw-text-sm tw-font-medium tw-text-gray-900 dark:tw-text-white">
-                  {quantities[kg.type] 
-                    ? formatCurrency(quantities[kg.type] * kg.weight * pricePerKg)
-                    : '₦0'
-                  }
-                </span>
+                <div className="tw-col-span-3 tw-text-right">
+                  <span className="tw-text-sm tw-font-medium tw-text-gray-900 dark:tw-text-white">
+                    {quantities[kg.type] 
+                      ? formatCurrency(quantities[kg.type] * kg.weight * pricePerKg)
+                      : '₦0'
+                    }
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Totals */}

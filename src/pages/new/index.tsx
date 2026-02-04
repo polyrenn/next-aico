@@ -158,28 +158,33 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
   // Mutation for inserting CRB
   const { mutate: insertCrb, isPending: isInsertingCrb } = useMutation({
     mutationFn: async (invoice: Invoice) => {
+      // Build the payload
+      const payload: Record<string, any> = {
+        branchId: branch?.branchId,
+        customerId: invoice.customerName,
+        description: invoice.items,
+        amount: invoice.grandTotal,
+        totalKg: invoice.totalKg,
+        category: invoice.salesCategory,
+        timestamp: new Date().toISOString(),
+        date: new Date().toISOString(),
+      };
+      
+      // Only include crbNumber if this is a queue item (already has assigned number)
+      // For walk-ins, let the API generate the number server-side
+      if (state.currentQueueItemId) {
+        payload.crbNumber = parseInt(state.invoiceNumber.replace('CRB-', ''));
+      }
+      
       const response = await fetch('/api/FrontDesk/insert-crb-mobile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          branchId: branch?.branchId,
-          customerId: invoice.customerName,
-          description: invoice.items,
-          amount: invoice.grandTotal,
-          totalKg: invoice.totalKg,
-          category: invoice.salesCategory,
-          timestamp: new Date().toISOString(),
-          date: new Date().toISOString(),
-          crbNumber: parseInt(state.invoiceNumber.replace('CRB-', '')),
-        }),
+        body: JSON.stringify(payload),
       });
       if (!response.ok) throw new Error('Failed to insert CRB');
       return response.json();
     },
-    onSuccess: (data) => {
-      dispatch({ type: 'CRB_SAVED', payload: { crbNumber: data.crbNumber } });
-      queryClient.invalidateQueries({ queryKey: ['nextCrbNumber'] });
-    },
+    // onSuccess is handled inline in handlePrintInvoice to ensure proper timing
     onError: (error) => {
       alert('Failed to save invoice record: ' + error.message);
     }
@@ -279,10 +284,13 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
       if (!state.savedCrbData) {
         return new Promise<void>((resolve, reject) => {
           insertCrb(state.currentInvoice!, {
-            onSuccess: () => {
+            onSuccess: (data) => {
               flushSync(() => {
+                // CRB_SAVED updates the invoice's number with server-assigned value
+                dispatch({ type: 'CRB_SAVED', payload: { crbNumber: data.crbNumber } });
                 dispatch({ type: 'PRINT_INVOICE' });
               });
+              queryClient.invalidateQueries({ queryKey: ['nextCrbNumber'] });
               resolve();
             },
             onError: () => reject()

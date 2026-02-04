@@ -128,11 +128,16 @@ export function salesReducer(state: SalesState, action: SalesAction): SalesState
       };
       
     case 'CRB_SAVED':
+      const realInvoiceNumber = `CRB-${action.payload.crbNumber}`;
       return {
         ...state,
         status: 'READY',
         savedCrbData: action.payload,
-        invoiceNumber: `CRB-${action.payload.crbNumber}`,
+        invoiceNumber: realInvoiceNumber,
+        // Update the invoice object with the real server-assigned number
+        currentInvoice: state.currentInvoice 
+          ? { ...state.currentInvoice, invoiceNumber: realInvoiceNumber }
+          : null,
       };
       
     case 'PRINT_INVOICE':
