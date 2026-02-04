@@ -475,8 +475,14 @@ const GasPurchaseForm: React.FC<GasPurchaseFormProps> = ({ isOpen, onClose }) =>
                                 <input
                                   type="number"
                                   min="0"
-                                  value={item.quantity}
-                                  onChange={(e) => handleQuantityChange(index, parseInt(e.target.value) || 0)}
+                                  value={item.quantity === 0 ? "" : item.quantity}
+                                  placeholder="0"
+                                  onChange={(e) =>
+                                    handleQuantityChange(
+                                      index,
+                                      parseInt(e.target.value) || 0
+                                    )
+                                  }
                                   className="tw-w-16 tw-px-2 tw-py-1 tw-bg-gray-700 tw-border tw-border-gray-600 tw-rounded tw-text-white tw-text-center focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500"
                                 />
                                 <button
