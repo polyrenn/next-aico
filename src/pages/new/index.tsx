@@ -15,7 +15,7 @@ import { withSessionSsr } from '../../lib/withSession';
 import { prisma } from '../../lib/prisma';
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { salesReducer, initialSalesState } from '@/reducers/salesReducer';
-import { ShoppingCart as CartIcon, RefreshCcw, User as UserIcon, ListOrdered } from 'lucide-react';
+import { ShoppingCart as CartIcon, RefreshCcw, User as UserIcon, ListOrdered, ChevronDown } from 'lucide-react';
 
 interface DashboardPageProps {
   user: {
@@ -47,6 +47,9 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
   
   // Ref for react-to-print
   const printRef = useRef<HTMLDivElement>(null);
+
+  // Queue collapse state
+  const [isQueueExpanded, setIsQueueExpanded] = useState(false);
 
   // Fetch next CRB number from API
   const { data: crbData } = useQuery({
@@ -432,74 +435,106 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
                 <div>
                   <h3 className="tw-text-lg tw-font-semibold tw-text-gray-900 dark:tw-text-white">
                     Order Queue
+                    {queueItems && queueItems.length > 0 && (
+                      <span className="tw-ml-2 tw-text-xs tw-bg-blue-500 tw-text-white tw-px-1.5 tw-py-0.5 tw-rounded-full">
+                        {queueItems.length}
+                      </span>
+                    )}
                   </h3>
                   <p className="tw-text-xs tw-text-gray-500 dark:tw-text-gray-400">
                     Pending gas orders
                   </p>
                 </div>
               </div>
-              <button 
-                onClick={() => refetchQueue()}
-                disabled={isFetchingQueue}
-                className="tw-p-2 tw-text-gray-500 hover:tw-bg-gray-100 dark:hover:tw-bg-gray-700 tw-rounded-lg tw-transition-colors"
-                title="Refresh Queue"
-              >
-                <RefreshCcw className={`tw-h-4 tw-w-4 ${isFetchingQueue ? 'tw-animate-spin' : ''}`} />
-              </button>
+              <div className="tw-flex tw-items-center tw-space-x-2">
+                <button 
+                  onClick={() => refetchQueue()}
+                  disabled={isFetchingQueue}
+                  className="tw-p-2 tw-text-gray-500 hover:tw-bg-gray-100 dark:hover:tw-bg-gray-700 tw-rounded-lg tw-transition-colors"
+                  title="Refresh Queue"
+                >
+                  <RefreshCcw className={`tw-h-4 tw-w-4 ${isFetchingQueue ? 'tw-animate-spin' : ''}`} />
+                </button>
+                <button
+                  onClick={() => setIsQueueExpanded(!isQueueExpanded)}
+                  className="tw-p-1 tw-text-gray-500 hover:tw-bg-gray-100 dark:hover:tw-bg-gray-700 tw-rounded-lg tw-transition-colors"
+                  title={isQueueExpanded ? 'Collapse queue' : 'Expand queue'}
+                >
+                  <ChevronDown className={`tw-h-5 tw-w-5 tw-text-gray-400 tw-transition-transform ${isQueueExpanded ? 'tw-rotate-180' : ''}`} />
+                </button>
+              </div>
             </div>
 
-            <div className="tw-divide-y tw-divide-gray-100 dark:tw-divide-gray-700 tw-max-h-[calc(100vh-250px)] tw-overflow-y-auto">
-              {!queueItems || queueItems.length === 0 ? (
-                <div className="tw-p-8 tw-text-center">
-                  <p className="tw-text-gray-500 dark:tw-text-gray-400 tw-text-sm">Queue is empty</p>
-                </div>
-              ) : (
-                queueItems.map((item: any) => (
-                  <div
+            {/* Compact View: CRB badges */}
+            {!isQueueExpanded && queueItems && queueItems.length > 0 && (
+              <div className="tw-p-3 tw-flex tw-flex-wrap tw-gap-2">
+                {queueItems.map((item: any) => (
+                  <button
                     key={item.id}
                     onClick={() => handleLoadQueueItem(item)}
-                    className="tw-w-full tw-p-4 tw-text-left hover:tw-bg-blue-50 dark:hover:tw-bg-blue-900/10 tw-transition-colors tw-group tw-cursor-pointer"
+                    className="tw-text-xs tw-font-mono tw-text-blue-600 dark:tw-text-blue-400 tw-bg-blue-50 dark:tw-bg-blue-900/30 tw-px-2 tw-py-1 tw-rounded hover:tw-bg-blue-100 dark:hover:tw-bg-blue-900/50 tw-transition-colors"
                   >
-                    <div className="tw-flex tw-justify-between tw-items-start tw-mb-2">
-                      <span className="tw-text-xs tw-font-mono tw-text-blue-600 dark:tw-text-blue-400 tw-bg-blue-50 dark:tw-bg-blue-900/30 tw-px-2 tw-py-0.5 tw-rounded">
-                        CRB-{item.crbNumber}
-                      </span>
-                      <span className="tw-text-xs tw-text-gray-400">
-                        {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                    <div className="tw-flex tw-items-center tw-space-x-2 tw-mb-2">
-                      <UserIcon className="tw-h-4 tw-w-4 tw-text-gray-400" />
-                      <span className="tw-font-semibold tw-text-gray-900 dark:tw-text-white tw-truncate">
-                        {item.customerId || 'Unknown'}
-                      </span>
-                    </div>
-                    <div className="tw-flex tw-items-center tw-justify-between tw-mb-2">
-                      <div className="tw-flex tw-items-center tw-space-x-2">
-                        <CartIcon className="tw-h-3 tw-w-3 tw-text-gray-400" />
-                        <span className="tw-text-xs tw-text-gray-600 dark:tw-text-gray-400">
-                          {item.totalKg}kg Total
+                    CRB-{item.crbNumber}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Expanded View: Full details */}
+            {isQueueExpanded && (
+              <div className="tw-divide-y tw-divide-gray-100 dark:tw-divide-gray-700 tw-max-h-[calc(100vh-300px)] tw-overflow-y-auto">
+                {!queueItems || queueItems.length === 0 ? (
+                  <div className="tw-p-8 tw-text-center">
+                    <p className="tw-text-gray-500 dark:tw-text-gray-400 tw-text-sm">Queue is empty</p>
+                  </div>
+                ) : (
+                  queueItems.map((item: any) => (
+                    <div
+                      key={item.id}
+                      onClick={() => handleLoadQueueItem(item)}
+                      className="tw-w-full tw-p-4 tw-text-left hover:tw-bg-blue-50 dark:hover:tw-bg-blue-900/10 tw-transition-colors tw-group tw-cursor-pointer"
+                    >
+                      <div className="tw-flex tw-justify-between tw-items-start tw-mb-2">
+                        <span className="tw-text-xs tw-font-mono tw-text-blue-600 dark:tw-text-blue-400 tw-bg-blue-50 dark:tw-bg-blue-900/30 tw-px-2 tw-py-0.5 tw-rounded">
+                          CRB-{item.crbNumber}
+                        </span>
+                        <span className="tw-text-xs tw-text-gray-400">
+                          {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
-                      <span className="tw-text-sm tw-font-bold tw-text-blue-600 dark:tw-text-blue-400">
-                        {formatCurrency(item.amount)}
-                      </span>
+                      <div className="tw-flex tw-items-center tw-space-x-2 tw-mb-2">
+                        <UserIcon className="tw-h-4 tw-w-4 tw-text-gray-400" />
+                        <span className="tw-font-semibold tw-text-gray-900 dark:tw-text-white tw-truncate">
+                          {item.customerId || 'Unknown'}
+                        </span>
+                      </div>
+                      <div className="tw-flex tw-items-center tw-justify-between tw-mb-2">
+                        <div className="tw-flex tw-items-center tw-space-x-2">
+                          <CartIcon className="tw-h-3 tw-w-3 tw-text-gray-400" />
+                          <span className="tw-text-xs tw-text-gray-600 dark:tw-text-gray-400">
+                            {item.totalKg}kg Total
+                          </span>
+                        </div>
+                        <span className="tw-text-sm tw-font-bold tw-text-blue-600 dark:tw-text-blue-400">
+                          {formatCurrency(item.amount)}
+                        </span>
+                      </div>
+                      <div className="tw-flex tw-justify-end">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeclineSale(item);
+                          }}
+                          className="tw-text-xs tw-font-medium tw-text-red-500 hover:tw-text-red-700 dark:tw-text-red-400 dark:hover:tw-text-red-300 tw-transition-colors"
+                        >
+                          Decline
+                        </button>
+                      </div>
                     </div>
-                    <div className="tw-flex tw-justify-end">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeclineSale(item);
-                        }}
-                        className="tw-text-xs tw-font-medium tw-text-red-500 hover:tw-text-red-700 dark:tw-text-red-400 dark:hover:tw-text-red-300 tw-transition-colors"
-                      >
-                        Decline
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
         </div>
 
