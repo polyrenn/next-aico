@@ -223,8 +223,7 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
       if (state.currentQueueItemId) {
         deleteQueueMutation.mutate(state.currentQueueItemId);
       }
-      // Reset form after sale is complete
-      handleNewInvoice();
+      // Note: Form reset is now handled in onAfterPrint to ensure print completes first
     },
     onError: (error) => {
       alert('Failed to save sale record: ' + error.message);
@@ -308,23 +307,35 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
   });
 
   // react-to-print handler for Receipt
+  // P0 FIX: Save sale BEFORE printing to prevent data loss
   const handlePrintReceipt = useReactToPrint({
     content: () => printRef.current,
     onBeforePrint: async () => {
       if (!state.currentInvoice) return Promise.reject();
       if (state.hasPrintedReceipt || !state.savedCrbData) return Promise.reject();
       
-      flushSync(() => {
-        dispatch({ type: 'PRINT_RECEIPT' });
+      // Save sale to DB BEFORE printing (prevents data loss if browser crashes after print)
+      return new Promise<void>((resolve, reject) => {
+        insertSale(
+          { invoice: state.currentInvoice!, crbNumber: state.savedCrbData!.crbNumber },
+          {
+            onSuccess: () => {
+              flushSync(() => {
+                dispatch({ type: 'PRINT_RECEIPT' });
+              });
+              resolve();
+            },
+            onError: (error) => {
+              alert('Failed to save sale: ' + error.message + '\nReceipt will NOT print.');
+              reject();
+            }
+          }
+        );
       });
-      return Promise.resolve();
     },
     onAfterPrint: () => {
-      // Save sale after print completes
-      // Note: handleNewInvoice is called in insertSale's onSuccess to avoid race condition
-      if (state.currentInvoice && state.savedCrbData) {
-        insertSale({ invoice: state.currentInvoice, crbNumber: state.savedCrbData.crbNumber });
-      }
+      // Sale already saved in onBeforePrint; just reset form
+      handleNewInvoice();
     },
   });
 
@@ -394,6 +405,7 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
         hasPrintedReceipt={state.hasPrintedReceipt}
         isSavingCrb={isInsertingCrb}
         isCrbSaved={!!state.savedCrbData}
+        isSavingSale={isInsertingSale}
       />
       
       {/* Test Drawer for debugging - DISABLED */}

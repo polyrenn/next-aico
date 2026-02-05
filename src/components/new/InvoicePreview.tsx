@@ -15,6 +15,7 @@ interface InvoicePreviewProps {
   hasPrintedReceipt: boolean;
   isSavingCrb: boolean;
   isCrbSaved: boolean;
+  isSavingSale: boolean;
 }
 
 const InvoicePreview: React.FC<InvoicePreviewProps> = ({
@@ -28,6 +29,7 @@ const InvoicePreview: React.FC<InvoicePreviewProps> = ({
   hasPrintedReceipt,
   isSavingCrb,
   isCrbSaved,
+  isSavingSale,
 }) => {
   if (!invoice) return null;
 
@@ -193,17 +195,17 @@ const InvoicePreview: React.FC<InvoicePreviewProps> = ({
                   
                    <button
                     onClick={onPrintReceipt}
-                    disabled={hasPrintedReceipt || !isCrbSaved || isSavingCrb}
+                    disabled={hasPrintedReceipt || !isCrbSaved || isSavingCrb || isSavingSale}
                     className={`tw-flex tw-flex-col tw-items-center tw-justify-center tw-p-4 tw-bg-white dark:tw-bg-gray-800 tw-border-2 tw-rounded-xl tw-transition-all tw-group ${
-                        (hasPrintedReceipt || !isCrbSaved || isSavingCrb)
+                        (hasPrintedReceipt || !isCrbSaved || isSavingCrb || isSavingSale)
                         ? 'tw-opacity-50 tw-cursor-not-allowed tw-border-gray-200 dark:tw-border-gray-700' 
                         : 'tw-border-green-100 dark:tw-border-green-900/30 hover:tw-border-green-500 hover:tw-bg-green-50 dark:hover:tw-bg-green-900/20'
                     }`}
                   >
-                    <Receipt className={`tw-h-6 tw-w-6 tw-mb-2 tw-transition-transform ${(hasPrintedReceipt || !isCrbSaved || isSavingCrb) ? 'tw-text-gray-400' : 'tw-text-green-600 group-hover:tw-scale-110'}`} />
-                    <span className={`tw-font-medium ${(hasPrintedReceipt || !isCrbSaved || isSavingCrb) ? 'tw-text-gray-400' : 'tw-text-green-900 dark:tw-text-green-100'}`}>Print Receipt</span>
-                     <span className={`tw-text-xs ${(hasPrintedReceipt || !isCrbSaved || isSavingCrb) ? 'tw-text-gray-300' : 'tw-text-green-500'}`}>
-                        {isSavingCrb ? 'Saving CRB...' : !isCrbSaved ? 'Print Invoice First' : hasPrintedReceipt ? 'Already Printed' : 'Completes Sale'}
+                    <Receipt className={`tw-h-6 tw-w-6 tw-mb-2 tw-transition-transform ${(hasPrintedReceipt || !isCrbSaved || isSavingCrb || isSavingSale) ? 'tw-text-gray-400' : 'tw-text-green-600 group-hover:tw-scale-110'} ${isSavingSale ? 'tw-animate-pulse' : ''}`} />
+                    <span className={`tw-font-medium ${(hasPrintedReceipt || !isCrbSaved || isSavingCrb || isSavingSale) ? 'tw-text-gray-400' : 'tw-text-green-900 dark:tw-text-green-100'}`}>Print Receipt</span>
+                     <span className={`tw-text-xs ${(hasPrintedReceipt || !isCrbSaved || isSavingCrb || isSavingSale) ? 'tw-text-gray-300' : 'tw-text-green-500'}`}>
+                        {isSavingSale ? 'Saving Sale...' : isSavingCrb ? 'Saving CRB...' : !isCrbSaved ? 'Print Invoice First' : hasPrintedReceipt ? 'Already Printed' : 'Completes Sale'}
                      </span>
                   </button>
               </div>
