@@ -130,14 +130,18 @@ export default async (req: any, res: any) => {
                 // select: { amount: true } // Optionally select updated amount
             });
 
-            // Optional: Update customer purchase count (if needed and logic defined)
-            // const { isreg, id: customerUniqueId } = req.query; // Re-introduce if needed
-            // if (isreg === 'true' && customerUniqueId) {
-            //     await tx.customer.update({
-            //         where: { uniqueId: customerUniqueId }, // Ensure customerUniqueId is passed if using this
-            //         data: { purchaseCount: { increment: 1 } }
-            //     });
-            // }
+            // 6. Update customer purchase count for reward system (if registered customer)
+            if (data.customerUniqueId && typeof data.customerUniqueId === 'string') {
+                try {
+                    await tx.customer.update({
+                        where: { uniqueId: data.customerUniqueId },
+                        data: { purchaseCount: { increment: 1 } }
+                    });
+                } catch (customerUpdateError) {
+                    // Log but don't fail the sale if customer update fails
+                    console.warn('Could not update customer purchase count:', customerUpdateError);
+                }
+            }
 
             return newSale; // Return the created sale record
         });

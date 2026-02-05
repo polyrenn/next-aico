@@ -38,7 +38,7 @@ const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({ invoice, isReceipt 
 
       {/* Customer */}
       <div style={{ marginBottom: '9px', borderTop: '1px dashed #000', paddingTop: '6px' }}>
-        <div style={{ fontWeight: '600', fontSize: '13px', wordWrap: 'break-word' }}>
+        <div style={{ fontWeight: '600', fontSize: '12px', wordWrap: 'break-word' }}>
           Customer: {invoice.customerName}
         </div>
       </div>

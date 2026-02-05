@@ -11,6 +11,7 @@ export interface SalesState {
   // Form data
   salesCategory: SalesCategory;
   customerName: string;
+  customerUniqueId: string | null; // For reward system tracking
   invoiceItems: InvoiceItem[];
   totalKg: number;
   grandTotal: number;
@@ -45,6 +46,7 @@ export interface SalesState {
 export type SalesAction =
   | { type: 'SET_CATEGORY'; payload: SalesCategory }
   | { type: 'SET_CUSTOMER_NAME'; payload: string }
+  | { type: 'SET_CUSTOMER_UNIQUE_ID'; payload: string | null }
   | { type: 'SET_ITEMS'; payload: InvoiceItem[] }
   | { type: 'SET_TOTALS'; payload: { kg: number; total: number } }
   | { type: 'SET_AMOUNT_PAID'; payload: number }
@@ -63,6 +65,7 @@ export const initialSalesState: SalesState = {
   status: 'IDLE',
   salesCategory: 'domestic',
   customerName: '',
+  customerUniqueId: null,
   invoiceItems: [],
   totalKg: 0,
   grandTotal: 0,
@@ -89,6 +92,9 @@ export function salesReducer(state: SalesState, action: SalesAction): SalesState
       
     case 'SET_CUSTOMER_NAME':
       return { ...state, customerName: action.payload };
+
+    case 'SET_CUSTOMER_UNIQUE_ID':
+      return { ...state, customerUniqueId: action.payload };
       
     case 'SET_ITEMS':
       return { ...state, invoiceItems: action.payload };

@@ -8,6 +8,7 @@ import Layout from '@/components/new/Layout';
 import SalesForm from '@/components/new/SalesForm';
 import InvoicePreview from '@/components/new/InvoicePreview';
 import PrintableInvoice from '@/components/new/PrintableInvoice';
+import CustomerSearch from '@/components/new/CustomerSearch';
 import TestDrawer from '@/components/new/TestDrawer';
 import { Calendar, Clock, Tag, User, DollarSign, CreditCard, Banknote } from 'lucide-react';
 import { withSessionSsr } from '../../lib/withSession';
@@ -202,6 +203,7 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
           amount: invoice.amountPaid.toString(),
           change: invoice.balance.toString(),
           customerId: invoice.customerName,
+          customerUniqueId: state.customerUniqueId, // For reward system
           category: invoice.salesCategory,
           paymentMethod: state.paymentMethod || 'cash',
           narrative: `Sale for ${invoice.customerName}`,
@@ -579,14 +581,15 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
             </div>
           </div>
 
-          <input
-            type="text"
+          <CustomerSearch
+            branchId={branch?.branchId || 0}
             value={state.customerName}
-            onChange={(e) => dispatch({ type: 'SET_CUSTOMER_NAME', payload: e.target.value })}
+            onChange={(name, uniqueId) => {
+              dispatch({ type: 'SET_CUSTOMER_NAME', payload: name });
+              dispatch({ type: 'SET_CUSTOMER_UNIQUE_ID', payload: uniqueId });
+            }}
             disabled={state.status !== 'IDLE'}
-            placeholder="Enter customer name"
-            className="tw-w-full tw-px-4 tw-py-3 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-lg focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-border-transparent tw-bg-white dark:tw-bg-gray-700 tw-text-gray-900 dark:tw-text-white disabled:tw-opacity-50 disabled:tw-cursor-not-allowed"
-            required
+            placeholder="Search or enter customer name"
           />
         </div>
 
