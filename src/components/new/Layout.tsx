@@ -1,5 +1,6 @@
-import React from 'react';
-import { User } from 'lucide-react';
+import React, { useState } from 'react';
+import { useRouter } from 'next/router';
+import { User, LogOut } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -8,7 +9,21 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children, userName, role }) => {
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      const res = await fetch('/api/Common/Logout', { method: 'POST' });
+      if (res.ok) {
+        router.push('/Login');
+      }
+    } catch (error) {
+      console.error('Logout failed:', error);
+      setIsLoggingOut(false);
+    }
+  };
 
   return (
     <div className="tw-min-h-screen tw-bg-gray-50 dark:tw-bg-gray-900">
@@ -29,6 +44,14 @@ const Layout: React.FC<LayoutProps> = ({ children, userName, role }) => {
               </div>
             </div>
 
+            <button
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              className="tw-flex tw-items-center tw-space-x-2 tw-px-3 tw-py-2 tw-text-sm tw-font-medium tw-text-red-600 dark:tw-text-red-400 tw-bg-red-50 dark:tw-bg-red-900/20 hover:tw-bg-red-100 dark:hover:tw-bg-red-900/30 tw-rounded-lg tw-transition-colors disabled:tw-opacity-50 disabled:tw-cursor-not-allowed"
+            >
+              <LogOut className="tw-h-4 tw-w-4" />
+              <span>{isLoggingOut ? 'Logging out...' : 'Log Out'}</span>
+            </button>
           </div>
         </div>
       </header>
