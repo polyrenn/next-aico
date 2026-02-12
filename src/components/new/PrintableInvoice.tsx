@@ -87,6 +87,14 @@ const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({ invoice, isReceipt 
           <span>TOTAL:</span>
           <span>{formatAmount(invoice.grandTotal)}</span>
         </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '3px', fontSize: '11px' }}>
+          <span>Paid:</span>
+          <span>{formatAmount(invoice.amountPaid)}</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '3px', fontSize: '11px', fontWeight: 'bold' }}>
+          <span>Change:</span>
+          <span>{invoice.balance > 0 ? formatAmount(invoice.balance) : '₦0'}</span>
+        </div>
       </div>
 
       {/* Footer */}
