@@ -18,7 +18,7 @@ async function getNextCrbNumber(branchId: number): Promise<number> {
     }),
     prisma.sale.aggregate({
       _max: { saleNumber: true },
-      where: { branchId, timestamp: { gte: todayStart } },
+      where: { branchId, timestamp: { gte: todayStart }, category: { not: 'Switch' } },
     }),
   ]);
 

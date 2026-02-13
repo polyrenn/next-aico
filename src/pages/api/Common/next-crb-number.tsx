@@ -46,12 +46,13 @@ export default async function handler(
           timestamp: { gte: todayStart },
         },
       }),
-      // Check Sale table (completed sales)
+      // Check Sale table (completed sales, excluding Switch records)
       prisma.sale.aggregate({
         _max: { saleNumber: true },
         where: {
           branchId: branchId,
           timestamp: { gte: todayStart },
+          category: { not: 'Switch' },
         },
       }),
     ]);
