@@ -75,7 +75,8 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
       return res.json();
     },
     enabled: !!branch?.branchId,
-    refetchInterval: 5000, // Auto refresh every 5 seconds
+    refetchInterval: 3e5, // Auto refresh every 5 minutes
+    staleTime: 6e4, // Consider data fresh for 1 minute
   });
 
   // Update invoice number when CRB data is fetched or when resetting
