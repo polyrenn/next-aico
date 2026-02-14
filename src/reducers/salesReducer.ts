@@ -35,7 +35,6 @@ export interface SalesState {
   // Print tracking
   hasPrintedInvoice: boolean;
   hasPrintedReceipt: boolean;
-  printType: 'invoice' | 'receipt';
   
   // UI state
   showPreview: boolean;
@@ -79,7 +78,6 @@ export const initialSalesState: SalesState = {
   currentQueueItem: null,
   hasPrintedInvoice: false,
   hasPrintedReceipt: false,
-  printType: 'invoice',
   showPreview: false,
   formKey: 0,
 };
@@ -150,14 +148,12 @@ export function salesReducer(state: SalesState, action: SalesAction): SalesState
       return {
         ...state,
         hasPrintedInvoice: true,
-        printType: 'invoice',
       };
       
     case 'PRINT_RECEIPT':
       return {
         ...state,
         status: 'COMPLETING',
-        printType: 'receipt',
       };
       
     case 'SALE_COMPLETED':

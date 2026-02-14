@@ -2,12 +2,12 @@ import React from 'react';
 import { Invoice } from '@/types';
 import { formatAmount, formatDate } from '@/utils/invoice-utils';
 
-interface PrintableInvoiceProps {
+interface PrintableReceiptProps {
   invoice: Invoice;
   companyName: string;
 }
 
-const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({ invoice, companyName }) => {
+const PrintableReceipt: React.FC<PrintableReceiptProps> = ({ invoice, companyName }) => {
   return (
     <div className="printable-content" style={{
       fontFamily: "'Courier New', monospace",
@@ -26,7 +26,7 @@ const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({ invoice, companyNam
         </h1>
         <div style={{ fontSize: '10px', lineHeight: '1.2' }}>
           <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>
-            INVOICE: {invoice.invoiceNumber}
+            RECEIPT: {invoice.invoiceNumber}
           </div>
           <div>Date: {formatDate(new Date(invoice.date))}</div>
           <div>Time: {invoice.time}</div>
@@ -42,29 +42,13 @@ const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({ invoice, companyNam
         </div>
       </div>
 
-      {/* Items Table */}
-      {invoice.items.length > 0 && (
-        <div style={{ marginBottom: '9px' }}>
-          <div style={{ borderBottom: '1px dashed #000', paddingBottom: '3px', marginBottom: '3px' }}>
-            <div style={{ display: 'flex', fontSize: '11px', fontWeight: 'bold' }}>
-              <div style={{ flex: '2' }}>Item</div>
-              <div style={{ flex: '1', textAlign: 'center' }}>Qty</div>
-              <div style={{ flex: '1', textAlign: 'right' }}>KG</div>
-              <div style={{ flex: '1.5', textAlign: 'right' }}>Amount</div>
-            </div>
-          </div>
-          {invoice.items.map((item, index) => (
-            <div key={index} style={{ display: 'flex', fontSize: '11px', marginBottom: '3px' }}>
-              <div style={{ flex: '2', wordWrap: 'break-word' }}>{item.kg}</div>
-              <div style={{ flex: '1', textAlign: 'center' }}>{item.quantity}</div>
-              <div style={{ flex: '1', textAlign: 'right', fontWeight: 'bold' }}>{item.totalKg}</div>
-              <div style={{ flex: '1.5', textAlign: 'right', fontWeight: 'bold' }}>
-                {formatAmount(item.totalAmount)}
-              </div>
-            </div>
-          ))}
+      {/* Receipt Summary */}
+      <div style={{ marginBottom: '12px', fontSize: '13px' }}>
+        <div style={{ fontWeight: 'bold' }}>Total KG: {invoice.totalKg}kg</div>
+        <div style={{ fontWeight: '900', fontSize: '14px', marginTop: '3px' }}>
+          Amount: {formatAmount(invoice.grandTotal)}
         </div>
-      )}
+      </div>
 
       {/* Totals */}
       <div style={{ borderTop: '1px dashed #000', paddingTop: '8px', marginBottom: '12px' }}>
@@ -85,8 +69,21 @@ const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({ invoice, companyNam
           <span>{invoice.balance > 0 ? formatAmount(invoice.balance) : '₦0'}</span>
         </div>
       </div>
+
+      {/* Footer */}
+      <div style={{ borderTop: '1px dashed #000', paddingTop: '8px', fontSize: '9px', textAlign: 'center', lineHeight: '1.2' }}>
+        <div style={{ marginBottom: '3px' }}>Service Hours:</div>
+        <div>Mon-Sat: 7am-6:30pm</div>
+        <div>Sunday: 9am-4:30pm</div>
+        <div style={{ marginTop: '2px', fontWeight: 'bold' }}>
+          WhatsApp: 0701 321 8705
+        </div>
+        <div style={{ marginTop: '3px', fontStyle: 'italic' }}>
+          Thank you for your patronage!
+        </div>
+      </div>
     </div>
   );
 };
 
-export default PrintableInvoice;
+export default PrintableReceipt;

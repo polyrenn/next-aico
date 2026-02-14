@@ -8,6 +8,7 @@ import Layout from '@/components/new/Layout';
 import SalesForm from '@/components/new/SalesForm';
 import InvoicePreview from '@/components/new/InvoicePreview';
 import PrintableInvoice from '@/components/new/PrintableInvoice';
+import PrintableReceipt from '@/components/new/PrintableReceipt';
 import CustomerSearch from '@/components/new/CustomerSearch';
 import TestDrawer from '@/components/new/TestDrawer';
 import { Calendar, Clock, Tag, User, DollarSign, CreditCard, Banknote } from 'lucide-react';
@@ -45,8 +46,9 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
   const [state, dispatch] = useReducer(salesReducer, initialSalesState);
   const queryClient = useQueryClient();
   
-  // Ref for react-to-print
-  const printRef = useRef<HTMLDivElement>(null);
+  // Refs for react-to-print
+  const invoicePrintRef = useRef<HTMLDivElement>(null);
+  const receiptPrintRef = useRef<HTMLDivElement>(null);
 
   // Queue collapse state
   const [isQueueExpanded, setIsQueueExpanded] = useState(false);
@@ -279,7 +281,7 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
 
   // react-to-print handler for Invoice
   const handlePrintInvoice = useReactToPrint({
-    content: () => printRef.current,
+    content: () => invoicePrintRef.current,
     onBeforePrint: async () => {
       if (!state.currentInvoice) return Promise.reject();
       if (state.hasPrintedInvoice) return Promise.reject();
@@ -312,7 +314,7 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
   // react-to-print handler for Receipt
   // P0 FIX: Save sale BEFORE printing to prevent data loss
   const handlePrintReceipt = useReactToPrint({
-    content: () => printRef.current,
+    content: () => receiptPrintRef.current,
     onBeforePrint: async () => {
       if (!state.currentInvoice) return Promise.reject();
       if (state.hasPrintedReceipt || !state.savedCrbData) return Promise.reject();
@@ -416,11 +418,16 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
         <TestDrawer />
       </div> */}
 
-       {/* Printable content - ref for react-to-print */}
+       {/* Printable content - separate refs for invoice and receipt */}
        {state.currentInvoice && (
-        <div ref={printRef} className="tw-print-only">
-          <PrintableInvoice invoice={state.currentInvoice} isReceipt={state.printType === 'receipt'} companyName={branch.company.name} />
-        </div>
+        <>
+          <div ref={invoicePrintRef} className="tw-print-only">
+            <PrintableInvoice invoice={state.currentInvoice} companyName={branch.company.name} />
+          </div>
+          <div ref={receiptPrintRef} className="tw-print-only">
+            <PrintableReceipt invoice={state.currentInvoice} companyName={branch.company.name} />
+          </div>
+        </>
       )}
 
       <div className="tw-grid lg:tw-grid-cols-3 tw-gap-6 tw-p-4 tw-no-print">
