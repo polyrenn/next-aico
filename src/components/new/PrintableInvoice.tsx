@@ -47,7 +47,7 @@ const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({ invoice, isReceipt 
       {!isReceipt && invoice.items.length > 0 && (
         <div style={{ marginBottom: '9px' }}>
           <div style={{ borderBottom: '1px dashed #000', paddingBottom: '3px', marginBottom: '3px' }}>
-            <div style={{ display: 'flex', fontSize: '10px', fontWeight: 'bold' }}>
+            <div style={{ display: 'flex', fontSize: '11px', fontWeight: 'bold' }}>
               <div style={{ flex: '2' }}>Item</div>
               <div style={{ flex: '1', textAlign: 'center' }}>Qty</div>
               <div style={{ flex: '1', textAlign: 'right' }}>KG</div>
@@ -55,11 +55,11 @@ const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({ invoice, isReceipt 
             </div>
           </div>
           {invoice.items.map((item, index) => (
-            <div key={index} style={{ display: 'flex', fontSize: '10px', marginBottom: '3px' }}>
+            <div key={index} style={{ display: 'flex', fontSize: '11px', marginBottom: '3px' }}>
               <div style={{ flex: '2', wordWrap: 'break-word' }}>{item.kg}</div>
               <div style={{ flex: '1', textAlign: 'center' }}>{item.quantity}</div>
-              <div style={{ flex: '1', textAlign: 'right' }}>{item.totalKg}</div>
-              <div style={{ flex: '1.5', textAlign: 'right' }}>
+              <div style={{ flex: '1', textAlign: 'right', fontWeight: 'bold' }}>{item.totalKg}</div>
+              <div style={{ flex: '1.5', textAlign: 'right', fontWeight: 'bold' }}>
                 {formatAmount(item.totalAmount)}
               </div>
             </div>
@@ -69,9 +69,9 @@ const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({ invoice, isReceipt 
 
       {/* Receipt Summary */}
       {isReceipt && (
-        <div style={{ marginBottom: '12px', fontSize: '12px' }}>
-          <div>Total KG: {invoice.totalKg}kg</div>
-          <div style={{ fontWeight: 'bold', fontSize: '12px', marginTop: '3px' }}>
+        <div style={{ marginBottom: '12px', fontSize: '13px' }}>
+          <div style={{ fontWeight: 'bold' }}>Total KG: {invoice.totalKg}kg</div>
+          <div style={{ fontWeight: '900', fontSize: '14px', marginTop: '3px' }}>
             Amount: {formatAmount(invoice.grandTotal)}
           </div>
         </div>
@@ -79,11 +79,11 @@ const PrintableInvoice: React.FC<PrintableInvoiceProps> = ({ invoice, isReceipt 
 
       {/* Totals */}
       <div style={{ borderTop: '1px dashed #000', paddingTop: '8px', marginBottom: '12px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px', fontSize: '11px', fontWeight: 'bold' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px', fontSize: '13px', fontWeight: 'bold' }}>
           <span>Total KG:</span>
           <span>{invoice.totalKg}kg</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 'bold' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', fontWeight: '900' }}>
           <span>TOTAL:</span>
           <span>{formatAmount(invoice.grandTotal)}</span>
         </div>

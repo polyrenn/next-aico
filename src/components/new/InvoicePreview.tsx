@@ -210,12 +210,12 @@ const InvoicePreview: React.FC<InvoicePreviewProps> = ({
                   </button>
               </div>
 
-               <button
+               {/* <button
                   onClick={onNewInvoice}
                   className="tw-w-full tw-py-4 tw-bg-gray-900 dark:tw-bg-white tw-text-white dark:tw-text-gray-900 tw-rounded-xl tw-font-bold tw-text-lg hover:tw-opacity-90 tw-transition-opacity"
                 >
                   Create New Invoice
-                </button>
+                </button> */}
                 <div className="tw-h-4"></div> 
             </div>
           </div>
