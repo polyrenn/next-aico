@@ -63,6 +63,9 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
       return res.json();
     },
     enabled: !!branch?.branchId,
+    staleTime: Infinity,           // Only refetch on manual invalidation (after sale completion / new invoice)
+    refetchOnWindowFocus: false,   // Don't refetch when cashier switches tabs
+    refetchOnReconnect: false,     // Don't refetch on network reconnect
   });
 
   // Fetch Queue data
