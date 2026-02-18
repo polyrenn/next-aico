@@ -158,20 +158,17 @@ export default (props: PageProps<[]>) => {
 
 
     const colorCode = (item:string) => {
-        switch (item) {
-            case 'Domestic':
+        switch (item?.toLowerCase()) {
+            case 'domestic':
                 return 'inherit'
         
-            case 'Dealer':
+            case 'dealer':
                 return 'green.300'
     
-            case 'Eatery':
+            case 'eatery':
                 return 'blue.300'
             
-            case 'Civil Servant':
-                return 'yellow.300'
-            
-            case 'Others':
+            case 'others':
                 return 'red.500'    
                         
             default:
@@ -180,9 +177,9 @@ export default (props: PageProps<[]>) => {
     }  
 
     const colorCodeText = (item:string) => {
-      switch (item) {
+      switch (item?.toLowerCase()) {
           
-          case 'Others':
+          case 'others':
               return 'white'    
                       
           default:
