@@ -1,0 +1,98 @@
+import { prisma } from './prisma';
+import { Prisma } from '@prisma/client';
+
+/**
+ * Atomically reserves the next CRB number for a branch.
+ * 
+ * Uses a Postgres advisory lock scoped to the branch ID to ensure
+ * only one request at a time can read the current max and compute
+ * the next number. The lock is automatically released when the
+ * transaction ends.
+ * 
+ * @param branchId - The branch to reserve a number for
+ * @param createFn - A callback that receives (tx, crbNumber) and 
+ *                   should create the record (crb, queue, etc.) 
+ *                   inside the same transaction
+ * @returns The result of createFn + the reserved crbNumber
+ */
+export async function reserveCrbNumber<T>(
+  branchId: number,
+  createFn: (tx: Prisma.TransactionClient, crbNumber: number) => Promise<T>
+): Promise<{ result: T; crbNumber: number }> {
+  return await prisma.$transaction(async (tx) => {
+    // Acquire an advisory lock scoped to this branch.
+    // pg_advisory_xact_lock is transaction-scoped — it automatically
+    // releases when this transaction commits or rolls back.
+    // Using branchId as the lock key so different branches don't block each other.
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(${branchId})`;
+
+    // Compute today's start for the daily reset window
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0];
+    const todayStart = new Date(`${formattedDate}T00:00:00.000Z`);
+
+    // Read max CRB number across all three tables
+    const [queueMax, crbMax, saleMax] = await Promise.all([
+      tx.queue.aggregate({
+        _max: { crbNumber: true },
+        where: { branchId, timestamp: { gte: todayStart } },
+      }),
+      tx.crb.aggregate({
+        _max: { crbNumber: true },
+        where: { branchId, timestamp: { gte: todayStart } },
+      }),
+      tx.sale.aggregate({
+        _max: { saleNumber: true },
+        where: { branchId, timestamp: { gte: todayStart }, category: { not: 'Switch' } },
+      }),
+    ]);
+
+    const maxQueue = queueMax._max.crbNumber || 0;
+    const maxCrb = crbMax._max.crbNumber || 0;
+    const maxSale = saleMax._max.saleNumber || 0;
+
+    const crbNumber = Math.max(maxQueue, maxCrb, maxSale) + 1;
+
+    // Execute the caller's create operation inside this same transaction,
+    // so the write happens BEFORE the lock is released
+    const result = await createFn(tx, crbNumber);
+
+    return { result, crbNumber };
+  });
+}
+
+/**
+ * Reads the next CRB number without reserving it (preview only).
+ * Still uses a brief advisory lock to ensure an accurate read,
+ * but does not write anything.
+ */
+export async function peekNextCrbNumber(branchId: number): Promise<number> {
+  return await prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(${branchId})`;
+
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0];
+    const todayStart = new Date(`${formattedDate}T00:00:00.000Z`);
+
+    const [queueMax, crbMax, saleMax] = await Promise.all([
+      tx.queue.aggregate({
+        _max: { crbNumber: true },
+        where: { branchId, timestamp: { gte: todayStart } },
+      }),
+      tx.crb.aggregate({
+        _max: { crbNumber: true },
+        where: { branchId, timestamp: { gte: todayStart } },
+      }),
+      tx.sale.aggregate({
+        _max: { saleNumber: true },
+        where: { branchId, timestamp: { gte: todayStart }, category: { not: 'Switch' } },
+      }),
+    ]);
+
+    const maxQueue = queueMax._max.crbNumber || 0;
+    const maxCrb = crbMax._max.crbNumber || 0;
+    const maxSale = saleMax._max.saleNumber || 0;
+
+    return Math.max(maxQueue, maxCrb, maxSale) + 1;
+  });
+}

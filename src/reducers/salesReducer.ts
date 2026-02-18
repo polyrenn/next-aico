@@ -26,7 +26,9 @@ export interface SalesState {
   invoiceNumber: string;
   
   // CRB/Sale tracking
-  savedCrbData: { crbNumber: number } | null;
+  savedCrbData: { crbNumber: number; isDuplicate?: boolean } | null;
+  crbError: string | null;
+  saleError: string | null;
   
   // Queue tracking (for completion/decline)
   currentQueueItemId: number | null;
@@ -52,7 +54,9 @@ export type SalesAction =
   | { type: 'SET_PAYMENT_METHOD'; payload: 'pos' | 'cash' | null }
   | { type: 'SET_INVOICE_NUMBER'; payload: string }
   | { type: 'GENERATE_INVOICE'; payload: Invoice }
-  | { type: 'CRB_SAVED'; payload: { crbNumber: number } }
+  | { type: 'CRB_SAVED'; payload: { crbNumber: number; isDuplicate?: boolean } }
+  | { type: 'CRB_FAILED'; payload: string }
+  | { type: 'SALE_FAILED'; payload: string }
   | { type: 'PRINT_INVOICE' }
   | { type: 'PRINT_RECEIPT' }
   | { type: 'SALE_COMPLETED' }
@@ -74,6 +78,8 @@ export const initialSalesState: SalesState = {
   currentInvoice: null,
   invoiceNumber: 'CRB-...',
   savedCrbData: null,
+  crbError: null,
+  saleError: null,
   currentQueueItemId: null,
   currentQueueItem: null,
   hasPrintedInvoice: false,
@@ -137,11 +143,28 @@ export function salesReducer(state: SalesState, action: SalesAction): SalesState
         ...state,
         status: 'READY',
         savedCrbData: action.payload,
+        crbError: null,
         invoiceNumber: realInvoiceNumber,
         // Update the invoice object with the real server-assigned number
         currentInvoice: state.currentInvoice 
           ? { ...state.currentInvoice, invoiceNumber: realInvoiceNumber }
           : null,
+      };
+      
+    case 'CRB_FAILED':
+      return {
+        ...state,
+        // Stay in GENERATING so the drawer remains open and button is retry-able
+        status: 'GENERATING',
+        crbError: action.payload,
+      };
+      
+    case 'SALE_FAILED':
+      return {
+        ...state,
+        // Stay in READY — CRB is saved, sale can be retried
+        status: 'READY',
+        saleError: action.payload,
       };
       
     case 'PRINT_INVOICE':
@@ -172,6 +195,9 @@ export function salesReducer(state: SalesState, action: SalesAction): SalesState
         // Clear queue tracking
         currentQueueItemId: null,
         currentQueueItem: null,
+        // Clear errors
+        crbError: null,
+        saleError: null,
       };
       
     case 'LOAD_QUEUE_ITEM':

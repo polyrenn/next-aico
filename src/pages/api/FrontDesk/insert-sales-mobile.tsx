@@ -1,7 +1,4 @@
-import { PrismaClient } from '@prisma/client'; // Import PrismaClient directly
-
-// Instantiate Prisma Client outside the handler for reuse
-const prisma = new PrismaClient();
+import { prisma } from "../../../lib/prisma";
 
 export default async (req: any, res: any) => {
     // Ensure request method is POST
@@ -151,8 +148,27 @@ export default async (req: any, res: any) => {
 
     } catch (error: any) {
         console.error("Sale transaction failed:", error);
-        // Check for specific Prisma errors or known issues if needed
-        // e.g., if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') // Unique constraint failed
+        
+        // Handle duplicate sale (unique constraint on [saleNumber, branchId, date])
+        // This happens when a cashier retries after the first attempt actually succeeded
+        if (error.code === 'P2002') {
+            // The sale already exists — find and return it
+            try {
+                const existingSale = await prisma.sale.findFirst({
+                    where: {
+                        saleNumber: parseInt(req.body.saleNumber),
+                        branchId: parseInt(req.body.branch, 10),
+                    },
+                    orderBy: { timestamp: 'desc' },
+                });
+                if (existingSale) {
+                    return res.status(200).json({ ...existingSale, isDuplicate: true });
+                }
+            } catch (lookupError) {
+                console.error("Failed to look up existing sale:", lookupError);
+            }
+        }
+        
         res.status(500).json({ error: "Failed to process sale transaction.", details: error.message });
     }
     // No finally block needed here as Prisma handles connection pooling

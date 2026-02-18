@@ -194,9 +194,8 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
       if (!response.ok) throw new Error('Failed to insert CRB');
       return response.json();
     },
-    // onSuccess is handled inline in handlePrintInvoice to ensure proper timing
     onError: (error) => {
-      alert('Failed to save invoice record: ' + error.message);
+      dispatch({ type: 'CRB_FAILED', payload: error.message });
     }
   });
 
@@ -235,7 +234,7 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
       // Note: Form reset is now handled in onAfterPrint to ensure print completes first
     },
     onError: (error) => {
-      alert('Failed to save sale record: ' + error.message);
+      dispatch({ type: 'SALE_FAILED', payload: error.message });
     }
   });
 
@@ -297,13 +296,19 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
             onSuccess: (data) => {
               flushSync(() => {
                 // CRB_SAVED updates the invoice's number with server-assigned value
-                dispatch({ type: 'CRB_SAVED', payload: { crbNumber: data.crbNumber } });
+                dispatch({ type: 'CRB_SAVED', payload: { 
+                  crbNumber: data.crbNumber,
+                  isDuplicate: data.isDuplicate || false 
+                }});
                 dispatch({ type: 'PRINT_INVOICE' });
               });
               queryClient.invalidateQueries({ queryKey: ['nextCrbNumber'] });
               resolve();
             },
-            onError: () => reject()
+            onError: () => {
+              // CRB_FAILED is dispatched by the mutation's onError handler
+              reject();
+            }
           });
         });
       } else {
@@ -321,7 +326,8 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
     content: () => receiptPrintRef.current,
     onBeforePrint: async () => {
       if (!state.currentInvoice) return Promise.reject();
-      if (state.hasPrintedReceipt || !state.savedCrbData) return Promise.reject();
+      if (!state.savedCrbData) return Promise.reject();
+      if (state.hasPrintedReceipt) return Promise.reject();
       
       // Save sale to DB BEFORE printing (prevents data loss if browser crashes after print)
       return new Promise<void>((resolve, reject) => {
@@ -329,13 +335,12 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
           { invoice: state.currentInvoice!, crbNumber: state.savedCrbData!.crbNumber },
           {
             onSuccess: () => {
-              flushSync(() => {
-                dispatch({ type: 'PRINT_RECEIPT' });
-              });
+              // SALE_COMPLETED is dispatched by the mutation-level onSuccess (fires first)
+              // which sets status to FINISHED. Just resolve to proceed with print.
               resolve();
             },
             onError: (error) => {
-              alert('Failed to save sale: ' + error.message + '\nReceipt will NOT print.');
+              // SALE_FAILED is dispatched by the mutation's onError handler
               reject();
             }
           }
@@ -343,8 +348,8 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
       });
     },
     onAfterPrint: () => {
-      // Sale already saved in onBeforePrint; just reset form
-      handleNewInvoice();
+      // Drawer stays open showing ✅ confirmation on both buttons.
+      // Cashier must tap "New Transaction" to move on — no silent auto-close.
     },
   });
 
@@ -406,7 +411,13 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
       <InvoicePreview
         invoice={state.currentInvoice}
         isOpen={state.showPreview}
-        onOpenChange={(open) => !open && handleNewInvoice()}
+        onOpenChange={(open) => {
+          // Only allow closing the drawer when transaction is idle or fully finished
+          if (!open && (state.status === 'IDLE' || state.status === 'FINISHED')) {
+            handleNewInvoice();
+          }
+          // Otherwise: do nothing — drawer stays locked open during active transaction
+        }}
         onPrintInvoice={() => handlePrint('invoice')}
         onPrintReceipt={() => handlePrint('receipt')}
         onNewInvoice={handleNewInvoice}
@@ -415,6 +426,10 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
         isSavingCrb={isInsertingCrb}
         isCrbSaved={!!state.savedCrbData}
         isSavingSale={isInsertingSale}
+        crbError={state.crbError}
+        saleError={state.saleError}
+        isDuplicate={state.savedCrbData?.isDuplicate || false}
+        status={state.status}
       />
       
       {/* Test Drawer for debugging - DISABLED */}

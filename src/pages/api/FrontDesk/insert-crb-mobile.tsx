@@ -1,33 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "../../../lib/prisma";
-
-// Helper to get next CRB number atomically
-async function getNextCrbNumber(branchId: number): Promise<number> {
-  const today = new Date();
-  const formattedDate = today.toISOString().split('T')[0];
-  const todayStart = new Date(`${formattedDate}T00:00:00.000Z`);
-
-  const [queueMax, crbMax, saleMax] = await Promise.all([
-    prisma.queue.aggregate({
-      _max: { crbNumber: true },
-      where: { branchId, timestamp: { gte: todayStart } },
-    }),
-    prisma.crb.aggregate({
-      _max: { crbNumber: true },
-      where: { branchId, timestamp: { gte: todayStart } },
-    }),
-    prisma.sale.aggregate({
-      _max: { saleNumber: true },
-      where: { branchId, timestamp: { gte: todayStart }, category: { not: 'Switch' } },
-    }),
-  ]);
-
-  const maxQueue = queueMax._max.crbNumber || 0;
-  const maxCrb = crbMax._max.crbNumber || 0;
-  const maxSale = saleMax._max.saleNumber || 0;
-
-  return Math.max(maxQueue, maxCrb, maxSale) + 1;
-}
+import { reserveCrbNumber } from "../../../lib/crb-lock";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'POST') {
@@ -42,32 +15,68 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     const branchId = parseInt(data.branchId);
-    
-    // Generate CRB number server-side for race-condition safety
-    // If client provides crbNumber (from loaded queue item), use it
-    // Otherwise generate a new one for walk-ins
-    const crbNumber = data.crbNumber 
-      ? parseInt(data.crbNumber) 
-      : await getNextCrbNumber(branchId);
 
-    const result = await prisma.crb.create({
-      data: {
-        branch: {
-          connect: { branchId }
+    // If client provides a crbNumber (from a loaded queue item), use it directly
+    // — the number was already reserved when the queue item was created
+    if (data.crbNumber) {
+      const crbNumber = parseInt(data.crbNumber);
+      const result = await prisma.crb.create({
+        data: {
+          branch: { connect: { branchId } },
+          crbNumber,
+          customerId: data.customerId,
+          description: data.description,
+          amount: parseInt(data.amount),
+          totalKg: parseFloat(data.totalKg),
+          category: data.category,
+          timestamp: data.timestamp ? new Date(data.timestamp) : new Date(),
+          date: data.date ? new Date(data.date) : new Date(),
         },
-        crbNumber: crbNumber,
-        customerId: data.customerId,
-        description: data.description,
-        amount: parseInt(data.amount),
-        totalKg: parseFloat(data.totalKg),
-        category: data.category,
-        timestamp: data.timestamp ? new Date(data.timestamp) : new Date(),
-        date: data.date ? new Date(data.date) : new Date(),
-      },
+      });
+      return res.status(200).json({ ...result, crbNumber });
+    }
+
+    // For walk-ins (no pre-assigned number): atomically reserve + insert
+    const amount = parseInt(data.amount);
+    const totalKg = parseFloat(data.totalKg);
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+
+    const { result, crbNumber } = await reserveCrbNumber(branchId, async (tx, crbNumber) => {
+      // Idempotency check: look for a matching CRB created in the last 5 minutes
+      const duplicate = await tx.crb.findFirst({
+        where: {
+          branchId,
+          customerId: data.customerId,
+          amount,
+          totalKg,
+          timestamp: { gte: fiveMinutesAgo },
+        },
+        orderBy: { timestamp: 'desc' },
+      });
+
+      if (duplicate) {
+        // Return existing record instead of creating a new one
+        return { ...duplicate, isDuplicate: true };
+      }
+
+      return await tx.crb.create({
+        data: {
+          branch: { connect: { branchId } },
+          crbNumber,
+          customerId: data.customerId,
+          description: data.description,
+          amount,
+          totalKg,
+          category: data.category,
+          timestamp: data.timestamp ? new Date(data.timestamp) : new Date(),
+          date: data.date ? new Date(data.date) : new Date(),
+        },
+      });
     });
-    
-    // Return with the assigned CRB number
-    res.status(200).json({ ...result, crbNumber });
+
+    // If duplicate was found, return the original CRB number
+    const finalCrbNumber = (result as any).isDuplicate ? (result as any).crbNumber : crbNumber;
+    res.status(200).json({ ...result, crbNumber: finalCrbNumber, isDuplicate: !!(result as any).isDuplicate });
   } catch (error: any) {
     console.error('Error inserting CRB:', error);
     res.status(500).json({ message: 'Failed to insert CRB', error: error.message });
