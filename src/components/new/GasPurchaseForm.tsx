@@ -44,13 +44,16 @@ const GasPurchaseForm: React.FC<GasPurchaseFormProps> = ({ isOpen, onClose }) =>
     branch: '',
     branchId: ''
   });
-  const [gasItems, setGasItems] = useState<GasItem[]>([
-    { size: '1KG', quantity: 0, unitPrice: 1144, totalPrice: 0 },
-    { size: '6KG', quantity: 0, unitPrice: 6864, totalPrice: 0 },
-    { size: '12.5KG', quantity: 0, unitPrice: 14300, totalPrice: 0 },
-    { size: '25KG', quantity: 0, unitPrice: 28600, totalPrice: 0 },
-    { size: '50KG', quantity: 0, unitPrice: 57200, totalPrice: 0 }
-  ]);
+  
+  // Store only quantities in state
+  const [quantities, setQuantities] = useState<Record<string, number>>({
+    '1KG': 0,
+    '6KG': 0,
+    '12.5KG': 0,
+    '25KG': 0,
+    '50KG': 0
+  });
+
   const [orderResult, setOrderResult] = useState<OrderResult | null>(null);
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
 
@@ -62,6 +65,36 @@ const GasPurchaseForm: React.FC<GasPurchaseFormProps> = ({ isOpen, onClose }) =>
       if (!res.ok) throw new Error('Failed to fetch branches');
       return res.json();
     }
+  });
+
+  // Fetch Prices for the selected branch
+  const { data: branchPrices, isLoading: isLoadingPrices } = useQuery({
+    queryKey: ['branchPrices', customerData.branchId],
+    queryFn: async () => {
+      if (!customerData.branchId) return null;
+      const res = await fetch(`/api/Prices/GetPriceList?branch=${customerData.branchId}`);
+      if (!res.ok) throw new Error('Failed to fetch prices');
+      return res.json();
+    },
+    enabled: !!customerData.branchId && isOpen
+  });
+
+  // Derive gasItems from branchPrices and quantities
+  const gasItems: GasItem[] = Object.keys(quantities).map(size => {
+    const quantity = quantities[size];
+    // Find the domestic price for this branch
+    const domesticPriceObj = branchPrices?.find((p: any) => p.category.toLowerCase() === 'domestic');
+    const pricePerKg = domesticPriceObj ? domesticPriceObj.pricePerKg : 1144; // Default if not found
+    
+    const kg = parseFloat(size.replace('KG', ''));
+    const unitPrice = Math.round(pricePerKg * kg);
+    
+    return {
+      size,
+      quantity,
+      unitPrice,
+      totalPrice: quantity * unitPrice
+    };
   });
 
   const generateUniqueCode = (name: string, phone: string): string => {
@@ -129,11 +162,11 @@ const GasPurchaseForm: React.FC<GasPurchaseFormProps> = ({ isOpen, onClose }) =>
     }
   };
 
-  const handleQuantityChange = (index: number, quantity: number) => {
-    const updatedItems = [...gasItems];
-    updatedItems[index].quantity = Math.max(0, quantity);
-    updatedItems[index].totalPrice = updatedItems[index].quantity * updatedItems[index].unitPrice;
-    setGasItems(updatedItems);
+  const handleQuantityChange = (size: string, quantity: number) => {
+    setQuantities(prev => ({
+      ...prev,
+      [size]: Math.max(0, quantity)
+    }));
     
     if (errors.purchase) {
       setErrors(prev => ({ ...prev, purchase: undefined }));
@@ -233,7 +266,13 @@ const GasPurchaseForm: React.FC<GasPurchaseFormProps> = ({ isOpen, onClose }) =>
   const handleClose = () => {
     setStep('register');
     setCustomerData({ name: '', phone: '', uniqueCode: '', branch: '', branchId: '' });
-    setGasItems(gasItems.map(item => ({ ...item, quantity: 0, totalPrice: 0 })));
+    setQuantities({
+      '1KG': 0,
+      '6KG': 0,
+      '12.5KG': 0,
+      '25KG': 0,
+      '50KG': 0
+    });
     setOrderResult(null);
     setErrors({});
     onClose();
@@ -433,7 +472,15 @@ const GasPurchaseForm: React.FC<GasPurchaseFormProps> = ({ isOpen, onClose }) =>
 
               <form onSubmit={handlePurchaseSubmit} className="tw-space-y-6">
                 <div>
-                  <h3 className="tw-text-xl tw-font-semibold tw-text-white tw-mb-4">Select Gas Cylinders</h3>
+                  <div className="tw-flex tw-items-center tw-justify-between tw-mb-4">
+                    <h3 className="tw-text-xl tw-font-semibold tw-text-white">Select Gas Cylinders</h3>
+                    {isLoadingPrices && (
+                      <div className="tw-flex tw-items-center tw-space-x-2 tw-text-blue-400 tw-text-sm">
+                        <Loader className="tw-h-4 tw-w-4 tw-animate-spin" />
+                        <span>Updating prices...</span>
+                      </div>
+                    )}
+                  </div>
                   
                   {errors.purchase && (
                     <div className="tw-mb-4 tw-p-3 tw-bg-red-600/20 tw-border tw-border-red-500/50 tw-rounded-lg tw-flex tw-items-center tw-space-x-2">
@@ -467,7 +514,7 @@ const GasPurchaseForm: React.FC<GasPurchaseFormProps> = ({ isOpen, onClose }) =>
                               <div className="tw-flex tw-items-center tw-justify-center tw-space-x-2">
                                 <button
                                   type="button"
-                                  onClick={() => handleQuantityChange(index, item.quantity - 1)}
+                                  onClick={() => handleQuantityChange(item.size, item.quantity - 1)}
                                   className="tw-w-8 tw-h-8 tw-bg-gray-600 hover:tw-bg-gray-500 tw-rounded-lg tw-flex tw-items-center tw-justify-center tw-text-white tw-transition-colors"
                                 >
                                   -
@@ -479,7 +526,7 @@ const GasPurchaseForm: React.FC<GasPurchaseFormProps> = ({ isOpen, onClose }) =>
                                   placeholder="0"
                                   onChange={(e) =>
                                     handleQuantityChange(
-                                      index,
+                                      item.size,
                                       parseInt(e.target.value) || 0
                                     )
                                   }
@@ -487,7 +534,7 @@ const GasPurchaseForm: React.FC<GasPurchaseFormProps> = ({ isOpen, onClose }) =>
                                 />
                                 <button
                                   type="button"
-                                  onClick={() => handleQuantityChange(index, item.quantity + 1)}
+                                  onClick={() => handleQuantityChange(item.size, item.quantity + 1)}
                                   className="tw-w-8 tw-h-8 tw-bg-gray-600 hover:tw-bg-gray-500 tw-rounded-lg tw-flex tw-items-center tw-justify-center tw-text-white tw-transition-colors"
                                 >
                                   +
