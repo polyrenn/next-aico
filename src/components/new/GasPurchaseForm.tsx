@@ -247,7 +247,7 @@ const GasPurchaseForm: React.FC<GasPurchaseFormProps> = ({ isOpen, onClose }) =>
       // Read the assigned CRB number from the API response
       setOrderResult({
         success: true,
-        orderNumber: `CRB-${result.crbNumber}`,
+        orderNumber: `Q-${result.queueNumber}`,
         message: 'Your gas order has been successfully placed in the queue!'
       });
       
@@ -608,7 +608,7 @@ const GasPurchaseForm: React.FC<GasPurchaseFormProps> = ({ isOpen, onClose }) =>
                   <div className="tw-bg-gray-700/50 tw-rounded-lg tw-p-6 tw-mb-6">
                     <div className="tw-grid md:tw-grid-cols-2 tw-gap-4 tw-text-left">
                       <div>
-                        <h4 className="tw-text-sm tw-font-medium tw-text-gray-400 tw-mb-1">Order Number</h4>
+                        <h4 className="tw-text-sm tw-font-medium tw-text-gray-400 tw-mb-1">Queue Number</h4>
                         <p className="tw-text-xl tw-font-bold tw-text-blue-400">{orderResult.orderNumber}</p>
                       </div>
                       <div>
@@ -630,7 +630,7 @@ const GasPurchaseForm: React.FC<GasPurchaseFormProps> = ({ isOpen, onClose }) =>
                     <h4 className="tw-text-blue-300 tw-font-medium tw-mb-2">Next Steps:</h4>
                     <ul className="tw-text-gray-300 tw-text-sm tw-space-y-1 tw-text-left">
                       <li>• Visit your selected branch: {customerData.branch}</li>
-                      <li>• Present your order number: {orderResult.orderNumber}</li>
+                      <li>• Present your queue number: {orderResult.orderNumber}</li>
                       <li>• Complete payment and collect your gas cylinders</li>
                       <li>• Keep your customer code for future orders</li>
                     </ul>

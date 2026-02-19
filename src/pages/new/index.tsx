@@ -179,12 +179,9 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
         timestamp: new Date().toISOString(),
         date: new Date().toISOString(),
       };
-      
-      // Only include crbNumber if this is a queue item (already has assigned number)
-      // For walk-ins, let the API generate the number server-side
-      if (state.currentQueueItemId) {
-        payload.crbNumber = parseInt(state.invoiceNumber.replace('CRB-', ''));
-      }
+      // CRB number is always generated server-side via reserveCrbNumber.
+      // Queue items have their own separate numbering (Q-1, Q-2, etc.)
+      // that doesn't correspond to real CRB numbers.
       
       const response = await fetch('/api/FrontDesk/insert-crb-mobile', {
         method: 'POST',
@@ -500,7 +497,7 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
                     onClick={() => handleLoadQueueItem(item)}
                     className="tw-text-xs tw-font-mono tw-text-blue-600 dark:tw-text-blue-400 tw-bg-blue-50 dark:tw-bg-blue-900/30 tw-px-2 tw-py-1 tw-rounded hover:tw-bg-blue-100 dark:hover:tw-bg-blue-900/50 tw-transition-colors"
                   >
-                    CRB-{item.crbNumber}
+                    Q-{item.crbNumber}
                   </button>
                 ))}
               </div>
@@ -522,7 +519,7 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
                     >
                       <div className="tw-flex tw-justify-between tw-items-start tw-mb-2">
                         <span className="tw-text-xs tw-font-mono tw-text-blue-600 dark:tw-text-blue-400 tw-bg-blue-50 dark:tw-bg-blue-900/30 tw-px-2 tw-py-0.5 tw-rounded">
-                          CRB-{item.crbNumber}
+                          Q-{item.crbNumber}
                         </span>
                         <span className="tw-text-xs tw-text-gray-400">
                           {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

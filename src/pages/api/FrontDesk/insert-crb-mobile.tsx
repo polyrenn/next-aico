@@ -16,27 +16,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
     const branchId = parseInt(data.branchId);
 
-    // If client provides a crbNumber (from a loaded queue item), use it directly
-    // — the number was already reserved when the queue item was created
-    if (data.crbNumber) {
-      const crbNumber = parseInt(data.crbNumber);
-      const result = await prisma.crb.create({
-        data: {
-          branch: { connect: { branchId } },
-          crbNumber,
-          customerId: data.customerId,
-          description: data.description,
-          amount: parseInt(data.amount),
-          totalKg: parseFloat(data.totalKg),
-          category: data.category,
-          timestamp: data.timestamp ? new Date(data.timestamp) : new Date(),
-          date: data.date ? new Date(data.date) : new Date(),
-        },
-      });
-      return res.status(200).json({ ...result, crbNumber });
-    }
+    // Always generate a fresh CRB number via reserveCrbNumber,
+    // whether this is a walk-in or a queue-based order.
+    // Queue items have their own separate numbering (Q-1, Q-2, etc.)
+    // that doesn't correspond to real CRB numbers.
 
-    // For walk-ins (no pre-assigned number): atomically reserve + insert
+    // Atomically reserve a CRB number + insert
     const amount = parseInt(data.amount);
     const totalKg = parseFloat(data.totalKg);
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);

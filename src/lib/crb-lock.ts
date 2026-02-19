@@ -31,12 +31,9 @@ export async function reserveCrbNumber<T>(
     const formattedDate = today.toISOString().split('T')[0];
     const todayStart = new Date(`${formattedDate}T00:00:00.000Z`);
 
-    // Read max CRB number across all three tables
-    const [queueMax, crbMax, saleMax] = await Promise.all([
-      tx.queue.aggregate({
-        _max: { crbNumber: true },
-        where: { branchId, timestamp: { gte: todayStart } },
-      }),
+    // Read max CRB number across crbs and sales only
+    // (queue has its own separate numbering — online orders don't consume CRB numbers)
+    const [crbMax, saleMax] = await Promise.all([
       tx.crb.aggregate({
         _max: { crbNumber: true },
         where: { branchId, timestamp: { gte: todayStart } },
@@ -47,11 +44,10 @@ export async function reserveCrbNumber<T>(
       }),
     ]);
 
-    const maxQueue = queueMax._max.crbNumber || 0;
     const maxCrb = crbMax._max.crbNumber || 0;
     const maxSale = saleMax._max.saleNumber || 0;
 
-    const crbNumber = Math.max(maxQueue, maxCrb, maxSale) + 1;
+    const crbNumber = Math.max(maxCrb, maxSale) + 1;
 
     // Execute the caller's create operation inside this same transaction,
     // so the write happens BEFORE the lock is released
@@ -74,11 +70,7 @@ export async function peekNextCrbNumber(branchId: number): Promise<number> {
     const formattedDate = today.toISOString().split('T')[0];
     const todayStart = new Date(`${formattedDate}T00:00:00.000Z`);
 
-    const [queueMax, crbMax, saleMax] = await Promise.all([
-      tx.queue.aggregate({
-        _max: { crbNumber: true },
-        where: { branchId, timestamp: { gte: todayStart } },
-      }),
+    const [crbMax, saleMax] = await Promise.all([
       tx.crb.aggregate({
         _max: { crbNumber: true },
         where: { branchId, timestamp: { gte: todayStart } },
@@ -89,10 +81,9 @@ export async function peekNextCrbNumber(branchId: number): Promise<number> {
       }),
     ]);
 
-    const maxQueue = queueMax._max.crbNumber || 0;
     const maxCrb = crbMax._max.crbNumber || 0;
     const maxSale = saleMax._max.saleNumber || 0;
 
-    return Math.max(maxQueue, maxCrb, maxSale) + 1;
+    return Math.max(maxCrb, maxSale) + 1;
   });
 }
