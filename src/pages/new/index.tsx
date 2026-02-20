@@ -50,6 +50,12 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
   const invoicePrintRef = useRef<HTMLDivElement>(null);
   const receiptPrintRef = useRef<HTMLDivElement>(null);
 
+  // State ref — always points to latest state, bypasses stale closures
+  // This is needed because useReactToPrint's onBeforePrint captures state
+  // at render time, but we call it from handleGenerateInvoice's flushSync flow
+  const stateRef = useRef(state);
+  stateRef.current = state;
+
   // Queue collapse state
   const [isQueueExpanded, setIsQueueExpanded] = useState(false);
 
@@ -161,8 +167,29 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
       balance: state.balance,
     };
 
-    dispatch({ type: 'GENERATE_INVOICE', payload: invoice });
+    // Use flushSync to ensure the invoice is in state + DOM
+    flushSync(() => {
+      dispatch({ type: 'GENERATE_INVOICE', payload: invoice });
+    });
     saveInvoice(invoice);
+
+    // Save CRB FIRST, then print — react-to-print clones the DOM before
+    // onBeforePrint, so the invoice number must be updated BEFORE we call print
+    insertCrb(invoice, {
+      onSuccess: (data) => {
+        flushSync(() => {
+          dispatch({ type: 'CRB_SAVED', payload: {
+            crbNumber: data.crbNumber,
+            isDuplicate: data.isDuplicate || false
+          }});
+          dispatch({ type: 'PRINT_INVOICE' });
+        });
+        queryClient.invalidateQueries({ queryKey: ['nextCrbNumber'] });
+        // DOM now has the real CRB number — safe to print
+        handlePrintInvoice();
+      },
+      // onError is handled by the mutation's onError handler (dispatches CRB_FAILED)
+    });
   };
 
   // Mutation for inserting CRB
@@ -280,41 +307,10 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
 
 
   // react-to-print handler for Invoice
+  // CRB save happens BEFORE this is called (in handleGenerateInvoice or retry click)
+  // so the DOM already has the real invoice number when content is cloned
   const handlePrintInvoice = useReactToPrint({
     content: () => invoicePrintRef.current,
-    onBeforePrint: async () => {
-      if (!state.currentInvoice) return Promise.reject();
-      if (state.hasPrintedInvoice) return Promise.reject();
-      
-      // Save to CRB if not already saved
-      if (!state.savedCrbData) {
-        return new Promise<void>((resolve, reject) => {
-          insertCrb(state.currentInvoice!, {
-            onSuccess: (data) => {
-              flushSync(() => {
-                // CRB_SAVED updates the invoice's number with server-assigned value
-                dispatch({ type: 'CRB_SAVED', payload: { 
-                  crbNumber: data.crbNumber,
-                  isDuplicate: data.isDuplicate || false 
-                }});
-                dispatch({ type: 'PRINT_INVOICE' });
-              });
-              queryClient.invalidateQueries({ queryKey: ['nextCrbNumber'] });
-              resolve();
-            },
-            onError: () => {
-              // CRB_FAILED is dispatched by the mutation's onError handler
-              reject();
-            }
-          });
-        });
-      } else {
-        flushSync(() => {
-          dispatch({ type: 'PRINT_INVOICE' });
-        });
-        return Promise.resolve();
-      }
-    },
   });
 
   // react-to-print handler for Receipt
@@ -322,22 +318,20 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
   const handlePrintReceipt = useReactToPrint({
     content: () => receiptPrintRef.current,
     onBeforePrint: async () => {
-      if (!state.currentInvoice) return Promise.reject();
-      if (!state.savedCrbData) return Promise.reject();
-      if (state.hasPrintedReceipt) return Promise.reject();
+      const s = stateRef.current; // Always latest state
+      if (!s.currentInvoice) return Promise.reject();
+      if (!s.savedCrbData) return Promise.reject();
+      if (s.hasPrintedReceipt) return Promise.reject();
       
-      // Save sale to DB BEFORE printing (prevents data loss if browser crashes after print)
+      // Save sale to DB BEFORE printing
       return new Promise<void>((resolve, reject) => {
         insertSale(
-          { invoice: state.currentInvoice!, crbNumber: state.savedCrbData!.crbNumber },
+          { invoice: s.currentInvoice!, crbNumber: s.savedCrbData!.crbNumber },
           {
             onSuccess: () => {
-              // SALE_COMPLETED is dispatched by the mutation-level onSuccess (fires first)
-              // which sets status to FINISHED. Just resolve to proceed with print.
               resolve();
             },
             onError: (error) => {
-              // SALE_FAILED is dispatched by the mutation's onError handler
               reject();
             }
           }
@@ -345,8 +339,8 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
       });
     },
     onAfterPrint: () => {
-      // Drawer stays open showing ✅ confirmation on both buttons.
-      // Cashier must tap "New Transaction" to move on — no silent auto-close.
+      // Auto-reset form after successful receipt print
+      handleNewInvoice();
     },
   });
 
@@ -358,8 +352,6 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
       handlePrintReceipt();
     }
   };
-
-
 
   const handleNewInvoice = () => {
     dispatch({ type: 'RESET_FOR_NEW_INVOICE' });
@@ -404,16 +396,16 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
 
   return (
     <Layout userName={user.username} role={user.role}>
-      {/* Drawer Component for Invoice Preview */}
+      {/* Drawer Component for Invoice Preview — COMMENTED OUT
+         Action buttons are now inline in the form for faster cashier workflow.
+         To re-enable, uncomment this block and remove the inline action buttons.
       <InvoicePreview
         invoice={state.currentInvoice}
         isOpen={state.showPreview}
         onOpenChange={(open) => {
-          // Only allow closing the drawer when transaction is idle or fully finished
           if (!open && (state.status === 'IDLE' || state.status === 'FINISHED')) {
             handleNewInvoice();
           }
-          // Otherwise: do nothing — drawer stays locked open during active transaction
         }}
         onPrintInvoice={() => handlePrint('invoice')}
         onPrintReceipt={() => handlePrint('receipt')}
@@ -428,6 +420,7 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
         isDuplicate={state.savedCrbData?.isDuplicate || false}
         status={state.status}
       />
+      */}
       
       {/* Test Drawer for debugging - DISABLED */}
       {/* <div className="tw-fixed tw-bottom-4 tw-right-4 tw-z-50 tw-no-print">
@@ -797,18 +790,150 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
           )}
         </div>
 
-        {/* Generate Invoice Button */}
-        <button
-          onClick={handleGenerateInvoice}
-          disabled={!state.customerName.trim() || state.invoiceItems.length === 0 || state.status !== 'IDLE'}
-          className="tw-w-full tw-bg-blue-600 hover:tw-bg-blue-700 disabled:tw-bg-gray-400 disabled:tw-cursor-not-allowed tw-text-white tw-font-medium tw-py-4 tw-px-4 tw-rounded-lg tw-transition-colors tw-text-lg"
-        >
-          Generate Invoice
-        </button>
+        {/* Action Buttons — always visible, enabled when form is valid */}
+        <div className="tw-space-y-3">
+            {/* Status Banner */}
+            {state.crbError && (
+              <div className="tw-p-3 tw-bg-red-50 dark:tw-bg-red-900/20 tw-border tw-border-red-200 dark:tw-border-red-800 tw-rounded-lg tw-flex tw-items-start tw-gap-3">
+                <span className="tw-text-red-500 tw-flex-shrink-0 tw-mt-0.5">⚠️</span>
+                <div>
+                  <p className="tw-text-sm tw-font-medium tw-text-red-800 dark:tw-text-red-200">Failed to Save Invoice</p>
+                  <p className="tw-text-xs tw-text-red-600 dark:tw-text-red-400 tw-mt-1">{state.crbError}. Tap "Print Invoice" to retry.</p>
+                </div>
+              </div>
+            )}
+            {state.saleError && (
+              <div className="tw-p-3 tw-bg-red-50 dark:tw-bg-red-900/20 tw-border tw-border-red-200 dark:tw-border-red-800 tw-rounded-lg tw-flex tw-items-start tw-gap-3">
+                <span className="tw-text-red-500 tw-flex-shrink-0 tw-mt-0.5">⚠️</span>
+                <div>
+                  <p className="tw-text-sm tw-font-medium tw-text-red-800 dark:tw-text-red-200">Failed to Save Sale</p>
+                  <p className="tw-text-xs tw-text-red-600 dark:tw-text-red-400 tw-mt-1">{state.saleError}. Invoice IS saved — tap "Print Receipt" to retry.</p>
+                </div>
+              </div>
+            )}
+            {state.savedCrbData?.isDuplicate && (
+              <div className="tw-p-3 tw-bg-amber-50 dark:tw-bg-amber-900/20 tw-border tw-border-amber-200 dark:tw-border-amber-800 tw-rounded-lg tw-flex tw-items-center tw-gap-2">
+                <span>⚠️</span>
+                <p className="tw-text-sm tw-text-amber-800 dark:tw-text-amber-200">Duplicate detected — original record loaded.</p>
+              </div>
+            )}
+
+
+          {/* Two-button grid: Print Invoice + Print Receipt */}
+          <div className="tw-grid tw-grid-cols-2 tw-gap-3">
+            {/* Print Invoice Button */}
+            <button
+              onClick={() => {
+                // If invoice not yet generated, generate it first (validation inside handleGenerateInvoice)
+                if (state.status === 'IDLE') {
+                  handleGenerateInvoice();
+                } else if (!state.savedCrbData && state.currentInvoice) {
+                  // Retry: CRB save failed, try again
+                  insertCrb(state.currentInvoice, {
+                    onSuccess: (data) => {
+                      flushSync(() => {
+                        dispatch({ type: 'CRB_SAVED', payload: {
+                          crbNumber: data.crbNumber,
+                          isDuplicate: data.isDuplicate || false
+                        }});
+                        dispatch({ type: 'PRINT_INVOICE' });
+                      });
+                      queryClient.invalidateQueries({ queryKey: ['nextCrbNumber'] });
+                      handlePrintInvoice();
+                    },
+                  });
+                }
+              }}
+              disabled={
+                !state.customerName.trim() ||
+                state.invoiceItems.length === 0 ||
+                !state.paymentMethod ||
+                isInsertingCrb ||
+                state.hasPrintedInvoice
+              }
+              className={`tw-flex tw-flex-col tw-items-center tw-justify-center tw-p-4 tw-border-2 tw-rounded-xl tw-transition-all ${
+                (!state.customerName.trim() || state.invoiceItems.length === 0 || !state.paymentMethod) && state.status === 'IDLE'
+                  ? 'tw-opacity-40 tw-cursor-not-allowed tw-border-gray-200 dark:tw-border-gray-700 tw-bg-white dark:tw-bg-gray-800'
+                  : isInsertingCrb
+                    ? 'tw-opacity-60 tw-cursor-wait tw-border-blue-200 dark:tw-border-blue-800 tw-bg-blue-50 dark:tw-bg-blue-900/10'
+                    : state.crbError
+                      ? 'tw-border-red-300 dark:tw-border-red-800 tw-bg-red-50 dark:tw-bg-red-900/10 hover:tw-bg-red-100'
+                      : state.hasPrintedInvoice
+                        ? 'tw-border-green-200 dark:tw-border-green-800 tw-bg-green-50 dark:tw-bg-green-900/10 tw-cursor-default'
+                        : 'tw-bg-white dark:tw-bg-gray-800 tw-border-blue-200 dark:tw-border-blue-800 hover:tw-border-blue-500 hover:tw-bg-blue-50 dark:hover:tw-bg-blue-900/20'
+              }`}
+            >
+              <span className="tw-text-2xl tw-mb-1">
+                {isInsertingCrb ? '⏳' : state.crbError ? '🔄' : state.hasPrintedInvoice ? '✅' : '🖨️'}
+              </span>
+              <span className={`tw-font-medium tw-text-sm ${
+                (!state.customerName.trim() || state.invoiceItems.length === 0 || !state.paymentMethod) && state.status === 'IDLE'
+                  ? 'tw-text-gray-400'
+                  : state.crbError ? 'tw-text-red-700 dark:tw-text-red-300'
+                    : state.hasPrintedInvoice ? 'tw-text-green-700 dark:tw-text-green-300'
+                    : 'tw-text-blue-900 dark:tw-text-blue-100'
+              }`}>
+                {isInsertingCrb ? 'Saving...'
+                  : state.crbError ? 'Retry Invoice'
+                  : state.hasPrintedInvoice ? 'Invoice Saved'
+                  : 'Print Invoice'}
+              </span>
+              <span className="tw-text-xs tw-text-gray-400 tw-mt-0.5">
+                {isInsertingCrb ? 'Please wait...'
+                  : state.crbError ? 'Tap to retry'
+                  : state.hasPrintedInvoice ? 'Record created'
+                  : (!state.customerName.trim() || state.invoiceItems.length === 0 || !state.paymentMethod)
+                    ? 'Fill form first'
+                    : 'Saves to DB + prints'}
+              </span>
+            </button>
+
+            {/* Print Receipt Button */}
+            <button
+                onClick={() => handlePrint('receipt')}
+                disabled={isInsertingSale || !state.savedCrbData || state.hasPrintedReceipt}
+                className={`tw-flex tw-flex-col tw-items-center tw-justify-center tw-p-4 tw-border-2 tw-rounded-xl tw-transition-all ${
+                  isInsertingSale
+                    ? 'tw-opacity-60 tw-cursor-wait tw-border-green-200 dark:tw-border-green-800 tw-bg-green-50 dark:tw-bg-green-900/10'
+                    : state.saleError
+                      ? 'tw-border-red-300 dark:tw-border-red-800 tw-bg-red-50 dark:tw-bg-red-900/10 hover:tw-bg-red-100'
+                      : state.hasPrintedReceipt
+                        ? 'tw-border-green-200 dark:tw-border-green-800 tw-bg-green-50 dark:tw-bg-green-900/10 tw-cursor-default'
+                        : !state.savedCrbData
+                          ? 'tw-opacity-40 tw-cursor-not-allowed tw-border-gray-200 dark:tw-border-gray-700 tw-bg-white dark:tw-bg-gray-800'
+                          : 'tw-bg-white dark:tw-bg-gray-800 tw-border-green-200 dark:tw-border-green-800 hover:tw-border-green-500 hover:tw-bg-green-50 dark:hover:tw-bg-green-900/20'
+                }`}
+              >
+                <span className="tw-text-2xl tw-mb-1">
+                  {isInsertingSale ? '⏳' : state.saleError ? '🔄' : state.hasPrintedReceipt ? '✅' : '🧾'}
+                </span>
+                <span className={`tw-font-medium tw-text-sm ${
+                  state.saleError ? 'tw-text-red-700 dark:tw-text-red-300'
+                    : state.hasPrintedReceipt ? 'tw-text-green-700 dark:tw-text-green-300'
+                    : !state.savedCrbData ? 'tw-text-gray-400'
+                    : 'tw-text-green-900 dark:tw-text-green-100'
+                }`}>
+                  {isInsertingSale ? 'Saving...'
+                    : state.saleError ? 'Retry Receipt'
+                    : state.hasPrintedReceipt ? 'Sale Complete'
+                    : !state.savedCrbData ? 'Print Receipt'
+                    : 'Print Receipt'}
+                </span>
+                <span className="tw-text-xs tw-text-gray-400 tw-mt-0.5">
+                  {isInsertingSale ? 'Please wait...'
+                    : state.saleError ? 'CRB is safe — tap to retry'
+                    : state.hasPrintedReceipt ? 'Sale recorded ✅'
+                    : !state.savedCrbData ? 'Print invoice first'
+                    : 'Completes sale + prints'}
+                </span>
+            </button>
+          </div>
+
+        </div>
         
       </div>
     </div>
-</Layout>
+  </Layout>
   );
 };
 
