@@ -225,7 +225,7 @@ export function salesReducer(state: SalesState, action: SalesAction): SalesState
         totalKg: queueItem.totalKg,
         grandTotal: queueItem.amount,
         balance: state.amountPaid - queueItem.amount,
-        invoiceNumber: 'CRB-...', // Real CRB number assigned on save
+        // invoiceNumber: keep current preview — real number assigned at print time
         formKey: state.formKey + 1, // Reset form component to reflect new items
         // Store queue item for completion/decline tracking
         currentQueueItemId: queueItem.id,
