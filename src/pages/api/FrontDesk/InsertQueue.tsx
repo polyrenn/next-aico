@@ -23,40 +23,58 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     // Generate a queue-local daily counter (separate from CRB/sale numbering).
     // Queue numbers do NOT consume real CRB numbers — those are assigned
     // when the cashier processes the order via insert-crb-mobile.
-    const result = await prisma.$transaction(async (tx) => {
-      // Lock on a different key than CRB (offset by 1,000,000 to avoid collision)
-      await tx.$executeRaw`SELECT pg_advisory_xact_lock(${branchId + 1000000})`;
+    //
+    // No advisory lock needed — one cashier per branch means near-zero
+    // contention. The unique constraint on (crbNumber, branchId, date)
+    // catches any freak duplicate; we retry with the next number.
+    const MAX_RETRIES = 3;
+    let lastError: any;
 
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       const today = new Date();
       const formattedDate = today.toISOString().split('T')[0];
       const todayStart = new Date(`${formattedDate}T00:00:00.000Z`);
 
-      const queueMax = await tx.queue.aggregate({
+      const queueMax = await prisma.queue.aggregate({
         _max: { crbNumber: true },
         where: { branchId, timestamp: { gte: todayStart } },
       });
 
-      const queueNumber = (queueMax._max.crbNumber || 0) + 1;
+      const queueNumber = (queueMax._max.crbNumber || 0) + 1 + attempt;
 
-      const queueItem = await tx.queue.create({
-        data: {
-          branch: { connect: { branchId } },
-          crbNumber: queueNumber,
-          customerId: data.customerId,
-          description: data.description,
-          amount: parseInt(data.amount),
-          totalKg: parseFloat(data.totalKg),
-          category: data.category || 'Walk-in',
-          timestamp: data.timestamp ? new Date(data.timestamp) : new Date(),
-          date: data.date ? new Date(data.date) : new Date(),
-        },
-      });
+      try {
+        const queueItem = await prisma.queue.create({
+          data: {
+            branch: { connect: { branchId } },
+            crbNumber: queueNumber,
+            customerId: data.customerId,
+            description: data.description,
+            amount: parseInt(data.amount),
+            totalKg: parseFloat(data.totalKg),
+            category: data.category || 'Walk-in',
+            timestamp: data.timestamp ? new Date(data.timestamp) : new Date(),
+            date: data.date ? new Date(data.date) : new Date(),
+          },
+        });
 
-      return { ...queueItem, queueNumber };
-    });
+        // Return queueNumber (not crbNumber — that's assigned when the cashier processes it)
+        return res.status(200).json({ ...queueItem, queueNumber });
+      } catch (error: any) {
+        if (error.code === 'P2002') {
+          // Unique constraint violation — retry with next number
+          console.warn(
+            `Queue number ${queueNumber} already taken for branch ${branchId}, retrying (attempt ${attempt + 1}/${MAX_RETRIES})`
+          );
+          lastError = error;
+          continue;
+        }
+        // Any other error — throw immediately
+        throw error;
+      }
+    }
 
-    // Return queueNumber (not crbNumber — that's assigned when the cashier processes it)
-    return res.status(200).json({ ...result, queueNumber: result.queueNumber });
+    // All retries exhausted
+    throw lastError;
   } catch (error: any) {
     console.error('Error inserting into queue:', error);
     return res.status(500).json({ message: 'Failed to insert into queue', error: error.message });

@@ -1,72 +1,12 @@
 import { prisma } from './prisma';
-import { Prisma } from '@prisma/client';
+
+const MAX_RETRIES = 3;
 
 /**
- * Atomically reserves the next CRB number for a branch.
- * 
- * Uses a Postgres advisory lock scoped to the branch ID to ensure
- * only one request at a time can read the current max and compute
- * the next number. The lock is automatically released when the
- * transaction ends.
- * 
- * @param branchId - The branch to reserve a number for
- * @param createFn - A callback that receives (tx, crbNumber) and 
- *                   should create the record (crb, queue, etc.) 
- *                   inside the same transaction
- * @returns The result of createFn + the reserved crbNumber
+ * Computes the next CRB number by reading the current max from
+ * both the crb and sale tables for today.
  */
-export async function reserveCrbNumber<T>(
-  branchId: number,
-  createFn: (tx: Prisma.TransactionClient, crbNumber: number) => Promise<T>
-): Promise<{ result: T; crbNumber: number }> {
-  return await prisma.$transaction(async (tx) => {
-    // Acquire an advisory lock scoped to this branch.
-    // pg_advisory_xact_lock is transaction-scoped — it automatically
-    // releases when this transaction commits or rolls back.
-    // Using branchId as the lock key so different branches don't block each other.
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(${branchId})`;
-
-    // Compute today's start for the daily reset window
-    const today = new Date();
-    const formattedDate = today.toISOString().split('T')[0];
-    const todayStart = new Date(`${formattedDate}T00:00:00.000Z`);
-
-    // Read max CRB number across crbs and sales only
-    // (queue has its own separate numbering — online orders don't consume CRB numbers)
-    const [crbMax, saleMax] = await Promise.all([
-      tx.crb.aggregate({
-        _max: { crbNumber: true },
-        where: { branchId, timestamp: { gte: todayStart } },
-      }),
-      tx.sale.aggregate({
-        _max: { saleNumber: true },
-        where: { branchId, timestamp: { gte: todayStart }, category: { not: 'Switch' } },
-      }),
-    ]);
-
-    const maxCrb = crbMax._max.crbNumber || 0;
-    const maxSale = saleMax._max.saleNumber || 0;
-
-    const crbNumber = Math.max(maxCrb, maxSale) + 1;
-
-    // Execute the caller's create operation inside this same transaction,
-    // so the write happens BEFORE the lock is released
-    const result = await createFn(tx, crbNumber);
-
-    return { result, crbNumber };
-  });
-}
-
-/**
- * Reads the next CRB number without reserving it (preview only).
- * 
- * This is a lock-free read — it does NOT acquire an advisory lock.
- * The number shown may be slightly stale if another request is
- * concurrently reserving a number, but that's fine for a preview.
- * The actual reservation in reserveCrbNumber still uses the lock
- * to guarantee uniqueness.
- */
-export async function peekNextCrbNumber(branchId: number): Promise<number> {
+async function getNextCrbNumber(branchId: number): Promise<number> {
   const today = new Date();
   const formattedDate = today.toISOString().split('T')[0];
   const todayStart = new Date(`${formattedDate}T00:00:00.000Z`);
@@ -86,4 +26,58 @@ export async function peekNextCrbNumber(branchId: number): Promise<number> {
   const maxSale = saleMax._max.saleNumber || 0;
 
   return Math.max(maxCrb, maxSale) + 1;
+}
+
+/**
+ * Reserves a CRB number and executes a create operation.
+ *
+ * No advisory lock — with one cashier per branch, contention is
+ * effectively zero. The unique constraint on (crbNumber, branchId, date)
+ * is the real safety net. If a freak duplicate occurs (P2002), we
+ * retry with the next number.
+ *
+ * @param branchId - The branch to reserve a number for
+ * @param createFn - Receives (prismaClient, crbNumber) and should
+ *                   create the record. Runs outside a transaction
+ *                   for speed — the unique constraint protects us.
+ * @returns The result of createFn + the reserved crbNumber
+ */
+export async function reserveCrbNumber<T>(
+  branchId: number,
+  createFn: (client: typeof prisma, crbNumber: number) => Promise<T>
+): Promise<{ result: T; crbNumber: number }> {
+  let lastError: any;
+
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    const crbNumber = await getNextCrbNumber(branchId);
+    // If retrying after a duplicate, bump the number
+    const adjustedNumber = crbNumber + attempt;
+
+    try {
+      const result = await createFn(prisma, adjustedNumber);
+      return { result, crbNumber: adjustedNumber };
+    } catch (error: any) {
+      // P2002 = unique constraint violation — another insert beat us
+      if (error.code === 'P2002') {
+        console.warn(
+          `CRB number ${adjustedNumber} already taken for branch ${branchId}, retrying (attempt ${attempt + 1}/${MAX_RETRIES})`
+        );
+        lastError = error;
+        continue;
+      }
+      // Any other error — throw immediately
+      throw error;
+    }
+  }
+
+  throw lastError;
+}
+
+/**
+ * Reads the next CRB number without reserving it (preview only).
+ * Lock-free read — the number may be slightly stale, which is
+ * fine for a preview.
+ */
+export async function peekNextCrbNumber(branchId: number): Promise<number> {
+  return getNextCrbNumber(branchId);
 }

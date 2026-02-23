@@ -1,5 +1,4 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { prisma } from "../../../lib/prisma";
 import { reserveCrbNumber } from "../../../lib/crb-lock";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
@@ -26,9 +25,9 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     const totalKg = parseFloat(data.totalKg);
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
 
-    const { result, crbNumber } = await reserveCrbNumber(branchId, async (tx, crbNumber) => {
+    const { result, crbNumber } = await reserveCrbNumber(branchId, async (client, crbNumber) => {
       // Idempotency check: look for a matching CRB created in the last 5 minutes
-      const duplicate = await tx.crb.findFirst({
+      const duplicate = await client.crb.findFirst({
         where: {
           branchId,
           customerId: data.customerId,
@@ -44,7 +43,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         return { ...duplicate, isDuplicate: true };
       }
 
-      return await tx.crb.create({
+      return await client.crb.create({
         data: {
           branch: { connect: { branchId } },
           crbNumber,
