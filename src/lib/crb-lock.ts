@@ -59,31 +59,31 @@ export async function reserveCrbNumber<T>(
 
 /**
  * Reads the next CRB number without reserving it (preview only).
- * Still uses a brief advisory lock to ensure an accurate read,
- * but does not write anything.
+ * 
+ * This is a lock-free read — it does NOT acquire an advisory lock.
+ * The number shown may be slightly stale if another request is
+ * concurrently reserving a number, but that's fine for a preview.
+ * The actual reservation in reserveCrbNumber still uses the lock
+ * to guarantee uniqueness.
  */
 export async function peekNextCrbNumber(branchId: number): Promise<number> {
-  return await prisma.$transaction(async (tx) => {
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(${branchId})`;
+  const today = new Date();
+  const formattedDate = today.toISOString().split('T')[0];
+  const todayStart = new Date(`${formattedDate}T00:00:00.000Z`);
 
-    const today = new Date();
-    const formattedDate = today.toISOString().split('T')[0];
-    const todayStart = new Date(`${formattedDate}T00:00:00.000Z`);
+  const [crbMax, saleMax] = await Promise.all([
+    prisma.crb.aggregate({
+      _max: { crbNumber: true },
+      where: { branchId, timestamp: { gte: todayStart } },
+    }),
+    prisma.sale.aggregate({
+      _max: { saleNumber: true },
+      where: { branchId, timestamp: { gte: todayStart }, category: { not: 'Switch' } },
+    }),
+  ]);
 
-    const [crbMax, saleMax] = await Promise.all([
-      tx.crb.aggregate({
-        _max: { crbNumber: true },
-        where: { branchId, timestamp: { gte: todayStart } },
-      }),
-      tx.sale.aggregate({
-        _max: { saleNumber: true },
-        where: { branchId, timestamp: { gte: todayStart }, category: { not: 'Switch' } },
-      }),
-    ]);
+  const maxCrb = crbMax._max.crbNumber || 0;
+  const maxSale = saleMax._max.saleNumber || 0;
 
-    const maxCrb = crbMax._max.crbNumber || 0;
-    const maxSale = saleMax._max.saleNumber || 0;
-
-    return Math.max(maxCrb, maxSale) + 1;
-  });
+  return Math.max(maxCrb, maxSale) + 1;
 }
