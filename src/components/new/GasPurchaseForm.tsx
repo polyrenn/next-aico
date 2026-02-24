@@ -87,7 +87,7 @@ const GasPurchaseForm: React.FC<GasPurchaseFormProps> = ({ isOpen, onClose }) =>
     const pricePerKg = domesticPriceObj ? domesticPriceObj.pricePerKg : 1144; // Default if not found
     
     const kg = parseFloat(size.replace('KG', ''));
-    const unitPrice = Math.round(pricePerKg * kg);
+    const unitPrice = Math.ceil((pricePerKg * kg) / 10) * 10;
     
     return {
       size,

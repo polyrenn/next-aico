@@ -53,7 +53,7 @@ const PriceUpdatesContent = ({ initialData }: PricesPageProps) => {
     kgs.forEach((kg: number) => {
       const label = `${kg}kg`;
       basePrices[label] = {
-        price: Math.round(dbPriceData.pricePerKg * kg),
+        price: Math.ceil((dbPriceData.pricePerKg * kg) / 10) * 10,
         change: '+0.0%', // Default for real data
         trend: 'neutral'
       };

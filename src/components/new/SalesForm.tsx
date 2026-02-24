@@ -42,7 +42,7 @@ const SalesForm: React.FC<SalesFormProps> = ({
       .map(kg => {
         const quantity = quantities[kg.type];
         const totalKg = quantity * kg.weight;
-        const totalAmount = totalKg * pricePerKg;
+        const totalAmount = Math.ceil((totalKg * pricePerKg) / 10) * 10;
         
         return {
           kg: kg.type,
@@ -74,7 +74,11 @@ const SalesForm: React.FC<SalesFormProps> = ({
     return sum + (qty * (kgData?.weight || 0));
   }, 0);
 
-  const grandTotal = totalKg * pricePerKg;
+  const grandTotal = Object.entries(quantities).reduce((sum, [kg, qty]) => {
+    const kgData = kgTypes.find(k => k.type === kg);
+    if (!kgData || qty <= 0) return sum;
+    return sum + Math.ceil((qty * kgData.weight * pricePerKg) / 10) * 10;
+  }, 0);
 
   return (
     <div className="tw-bg-white dark:tw-bg-gray-800 tw-rounded-xl tw-shadow-sm tw-border tw-border-gray-200 dark:tw-border-gray-700">
@@ -88,7 +92,7 @@ const SalesForm: React.FC<SalesFormProps> = ({
               Sales Calculator
             </h3>
             <p className="tw-text-sm tw-text-gray-600 dark:tw-text-gray-400">
-              Price per KG: {formatCurrency(pricePerKg)}
+              Price per KG: {formatCurrency(Math.ceil(pricePerKg / 10) * 10)}
             </p>
           </div>
         </div>
@@ -162,7 +166,7 @@ const SalesForm: React.FC<SalesFormProps> = ({
                 <div className="tw-col-span-3 tw-text-right">
                   <span className="tw-text-sm tw-font-medium tw-text-gray-900 dark:tw-text-white">
                     {quantities[kg.type] 
-                      ? formatCurrency(quantities[kg.type] * kg.weight * pricePerKg)
+                      ? formatCurrency(Math.ceil((quantities[kg.type] * kg.weight * pricePerKg) / 10) * 10)
                       : '₦0'
                     }
                   </span>
