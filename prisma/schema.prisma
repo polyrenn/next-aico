@@ -103,6 +103,9 @@ model Crb {
   date        DateTime? @db.Date()
 
   @@unique([crbNumber, branchId, date])
+  @@index([branchId, timestamp])
+  @@index([branchId, timestamp, crbNumber])
+  @@index([branchId, customerId, amount, totalKg, timestamp])
   @@map(name: "crbs")
 }
 
@@ -122,6 +125,8 @@ model Queue {
   date        DateTime? @db.Date()
 
   @@unique([crbNumber, branchId, date])
+  @@index([branchId, timestamp])
+  @@index([branchId, timestamp, crbNumber])
   @@map(name: "queue")
 }
 
@@ -146,6 +151,8 @@ model Sale {
   closing       Float
 
   @@unique([saleNumber, branchId, date])
+  @@index([branchId, timestamp])
+  @@index([branchId, timestamp, saleNumber])
   @@map(name: "sales")
 }
 
