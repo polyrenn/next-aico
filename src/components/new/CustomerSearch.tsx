@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Search, User, Phone, Hash, X, Loader } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
 interface Customer {
   id: number;
@@ -20,9 +21,9 @@ interface CustomerSearchProps {
 
 /**
  * Memory-safe customer search component with:
- * - Debounced API calls
- * - AbortController for canceling in-flight requests
- * - Proper cleanup on unmount
+ * - React Query for caching & auto-cancellation
+ * - Debounced input to reduce network hits
+ * - Threshold-based searching (3+ chars)
  */
 const CustomerSearch: React.FC<CustomerSearchProps> = ({
   branchId,
@@ -32,30 +33,49 @@ const CustomerSearch: React.FC<CustomerSearchProps> = ({
   placeholder = 'Search or enter customer name',
 }) => {
   const [inputValue, setInputValue] = useState(value);
-  const [results, setResults] = useState<Customer[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [debouncedValue, setDebouncedValue] = useState(value);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-
-  // Refs for cleanup
-  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const isMountedRef = useRef(true);
 
-  // Sync external value changes (especially for reset after sale completion)
+  // 1. Debounce logic: Only update debouncedValue after 500ms of no typing
   useEffect(() => {
-    // If external value is empty (reset scenario), clear all internal state
+    const timer = setTimeout(() => {
+      setDebouncedValue(inputValue);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [inputValue]);
+
+  // 2. React Query: Handle the heavy lifting
+  const { data, isLoading } = useQuery({
+    queryKey: ['customerSearch', branchId, debouncedValue],
+    queryFn: async ({ signal }) => {
+      if (!debouncedValue.trim() || debouncedValue.length < 3) return { items: [] };
+      
+      const res = await fetch(
+        `/api/Customer/search-mobile?branch=${branchId}&searchTerm=${encodeURIComponent(debouncedValue)}&limit=10`,
+        { signal } // Automated cancellation by React Query
+      );
+      if (!res.ok) throw new Error('Search failed');
+      return res.json();
+    },
+    enabled: debouncedValue.length >= 3 && !selectedCustomer,
+    staleTime: 60000, // Keep results "fresh" for 1 minute
+    gcTime: 300000,  // Keep in memory for 5 minutes (Garbage Collection)
+  });
+
+  const results = data?.items || [];
+
+  // Sync external value changes (reset scenario)
+  useEffect(() => {
     if (value === '' && inputValue !== '') {
       setInputValue('');
+      setDebouncedValue('');
       setSelectedCustomer(null);
-      setResults([]);
       setShowDropdown(false);
     } else if (value !== inputValue && !selectedCustomer) {
-      // Normal sync for external changes
       setInputValue(value);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   // Click outside handler
@@ -65,88 +85,15 @@ const CustomerSearch: React.FC<CustomerSearchProps> = ({
         setShowDropdown(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-      // Clear any pending debounce timer
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-      // Abort any in-flight request
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-  }, []);
-
-  const searchCustomers = useCallback(async (searchTerm: string) => {
-    // Abort previous request if still in flight
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    if (!searchTerm.trim() || searchTerm.length < 2) {
-      setResults([]);
-      setIsLoading(false);
-      return;
-    }
-
-    // Create new AbortController for this request
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-    setIsLoading(true);
-
-    try {
-      const res = await fetch(
-        `/api/Customer/search-mobile?branch=${branchId}&searchTerm=${encodeURIComponent(searchTerm)}&limit=10`,
-        { signal: controller.signal }
-      );
-
-      if (!res.ok) throw new Error('Search failed');
-
-      const data = await res.json();
-      
-      // Only update state if this is still the current request and component is mounted
-      if (isMountedRef.current && abortControllerRef.current === controller) {
-        setResults(data.items || []);
-        setIsLoading(false);
-      }
-    } catch (error: any) {
-      // Ignore abort errors
-      if (error.name !== 'AbortError') {
-        console.error('Customer search error:', error);
-        if (isMountedRef.current) {
-          setResults([]);
-          setIsLoading(false);
-        }
-      }
-    }
-  }, [branchId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setInputValue(newValue);
     setSelectedCustomer(null);
     setShowDropdown(true);
-
-    // Clear previous debounce timer
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    // Debounce search - 300ms delay
-    debounceTimerRef.current = setTimeout(() => {
-      searchCustomers(newValue);
-    }, 300);
-
-    // Pass the raw input to parent (for non-registered customer fallback)
     onChange(newValue, null);
   };
 
@@ -154,14 +101,14 @@ const CustomerSearch: React.FC<CustomerSearchProps> = ({
     setInputValue(customer.name);
     setSelectedCustomer(customer);
     setShowDropdown(false);
-    setResults([]);
     onChange(customer.name, customer.uniqueId);
   };
 
   const handleClear = () => {
     setInputValue('');
+    setDebouncedValue('');
     setSelectedCustomer(null);
-    setResults([]);
+    setShowDropdown(false);
     onChange('', null);
   };
 
@@ -175,7 +122,7 @@ const CustomerSearch: React.FC<CustomerSearchProps> = ({
           type="text"
           value={inputValue}
           onChange={handleInputChange}
-          onFocus={() => inputValue.length >= 2 && setShowDropdown(true)}
+          onFocus={() => inputValue.length >= 3 && setShowDropdown(true)}
           disabled={disabled}
           placeholder={placeholder}
           className="tw-w-full tw-pl-10 tw-pr-10 tw-py-3 tw-border tw-border-gray-300 dark:tw-border-gray-600 tw-rounded-lg focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-border-transparent tw-bg-white dark:tw-bg-gray-700 tw-text-gray-900 dark:tw-text-white disabled:tw-opacity-50 disabled:tw-cursor-not-allowed"
@@ -210,7 +157,7 @@ const CustomerSearch: React.FC<CustomerSearchProps> = ({
       {/* Dropdown results */}
       {showDropdown && results.length > 0 && (
         <div className="tw-absolute tw-z-50 tw-w-full tw-mt-1 tw-bg-white dark:tw-bg-gray-800 tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-rounded-lg tw-shadow-lg tw-max-h-60 tw-overflow-y-auto">
-          {results.map((customer) => (
+          {results.map((customer: Customer) => (
             <button
               key={customer.id}
               type="button"
@@ -244,7 +191,7 @@ const CustomerSearch: React.FC<CustomerSearchProps> = ({
       )}
 
       {/* No results message */}
-      {showDropdown && inputValue.length >= 2 && !isLoading && results.length === 0 && (
+      {showDropdown && debouncedValue.length >= 3 && !isLoading && results.length === 0 && (
         <div className="tw-absolute tw-z-50 tw-w-full tw-mt-1 tw-bg-white dark:tw-bg-gray-800 tw-border tw-border-gray-200 dark:tw-border-gray-700 tw-rounded-lg tw-shadow-lg tw-p-4 tw-text-center">
           <p className="tw-text-sm tw-text-gray-500 dark:tw-text-gray-400">
             No registered customers found. Name will be used directly.
