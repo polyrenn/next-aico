@@ -121,6 +121,9 @@ function ReportsContent(props: PageProps) {
         "Branch Name": b.name,
         "Transactions": b.transactionCount,
         "KG Sold": b.totalKg,
+        "Cash (NGN)": b.cashTotal,
+        "POS (NGN)": b.posTotal,
+        "Transfer (NGN)": b.transferTotal,
         "Total Revenue (NGN)": b.totalAmount
       }));
 
@@ -129,13 +132,16 @@ function ReportsContent(props: PageProps) {
         "Branch Name": "TOTAL (CUMULATIVE)",
         "Transactions": data.summary.transactionCount,
         "KG Sold": data.summary.totalKg,
+        "Cash (NGN)": data.summary.cashTotal,
+        "POS (NGN)": data.summary.posTotal,
+        "Transfer (NGN)": data.summary.transferTotal,
         "Total Revenue (NGN)": data.summary.totalAmount
       };
 
       const ws = XLSX.utils.json_to_sheet([...branchesData, {}, totalRow]);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Sales Summary");
-      XLSX.writeFile(wb, `AicoGas_Report_${dayjs().format('YYYY-MM-DD')}.xlsx`);
+      XLSX.writeFile(wb, `AicoGas_Full_Audit_${dayjs().format('YYYY-MM-DD')}.xlsx`);
     } catch (err) {
       toast({ title: "Excel export failed", status: "error" });
     }
@@ -145,20 +151,23 @@ function ReportsContent(props: PageProps) {
   const handleExportPDF = () => {
     if (!data) return;
     try {
-      const doc = new jsPDF();
+      const doc = new jsPDF('l', 'mm', 'a4'); // Landscape for more columns
       
       // Helper to format currency for PDF (Avoid Naira symbol which breaks in jsPDF)
       const pdfCurrency = (val: number) => `NGN ${val.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
 
-      doc.setFontSize(18);
-      doc.text(`${props.company.name} - Sales Report`, 14, 22);
-      doc.setFontSize(11);
-      doc.text(`Period: ${data.period.type.toUpperCase()} (${dayjs(data.period.start).format('DD/MM/YYYY')} - ${dayjs(data.period.end).format('DD/MM/YYYY')})`, 14, 30);
+      doc.setFontSize(22);
+      doc.text(`${props.company.name} - Detailed Sales Report`, 14, 22);
+      doc.setFontSize(12);
+      doc.text(`Period: ${data.period.type.toUpperCase()} (${dayjs(data.period.start).format('DD/MM/YYYY')} - ${dayjs(data.period.end).format('DD/MM/YYYY')})`, 14, 32);
       
       const tableData = data.branches.map((b: any) => [
         b.name,
         b.transactionCount,
         `${b.totalKg.toLocaleString()} KG`,
+        pdfCurrency(b.cashTotal),
+        pdfCurrency(b.posTotal),
+        pdfCurrency(b.transferTotal),
         pdfCurrency(b.totalAmount)
       ]);
 
@@ -167,23 +176,26 @@ function ReportsContent(props: PageProps) {
         "TOTAL (CUMULATIVE)",
         data.summary.transactionCount,
         `${data.summary.totalKg.toLocaleString()} KG`,
+        pdfCurrency(data.summary.cashTotal),
+        pdfCurrency(data.summary.posTotal),
+        pdfCurrency(data.summary.transferTotal),
         pdfCurrency(data.summary.totalAmount)
       ]);
 
       autoTable(doc, {
-        startY: 40,
-        head: [['Branch', 'Transactions', 'KG Sold', 'Revenue']],
+        startY: 42,
+        head: [['Branch', 'Count', 'KG Sold', 'Cash', 'POS', 'Transfer', 'Total Revenue']],
         body: tableData,
-        foot: [['', '', '', '']], // Placeholder for spacing
+        headStyles: { fillColor: [44, 62, 80] },
         didParseCell: (data) => {
           if (data.row.index === tableData.length - 1) {
              data.cell.styles.fontStyle = 'bold';
-             data.cell.styles.fillColor = [240, 240, 240];
+             data.cell.styles.fillColor = [236, 240, 241];
           }
         }
       });
 
-      doc.save(`AicoGas_Report_${dayjs().format('YYYYMMDD')}.pdf`);
+      doc.save(`AicoGas_Audit_${dayjs().format('YYYYMMDD')}.pdf`);
     } catch (err) {
       toast({ title: "PDF export failed", status: "error" });
     }
@@ -329,7 +341,9 @@ function ReportsContent(props: PageProps) {
                   <StatLabel color="gray.500" fontWeight="medium">Total Revenue</StatLabel>
                   <StatNumber fontSize="3xl" color="blue.600">{formatCurrency(data?.summary.totalAmount || 0)}</StatNumber>
                   <StatHelpText>
-                    <Text as="span" color="green.500" fontWeight="bold">POS: {formatCurrency(data?.summary.posTotal)}</Text> | <Text as="span" color="blue.500">Cash: {formatCurrency(data?.summary.cashTotal)}</Text>
+                    <Text as="span" color="green.600" fontWeight="bold">POS: {formatCurrency(data?.summary.posTotal)}</Text> | 
+                    <Text as="span" color="blue.600"> Cash: {formatCurrency(data?.summary.cashTotal)}</Text> | 
+                    <Text as="span" color="purple.600"> Trf: {formatCurrency(data?.summary.transferTotal)}</Text>
                   </StatHelpText>
                 </Stat>
 

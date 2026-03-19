@@ -108,6 +108,16 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     });
     const paymentMethods = paymentMethodsInput as unknown as PaymentMethodAggregation[];
 
+    // 6.5. Enrichment: Get Payment Method breakdown PER BRANCH
+    const branchPaymentSplitInput = await prisma.sale.groupBy({
+      by: ['branchId', 'paymentMethod'],
+      where,
+      _sum: {
+        amount: true,
+      },
+    });
+    const branchPaymentSplit = branchPaymentSplitInput as unknown as any[];
+
     // 7. Enrichment: Get Branch Names for the breakdown
     const branchNames = await prisma.branch.findMany({
       where: {
@@ -132,14 +142,23 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         transactionCount: cumulative._count.id || 0,
         cashTotal: paymentMethods.find((p: PaymentMethodAggregation) => p.paymentMethod?.toLowerCase() === 'cash')?._sum.amount || 0,
         posTotal: paymentMethods.find((p: PaymentMethodAggregation) => p.paymentMethod?.toLowerCase() === 'pos')?._sum.amount || 0,
+        transferTotal: paymentMethods.find((p: PaymentMethodAggregation) => p.paymentMethod?.toLowerCase() === 'transfer')?._sum.amount || 0,
       },
-      branches: branchBreakdown.map((b: BranchAggregation) => ({
-        branchId: b.branchId,
-        name: branchNames.find((bn: { branchId: number; name: string | null }) => bn.branchId === b.branchId)?.name || `Branch #${b.branchId}`,
-        totalAmount: b._sum.amount || 0,
-        totalKg: b._sum.totalKg || 0,
-        transactionCount: b._count.id || 0,
-      })).sort((a: any, b: any) => b.totalAmount - a.totalAmount)
+      branches: branchBreakdown.map((b: BranchAggregation) => {
+        const getPaymentTotal = (method: string) => 
+          branchPaymentSplit.find(ps => ps.branchId === b.branchId && ps.paymentMethod?.toLowerCase() === method.toLowerCase())?._sum.amount || 0;
+
+        return {
+          branchId: b.branchId,
+          name: branchNames.find((bn: { branchId: number; name: string | null }) => bn.branchId === b.branchId)?.name || `Branch #${b.branchId}`,
+          totalAmount: b._sum.amount || 0,
+          totalKg: b._sum.totalKg || 0,
+          transactionCount: b._count.id || 0,
+          cashTotal: getPaymentTotal('cash'),
+          posTotal: getPaymentTotal('pos'),
+          transferTotal: getPaymentTotal('transfer'),
+        };
+      }).sort((a: any, b: any) => b.totalAmount - a.totalAmount)
     };
 
     res.status(200).json(response);
