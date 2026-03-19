@@ -57,6 +57,11 @@ interface PageProps {
   branches: {
     branchId: number;
     name: string;
+    companyID: number;
+  }[];
+  companies: {
+    companyId: number;
+    name: string;
   }[];
 }
 
@@ -65,6 +70,7 @@ function ReportsContent(props: PageProps) {
   const [toggled, setToggled] = useState(false);
   const [collapsed, setCollapsed] = useState(true);
   const [reportType, setReportType] = useState("daily");
+  const [selectedCompany, setSelectedCompany] = useState<string>("all");
   const [selectedBranch, setSelectedBranch] = useState("all");
   const [startDate, setStartDate] = useState(dayjs().startOf("day").format("YYYY-MM-DD"));
   const [endDate, setEndDate] = useState(dayjs().endOf("day").format("YYYY-MM-DD"));
@@ -75,12 +81,25 @@ function ReportsContent(props: PageProps) {
   const handleCollapsedChange = (value: boolean) => setCollapsed(value);
   const handleToggleSidebar = (value: boolean) => setToggled(value);
 
+  // Filter branches based on selected company
+  const filteredBranches = useMemo(() => {
+    if (selectedCompany === "all") return props.branches;
+    return props.branches.filter(b => b.companyID === parseInt(selectedCompany));
+  }, [selectedCompany, props.branches]);
+
+  // Handle company change: reset branch to 'all'
+  const handleCompanyChange = (val: string) => {
+    setSelectedCompany(val);
+    setSelectedBranch("all");
+  };
+
   // 1. Data Fetching
   const { data, isLoading, error } = useQuery({
-    queryKey: ['reportsSummary', reportType, selectedBranch, startDate, endDate],
+    queryKey: ['reportsSummary', reportType, selectedCompany, selectedBranch, startDate, endDate],
     queryFn: async () => {
       const params = new URLSearchParams({
         reportType,
+        companyId: selectedCompany,
         branchId: selectedBranch,
         startDate,
         endDate
@@ -223,7 +242,7 @@ function ReportsContent(props: PageProps) {
 
           {/* Filters */}
           <Box bg="white" p={4} rounded="xl" shadow="sm" mb={8} border="1px" borderColor="gray.100">
-            <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} alignContent="center">
+            <SimpleGrid columns={{ base: 1, md: 5 }} spacing={4} alignContent="center">
               <Box>
                 <Text fontSize="xs" fontWeight="bold" color="gray.400" mb={1} ml={1}>PERIOD</Text>
                 <ChakraSelect 
@@ -239,6 +258,22 @@ function ReportsContent(props: PageProps) {
                   <option value="custom">Custom Range</option>
                 </ChakraSelect>
               </Box>
+
+              {props.user.role === 'Admin' && (
+                <Box>
+                  <Text fontSize="xs" fontWeight="bold" color="gray.400" mb={1} ml={1}>COMPANY</Text>
+                  <ChakraSelect 
+                    value={selectedCompany} 
+                    onChange={(e) => handleCompanyChange(e.target.value)}
+                    bg="gray.50"
+                  >
+                    <option value="all">All Companies</option>
+                    {props.companies.map(c => (
+                      <option key={c.companyId} value={c.companyId}>{c.name}</option>
+                    ))}
+                  </ChakraSelect>
+                </Box>
+              )}
               
               <Box>
                 <Text fontSize="xs" fontWeight="bold" color="gray.400" mb={1} ml={1}>BRANCH</Text>
@@ -247,8 +282,8 @@ function ReportsContent(props: PageProps) {
                   onChange={(e) => setSelectedBranch(e.target.value)}
                   bg="gray.50"
                 >
-                  <option value="all">All Branches (Cumulative)</option>
-                  {props.branches.map(b => (
+                  <option value="all">All Branches</option>
+                  {filteredBranches.map(b => (
                     <option key={b.branchId} value={b.branchId}>{b.name}</option>
                   ))}
                 </ChakraSelect>
@@ -388,7 +423,11 @@ export const getServerSideProps = withSessionSsr(async function({ req }) {
 
   const branches = await prisma.branch.findMany({
     where: user.role === 'Supervisor' ? { companyID: user.company } : {},
-    select: { branchId: true, name: true }
+    select: { branchId: true, name: true, companyID: true }
+  });
+
+  const companies = await prisma.company.findMany({
+    select: { companyId: true, name: true }
   });
 
   return {
@@ -396,7 +435,8 @@ export const getServerSideProps = withSessionSsr(async function({ req }) {
       user,
       branch: branch || { address: "", branchId: 0, name: "Unknown" },
       company: company || { name: "Unknown", companyId: 0 },
-      branches
+      branches,
+      companies
     }
   };
 });

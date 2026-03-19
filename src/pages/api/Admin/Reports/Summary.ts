@@ -22,9 +22,10 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  const { reportType = "daily", branchId = "all", startDate, endDate } = req.query as {
+  const { reportType = "daily", branchId = "all", companyId = "all", startDate, endDate } = req.query as {
     reportType: string;
     branchId: string;
+    companyId: string;
     startDate?: string;
     endDate?: string;
   };
@@ -58,9 +59,14 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         gte: start,
         lte: end,
       },
-      // If Supervisor, restrict to their company
+      // If Supervisor, strictly restrict to their company
       ...(user.role === 'Supervisor' ? { branch: { companyID: user.company } } : {})
     };
+
+    // Filter by Company if not 'all' and user is Admin
+    if (companyId !== "all" && user.role === 'Admin') {
+      where.branch = { ...where.branch, companyID: parseInt(companyId) };
+    }
 
     if (branchId !== "all") {
       where.branchId = parseInt(branchId);
