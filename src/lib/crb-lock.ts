@@ -11,19 +11,21 @@ async function getNextCrbNumber(branchId: number): Promise<number> {
   const formattedDate = today.toISOString().split('T')[0];
   const todayStart = new Date(`${formattedDate}T00:00:00.000Z`);
 
-  const [crbMax, saleMax] = await Promise.all([
-    prisma.crb.aggregate({
-      _max: { crbNumber: true },
+  const [latestCrb, latestSale] = await Promise.all([
+    prisma.crb.findFirst({
       where: { branchId, timestamp: { gte: todayStart } },
+      orderBy: { crbNumber: 'desc' },
+      select: { crbNumber: true },
     }),
-    prisma.sale.aggregate({
-      _max: { saleNumber: true },
+    prisma.sale.findFirst({
       where: { branchId, timestamp: { gte: todayStart }, category: { not: 'Switch' } },
+      orderBy: { saleNumber: 'desc' },
+      select: { saleNumber: true },
     }),
   ]);
 
-  const maxCrb = crbMax._max.crbNumber || 0;
-  const maxSale = saleMax._max.saleNumber || 0;
+  const maxCrb = latestCrb?.crbNumber || 0;
+  const maxSale = latestSale?.saleNumber || 0;
 
   return Math.max(maxCrb, maxSale) + 1;
 }

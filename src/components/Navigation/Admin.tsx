@@ -112,6 +112,9 @@ const AdminNav: FC<any> = (props) => {
           <MenuItem icon={<StaffIcon />}>
             <Link href="/Admin/Staff">Manage Accounts</Link>
           </MenuItem>
+          <MenuItem icon={<ViewIcon />}>
+            <Link href="/Admin/Reports">Reports</Link>
+          </MenuItem>
         </Menu>
       </SidebarContent>
       <SidebarFooter
