@@ -39,6 +39,24 @@ export default async (req: any, res: any) => {
 
     try {
         const result = await prisma.$transaction(async (tx) => {
+            // 0. CRB Validation: Ensure a CRB exists before creating sale
+            // This prevents orphaned sales (sales without corresponding CRB records)
+            const saleNumber = parseInt(data.saleNumber, 10);
+            if (!saleNumber || isNaN(saleNumber)) {
+                throw new Error("Invalid saleNumber. A valid CRB number is required.");
+            }
+            
+            const crbExists = await tx.crb.findFirst({
+                where: {
+                    branchId: branchId,
+                    crbNumber: saleNumber,
+                },
+            });
+            
+            if (!crbExists) {
+                throw new Error(`No CRB found for saleNumber ${saleNumber}. Please save the invoice first before completing the sale.`);
+            }
+
             // 1. Find the Current Tank ID for the branch
             const branchInfo = await tx.branch.findUnique({
                 where: { branchId: branchId },
