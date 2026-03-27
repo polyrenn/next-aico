@@ -232,7 +232,7 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
         body: JSON.stringify({
           branch: branch?.branchId.toString(),
           totalKg: invoice.totalKg.toString(),
-          amount: invoice.amountPaid.toString(),
+          amount: invoice.grandTotal.toString(),
           change: invoice.balance.toString(),
           customerId: invoice.customerName,
           customerUniqueId: state.customerUniqueId, // For reward system

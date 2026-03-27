@@ -14,8 +14,8 @@ export default async (req: any, res: any) => {
     // Validate and parse essential numeric data
     const branchId = parseInt(data.branch, 10);
     const totalKgSold = parseFloat(data.totalKg);
-    const amountReceived = parseInt(data.amount, 10); // Assuming 'amount' is the total amount paid
-    const changeGiven = parseFloat(data.change || '0'); // Assuming 'change' is the change given back
+    const amountReceived = parseInt(data.amount, 10); // Now 'amount' is the actual cost of items (for reporting consistency)
+    const changeGiven = parseFloat(data.change || '0'); // Change given back to customer
 
 
     if (isNaN(branchId) || isNaN(totalKgSold) || isNaN(amountReceived) || isNaN(changeGiven)) {
