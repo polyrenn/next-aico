@@ -1,5 +1,10 @@
 import { prisma } from "../../../lib/prisma";
 
+const toDateOnly = (value?: string) => {
+    const source = value ? new Date(value) : new Date();
+    return new Date(Date.UTC(source.getUTCFullYear(), source.getUTCMonth(), source.getUTCDate()));
+};
+
 export default async (req: any, res: any) => {
     // Ensure request method is POST
     if (req.method !== 'POST') {
@@ -16,6 +21,11 @@ export default async (req: any, res: any) => {
     const totalKgSold = parseFloat(data.totalKg);
     const amountReceived = parseInt(data.amount, 10); // Now 'amount' is the actual cost of items (for reporting consistency)
     const changeGiven = parseFloat(data.change || '0'); // Change given back to customer
+    const saleNumber = parseInt(data.saleNumber, 10);
+    const saleDate = toDateOnly(data.date);
+    const idempotencyKey = typeof data.idempotencyKey === 'string' && data.idempotencyKey.trim()
+      ? data.idempotencyKey.trim()
+      : null;
 
 
     if (isNaN(branchId) || isNaN(totalKgSold) || isNaN(amountReceived) || isNaN(changeGiven)) {
@@ -38,10 +48,24 @@ export default async (req: any, res: any) => {
 
 
     try {
+        if (idempotencyKey) {
+            const existingSale = await prisma.sale.findUnique({
+                where: {
+                    branchId_idempotencyKey: {
+                        branchId,
+                        idempotencyKey,
+                    },
+                },
+            });
+
+            if (existingSale) {
+                return res.status(200).json({ ...existingSale, isDuplicate: true });
+            }
+        }
+
         const result = await prisma.$transaction(async (tx) => {
             // 0. CRB Validation: Ensure a CRB exists before creating sale
             // This prevents orphaned sales (sales without corresponding CRB records)
-            const saleNumber = parseInt(data.saleNumber, 10);
             if (!saleNumber || isNaN(saleNumber)) {
                 throw new Error("Invalid saleNumber. A valid CRB number is required.");
             }
@@ -50,6 +74,8 @@ export default async (req: any, res: any) => {
                 where: {
                     branchId: branchId,
                     crbNumber: saleNumber,
+                    date: saleDate,
+                    ...(idempotencyKey ? { idempotencyKey } : {}),
                 },
             });
             
@@ -114,11 +140,12 @@ export default async (req: any, res: any) => {
                     amount: amountReceived,
                     category: data.category,
                     timestamp: new Date(), // Use server time for consistency
-                    date: new Date(), // Or derive from timestamp if needed differently
+                    date: saleDate, // Or derive from timestamp if needed differently
                     customerId: data.customerId,
                     description: data.description || {}, // Provide default if optional
                     narrative: data.narrative,
                     paymentMethod: data.paymentMethod,
+                    idempotencyKey,
                     change: changeGiven,
                     saleNumber: data.saleNumber,
 
@@ -172,13 +199,23 @@ export default async (req: any, res: any) => {
         if (error.code === 'P2002') {
             // The sale already exists — find and return it
             try {
-                const existingSale = await prisma.sale.findFirst({
-                    where: {
-                        saleNumber: parseInt(req.body.saleNumber),
-                        branchId: parseInt(req.body.branch, 10),
-                    },
-                    orderBy: { timestamp: 'desc' },
-                });
+                const existingSale = idempotencyKey
+                    ? await prisma.sale.findUnique({
+                        where: {
+                            branchId_idempotencyKey: {
+                                branchId,
+                                idempotencyKey,
+                            },
+                        },
+                    })
+                    : await prisma.sale.findFirst({
+                        where: {
+                            saleNumber,
+                            branchId,
+                            date: saleDate,
+                        },
+                        orderBy: { timestamp: 'desc' },
+                    });
                 if (existingSale) {
                     return res.status(200).json({ ...existingSale, isDuplicate: true });
                 }

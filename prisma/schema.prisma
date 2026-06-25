@@ -99,10 +99,12 @@ model Crb {
   amount      Int
   totalKg     Float     @default(0) @map(name: "total_kg")
   category    String
+  idempotencyKey String? @map(name: "idempotency_key")
   timestamp   DateTime  @db.Timestamptz()
   date        DateTime? @db.Date()
 
   @@unique([crbNumber, branchId, date])
+  @@unique([branchId, idempotencyKey])
   @@index([branchId, timestamp])
   @@index([branchId, timestamp, crbNumber])
   @@index([branchId, customerId, amount, totalKg, timestamp])
@@ -144,6 +146,7 @@ model Sale {
   description   Json // Meta Data
   narrative     String
   paymentMethod String    @map(name: "payment_method")
+  idempotencyKey String?   @map(name: "idempotency_key")
   change        Float
   currentTank   String    @map(name: "current_tank")
   opening       Float
@@ -151,6 +154,7 @@ model Sale {
   closing       Float
 
   @@unique([saleNumber, branchId, date])
+  @@unique([branchId, idempotencyKey])
   @@index([branchId, timestamp])
   @@index([branchId, timestamp, saleNumber])
   @@map(name: "sales")

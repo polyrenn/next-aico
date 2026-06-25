@@ -1,5 +1,11 @@
 import { NextApiRequest, NextApiResponse } from "next";
+import { prisma } from "../../../lib/prisma";
 import { reserveCrbNumber } from "../../../lib/crb-lock";
+
+const toDateOnly = (value?: string) => {
+  const source = value ? new Date(value) : new Date();
+  return new Date(Date.UTC(source.getUTCFullYear(), source.getUTCMonth(), source.getUTCDate()));
+};
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'POST') {
@@ -23,39 +29,92 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     // Atomically reserve a CRB number + insert
     const amount = parseInt(data.amount);
     const totalKg = parseFloat(data.totalKg);
+    const crbDate = toDateOnly(data.date);
+    const idempotencyKey = typeof data.idempotencyKey === 'string' && data.idempotencyKey.trim()
+      ? data.idempotencyKey.trim()
+      : null;
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
 
-    const { result, crbNumber } = await reserveCrbNumber(branchId, async (client, crbNumber) => {
-      // Idempotency check: look for a matching CRB created in the last 5 minutes
-      const duplicate = await client.crb.findFirst({
+    if (idempotencyKey) {
+      const existingCrb = await prisma.crb.findUnique({
         where: {
-          branchId,
-          customerId: data.customerId,
-          amount,
-          totalKg,
-          timestamp: { gte: fiveMinutesAgo },
+          branchId_idempotencyKey: {
+            branchId,
+            idempotencyKey,
+          },
         },
-        orderBy: { timestamp: 'desc' },
       });
+
+      if (existingCrb) {
+        return res.status(200).json({ ...existingCrb, isDuplicate: true });
+      }
+    }
+
+    const { result, crbNumber } = await reserveCrbNumber(branchId, async (client, crbNumber) => {
+      let duplicate = idempotencyKey
+        ? await client.crb.findUnique({
+            where: {
+              branchId_idempotencyKey: {
+                branchId,
+                idempotencyKey,
+              },
+            },
+          })
+        : null;
+
+      // Legacy fallback for older callers without a transaction key.
+      if (!duplicate && !idempotencyKey) {
+        duplicate = await client.crb.findFirst({
+          where: {
+            branchId,
+            customerId: data.customerId,
+            amount,
+            totalKg,
+            date: crbDate,
+            timestamp: { gte: fiveMinutesAgo },
+          },
+          orderBy: { timestamp: 'desc' },
+        });
+      }
 
       if (duplicate) {
         // Return existing record instead of creating a new one
         return { ...duplicate, isDuplicate: true };
       }
 
-      return await client.crb.create({
-        data: {
-          branch: { connect: { branchId } },
-          crbNumber,
-          customerId: data.customerId,
-          description: data.description,
-          amount,
-          totalKg,
-          category: data.category,
-          timestamp: data.timestamp ? new Date(data.timestamp) : new Date(),
-          date: data.date ? new Date(data.date) : new Date(),
-        },
-      });
+      try {
+        return await client.crb.create({
+          data: {
+            branch: { connect: { branchId } },
+            crbNumber,
+            customerId: data.customerId,
+            description: data.description,
+            amount,
+            totalKg,
+            category: data.category,
+            idempotencyKey,
+            timestamp: data.timestamp ? new Date(data.timestamp) : new Date(),
+            date: crbDate,
+          },
+        });
+      } catch (error: any) {
+        if (idempotencyKey && error.code === 'P2002') {
+          const existingCrb = await client.crb.findUnique({
+            where: {
+              branchId_idempotencyKey: {
+                branchId,
+                idempotencyKey,
+              },
+            },
+          });
+
+          if (existingCrb) {
+            return { ...existingCrb, isDuplicate: true };
+          }
+        }
+
+        throw error;
+      }
     });
 
     // If duplicate was found, return the original CRB number

@@ -151,8 +151,12 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
       if (!confirmCredit) return;
     }
 
+    const invoiceId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
     const invoice: Invoice = {
-      id: Date.now().toString(),
+      id: invoiceId,
       invoiceNumber: state.invoiceNumber,
       date: currentDate.toISOString(),
       time: formatTime(currentDate),
@@ -182,7 +186,6 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
             crbNumber: data.crbNumber,
             isDuplicate: data.isDuplicate || false
           }});
-          dispatch({ type: 'PRINT_INVOICE' });
         });
         queryClient.invalidateQueries({ queryKey: ['nextCrbNumber'] });
         // DOM now has the real CRB number — safe to print
@@ -203,8 +206,9 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
         amount: invoice.grandTotal,
         totalKg: invoice.totalKg,
         category: invoice.salesCategory,
-        timestamp: new Date().toISOString(),
-        date: new Date().toISOString(),
+        idempotencyKey: invoice.id,
+        timestamp: invoice.date,
+        date: invoice.date,
       };
       // CRB number is always generated server-side via reserveCrbNumber.
       // Queue items have their own separate numbering (Q-1, Q-2, etc.)
@@ -240,6 +244,8 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
           paymentMethod: state.paymentMethod || 'cash',
           narrative: `Sale for ${invoice.customerName}`,
           saleNumber: crbNumber,
+          idempotencyKey: invoice.id,
+          date: invoice.date,
           description: invoice.items,
         }),
       });
@@ -311,6 +317,15 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
   // so the DOM already has the real invoice number when content is cloned
   const handlePrintInvoice = useReactToPrint({
     content: () => invoicePrintRef.current,
+    onBeforePrint: async () => {
+      const s = stateRef.current;
+      if (!s.currentInvoice) return Promise.reject();
+      if (!s.savedCrbData) return Promise.reject();
+      if (s.hasPrintedInvoice) return Promise.reject();
+    },
+    onAfterPrint: () => {
+      dispatch({ type: 'PRINT_INVOICE' });
+    },
   });
 
   // react-to-print handler for Receipt
@@ -346,9 +361,13 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
 
   // Wrapper to handle print type selection
   const handlePrint = (type: 'invoice' | 'receipt') => {
+    const s = stateRef.current;
+
     if (type === 'invoice') {
+      if (s.hasPrintedInvoice || !s.savedCrbData) return;
       handlePrintInvoice();
     } else {
+      if (s.hasPrintedReceipt || !s.savedCrbData) return;
       handlePrintReceipt();
     }
   };
@@ -836,7 +855,6 @@ const DashboardContent: React.FC<DashboardPageProps> = ({ user, branch, prices }
                           crbNumber: data.crbNumber,
                           isDuplicate: data.isDuplicate || false
                         }});
-                        dispatch({ type: 'PRINT_INVOICE' });
                       });
                       queryClient.invalidateQueries({ queryKey: ['nextCrbNumber'] });
                       handlePrintInvoice();
